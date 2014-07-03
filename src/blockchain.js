@@ -3,15 +3,11 @@ var inherits = require('inherits')
 
 
 /**
- * Parent class for BlockchainState that uses
- *   [blockexplorer.com]{@link BlockexplorerBlockchainState} and
- *   [blockchain.info]{@link BlockchaininfoBlockchainState} as sources
+ * BlockchainState that uses [Blockchain Data API]{@link https://blockchain.info/api/blockchain_api}
  *
- * @class SimpleQueryAPI
+ * @class BlockchaininfoDataAPI
  */
-function SimpleQueryAPI() {
-  this.port = 80
-}
+function BlockchaininfoDataAPI() {}
 
 /**
  * Make request to the server
@@ -19,11 +15,14 @@ function SimpleQueryAPI() {
  * @param {string} path Path to resource
  * @param {function} cb Function executed with params (error, response)
  */
-SimpleQueryAPI.prototype.request = function(path, cb) {
+BlockchaininfoDataAPI.prototype.request = function(path, cb) {
+  if (path.indexOf('cors=true') === -1)
+    path += (path.indexOf('?') === -1 ? '?' : '&') + 'cors=true'
+
   var opts = {
-    path: '/q/' + path,
-    host: this.host,
-    port: this.port
+    path: path,
+    host: 'blockchain.info',
+    port: 80
   }
 
   http.get(opts, function(res) {
@@ -48,11 +47,13 @@ SimpleQueryAPI.prototype.request = function(path, cb) {
  *
  * @param {function} cb Function executed with params (error, response)
  */
-SimpleQueryAPI.prototype.getBlockCount = function(cb) {
-  this.request('getblockcount', function(error, response) {
-    if (error !== null) {
+BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
+  this.request('/latestblock', function(error, response) {
+    if (error === null) {
       try {
-        response = parseInt(response)
+        response = JSON.parse(response).height
+        if (response === undefined)
+          throw 'height not found in response'
       } catch (e) {
         error = e
         response = null
@@ -64,35 +65,6 @@ SimpleQueryAPI.prototype.getBlockCount = function(cb) {
 }
 
 
-/**
- * BlockchainState for [blockchain.info]{@link http://blockchain.info/},
- *  inherits {@link SimpleQueryAPI}
- *
- * @class BlockchaininfoBlockchainState
- */
-function BlockchaininfoBlockchainState() {
-  SimpleQueryAPI.call(this)
-  this.host = 'blockchain.info'
-}
-
-inherits(BlockchaininfoBlockchainState, SimpleQueryAPI)
-
-
-/**
- * BlockchainState for [blockexplorer.com]{@link http://blockexplorer.com/},
- *  inherits {@link SimpleQueryAPI}
- *
- * @class BlockexplorerBlockchainState
- */
-function BlockexplorerBlockchainState() {
-  SimpleQueryAPI.call(this)
-  this.host = 'blockexplorer.com'
-}
-
-inherits(BlockexplorerBlockchainState, SimpleQueryAPI)
-
-
 module.exports = {
-  BlockchaininfoBlockchainState: BlockchaininfoBlockchainState,
-  BlockexplorerBlockchainState: BlockexplorerBlockchainState
+  BlockchaininfoDataAPI: BlockchaininfoDataAPI
 }

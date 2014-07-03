@@ -5,7 +5,13 @@ var coloredcoinlib = coloredcoinlib || require('../src/index')
 var blockchain = coloredcoinlib.blockchain
 
 
-function testSimpleQueryAPI(bs) {
+describe('BlockchaininfoDataAPI', function() {
+  var bs;
+
+  before(function() {
+    bs = new blockchain.BlockchaininfoDataAPI()
+  })
+
   it('getBlockCount', function(done) {
     bs.getBlockCount(function(error, response) {
       expect(error).to.be.null
@@ -14,12 +20,4 @@ function testSimpleQueryAPI(bs) {
       done()
     })
   })
-}
-
-describe('BlockchaininfoBlockchainState', function() {
-  testSimpleQueryAPI(new blockchain.BlockchaininfoBlockchainState())
-})
-
-describe('BlockexplorerBlockchainState', function() {
-  testSimpleQueryAPI(new blockchain.BlockexplorerBlockchainState())
 })
