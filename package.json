@@ -16,16 +16,25 @@
     "url": ""
   },
   "scripts": {
-    "jshint": "./node_modules/.bin/jshint --config jshint.json src/*.js ; true"
+  	"compile": "./node_modules/.bin/browserify ./src/index.js -s coloredcoinlib | ./node_modules/.bin/uglifyjs > coloredcoinlib-min.js; true",
+  	"coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter spec test/*.js; true",
+  	"jsdoc": "./node_modules/jsdoc/jsdoc.js -c jsdoc.json ; true",
+    "jshint": "./node_modules/.bin/jshint --config jshint.json src/*.js ; true",
+    "test": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter spec test/*.js; true"
   },
   "dependencies": {
     "bitcoinjs-lib": "*",
-    "q": "*"
+    "http-browserify": "*",
+    "inherits": "*"
   },
   "devDependencies": {
+    "browserify": "*",
     "chai": "*",
+    "istanbul": "*",
+    "jsdoc": "*",
     "jshint": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "uglify-js": "*"
   }
 }
 
