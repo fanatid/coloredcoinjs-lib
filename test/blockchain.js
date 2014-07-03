@@ -1,6 +1,8 @@
-var expect = require('chai').expect
+var chai = chai || require('chai')
+var expect = chai.expect
 
-var blockchain = require('../src/blockchain')
+var coloredcoinlib = coloredcoinlib || require('../src/index')
+var blockchain = coloredcoinlib.blockchain
 
 
 function testSimpleQueryAPI(bs) {
