@@ -1,14 +1,14 @@
-var chai = chai || require('chai')
-var expect = chai.expect
+var expect = require('chai').expect
 
-var bitcoin = bitcoin || require('bitcoinjs-lib')
+var bitcoin = require('bitcoinjs-lib')
+var sinon = require('sinon')
 
-var coloredcoinlib = coloredcoinlib || require('../src/index')
-var blockchain = coloredcoinlib.blockchain
+var coloredcoinlib = require('../src/index')
 
 
 describe('BlockchaininfoDataAPI', function() {
-  var bs;
+  var bs
+
   var rawTx = {
     'c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48': '\
 010000000126b77c90dff8b58d27e4e00c7e73df612df69f83c106d1aefbb20137b1d3ff1801000\
@@ -20,15 +20,34 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
 6bb648792e706985d5f98ace722b6288ac00000000'
   }
 
-  before(function() {
-    bs = new blockchain.BlockchaininfoDataAPI()
+  beforeEach(function() {
+    bs = new coloredcoinlib.blockchain.BlockchaininfoDataAPI()
+  })
+
+  it('raw request with cors in params', function(done) {
+    bs.request('/latestblock?cors=false', function(error, response) {
+      expect(error).to.be.null
+      expect(response).to.be.a('string')
+      done()
+    })
   })
 
   it('getBlockCount', function(done) {
     bs.getBlockCount(function(error, response) {
       expect(error).to.be.null
-      expect(response).to.be.a.number
+      expect(response).to.be.a('number')
       expect(response).to.be.at.least(0)
+      done()
+    })
+  })
+
+  it('getBlockCount with bad number', function(done) {
+    var bsRequest = sinon.stub(bs, 'request', function(path, cb) {
+      cb(null, JSON.stringify({ 'height': 'notNumber' }))
+    })
+    bs.getBlockCount(function(error, response) {
+      expect(error).to.equal('heght not number')
+      expect(response).to.be.null
       done()
     })
   })
@@ -47,6 +66,14 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
       expect(error).to.be.null
       expect(response).to.deep.equal(
         bitcoin.Transaction.fromHex(rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']))
+      done()
+    })
+  })
+
+  it('getTx with error', function(done) {
+    bs.getTx('unknow tx', function(error, response) {
+      expect(error).not.to.be.null
+      expect(response).to.be.null
       done()
     })
   })

@@ -7,7 +7,10 @@ var bitcoin = require('bitcoinjs-lib')
  *
  * @class BlockchaininfoDataAPI
  */
-function BlockchaininfoDataAPI() {}
+function BlockchaininfoDataAPI() {
+  this.host = 'blockchain.info'
+  this.port = 80
+}
 
 /**
  * Make request to the server
@@ -16,13 +19,13 @@ function BlockchaininfoDataAPI() {}
  * @param {Function} cb Called on response with params  (error, String)
  */
 BlockchaininfoDataAPI.prototype.request = function(path, cb) {
-  if (path.indexOf('cors=true') === -1)
+  if (path.indexOf('cors=') === -1)
     path += (path.indexOf('?') === -1 ? '?' : '&') + 'cors=true'
 
   var opts = {
     path: path,
-    host: 'blockchain.info',
-    port: 80
+    host: this.host,
+    port: this.port
   }
 
   http.get(opts, function(res) {
@@ -51,9 +54,9 @@ BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
   this.request('/latestblock', function(error, response) {
     if (error === null) {
       try {
-        response = JSON.parse(response).height
-        if (response === undefined)
-          throw 'height not found in response'
+        response = parseInt(JSON.parse(response).height)
+        if (isNaN(response))
+          throw 'heght not number'
       } catch (e) {
         error = e
         response = null
@@ -71,15 +74,9 @@ BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
  * @param {Function} cb Called on response with params  (error, String)
  */
 BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
-  this.request('/rawtx/' + txHash + '?format=hex', function(error, response) {
-    if (error === null) {
-      try {
-        var tx = new Buffer(response, 'hex')
-      } catch (e) {
-        error = e
-        response = null
-      }
-    }
+  this.getTx(txHash, function(error, response) {
+    if (error === null)
+      response = response.toHex()
 
     cb(error, response)
   })
@@ -92,7 +89,7 @@ BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
  * @param {Function} cb Called on response with params (error, bitcoinjs-lib.Transaction)
  */
 BlockchaininfoDataAPI.prototype.getTx = function(txHash, cb) {
-  this.getRawTx(txHash, function(error, response) {
+  this.request('/rawtx/' + txHash + '?format=hex', function(error, response) {
     if (error === null) {
       try {
         response = bitcoin.Transaction.fromHex(response)

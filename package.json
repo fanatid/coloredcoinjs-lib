@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "bitcoinjs-lib": "1.0.0",
-    "http-browserify": "1.3.2"
+    "http-browserify": "1.3.2",
+    "inherits": "2.0.1"
   },
   "devDependencies": {
     "browserify": "4.2.0",
