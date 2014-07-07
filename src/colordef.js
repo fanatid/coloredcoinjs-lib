@@ -1,5 +1,6 @@
 var inherits = require('inherits')
 
+
 /**
  * Represents a color definition scheme. This means how color exists and
  *  is transferred in the blockchain
@@ -11,12 +12,15 @@ function ColorDefinition(colorID) {
 }
 
 
-var GENESIS_OUTPUT_MARKER = ColorDefinition(-1)
-var UNCOLORED_MARKER = ColorDefinition(0)
+var genesisOutputMarker = new ColorDefinition(-1)
+var uncoloredMarker = new ColorDefinition(0)
 
 
 /**
  * @class GenesisColorDefinition
+ *
+ * @param {number} colorID
+ * @param {Object} genesis Contains txhash, outindex, height
  */
 function GenesisColorDefinition(colorID, genesis) {
   ColorDefinition.apply(this, colorID)
@@ -51,6 +55,7 @@ var EPOBCColorDefinition = (function() {
       return Math.pow(2, this.paddingCode)
   }
 
+
   /**
    * @param {number} n sequence in transaction, 4 bytes unsigned int
    * @return {Array} array bits of n
@@ -84,24 +89,68 @@ var EPOBCColorDefinition = (function() {
 
   /**
    * @param {bitcoinjs-lib.Transaction} tx
-   * @return {Tag|null} Tag instance if tx is genesis or xfer
+   * @return {Tag|null} Tag instance if tx is genesis or xfer and not coinbase
    */
   function getTag(tx) {
-    // Todo: add check (tx.raw.vin[0].prevout.is_null())
-    //if (?)
-    //  return null
+    var isCoinbase = (
+      tx.ins[0].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
+      tx.ins[0].index === 4294967295)
+    if (isCoinbase)
+      return null
 
     var nSequence = tx.ins[0].sequence
     var bits = number2bitArray(nSequence)
     var tagBits = bits.slice(0, 6)
 
-    if (tagBits.some(function(v, i) { return v !== xferTagBits[i] }) &&
-        tagBits.some(function(v, i) { return v !== genesisTagBits[i] }))
+    var isXfer = tagBits.every(function(v, i) { return v === xferTagBits[i] })
+    var isGenesis = tagBits.every(function(v, i) { return v === genesisTagBits[i] })
+
+    if (!(isXfer || isGenesis))
       return null
 
     var paddingCode = bitArray2number(bits.slice(6, 12))
-    var isGenesis = tagBits.every(function(v, i) { return v === genesisTagBits[i] })
     return new Tag(paddingCode, isGenesis)
+  }
+
+  function getXferAffectingInputs() {}
+
+  /**
+   * @param {bitcoinjs-lib.Transaction} tx
+   * @param {coloredcoinlib.blockchain.BlockchainState} bs
+   * @param {function} cb Called on finished with params (error, bitcoinjs-lib.Transaction)
+   */
+  function ensureInputValues(tx, bs, cb) {
+    tx = tx.clone()
+
+    function processOne(index) {
+      if (index === tx.ins.length) {
+        cb(null, tx)
+        return
+      }
+
+      var isCoinbase = (
+        tx.ins[index].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
+        tx.ins[index].index === 4294967295)
+
+      if (isCoinbase) {
+        tx.ins[index].value = 0
+        process.nextTick(function() { processOne(index+1) })
+
+      } else {
+        bs.getTx(tx.ins[index].hash.toString('hex'), function(error, prevTx) {
+          if (error === null) {
+            tx.ins[index].prevTx = prevTx
+            tx.ins[index].value = prevTx.outs[tx.ins[index].index].value
+            process.nextTick(function() { processOne(index+1) })
+
+          } else {
+            cb(error, null)
+          }
+        })
+      }
+    }
+
+    process.nextTick(function() { processOne(0) })
   }
 
 
@@ -109,7 +158,7 @@ var EPOBCColorDefinition = (function() {
    * @class EPOBCColorDefinition
    */
   function EPOBCColorDefinition() {
-    GenesisColorDefinition.apply(this, Array.prototype.slice.call(arguments, 0))
+    GenesisColorDefinition.call(this, Array.prototype.slice.call(arguments))
   }
 
   inherits(EPOBCColorDefinition, GenesisColorDefinition)
@@ -118,12 +167,28 @@ var EPOBCColorDefinition = (function() {
 
   }
 
-  EPOBCColorDefinition.prototype.getAffectingInputs = function() {
+  /**
+   * @param {bitcoinjs-lib.Transaction} tx
+   * @param {Array} outputSet
+   * @param {coloredcoinlib.blockchain.BlockchainState} bs
+   * @param {function} cb Called on finished with params (error, Array)
+   */
+  EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, cb) {
+    var tag = getTag(tx)
 
-  }
+    if (tag === null || tag.isGenesis) {
+      cb(null, [])
 
-  function getXferAffectingInputs() {
+    } else {
+      ensureInputValues(tx, bs, function(error, tx) {
+        if (error !== null) {
+          cb(error, [])
+          return
+        }
 
+        cb(null, [])
+      })
+    }
   }
 
   return EPOBCColorDefinition
@@ -134,6 +199,6 @@ module.exports = {
   ColorDefinition: ColorDefinition,
   EPOBCColorDefinition: EPOBCColorDefinition,
 
-  GENESIS_OUTPUT_MARKER: GENESIS_OUTPUT_MARKER,
-  UNCOLORED_MARKER: UNCOLORED_MARKER
+  genesisOutputMarker: genesisOutputMarker,
+  uncoloredMarker: uncoloredMarker
 }
