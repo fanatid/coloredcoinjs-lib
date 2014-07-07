@@ -1,3 +1,4 @@
 module.exports = {
-  blockchain: require('./blockchain')
+  blockchain: require('./blockchain'),
+  colordef: require('./colordef')
 }
