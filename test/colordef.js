@@ -43,7 +43,7 @@ describe('EPOBCColorDefinition', function() {
         4294967295,
         4294967295
       )
-      epobc.getAffectingInputs(tx, [], bs, function(error, inputs) {
+      epobc.getAffectingInputs(tx, [], undefined, function(error, inputs) {
         expect(error).to.be.null
         expect(inputs).to.deep.equal([])
         done()
@@ -56,7 +56,7 @@ describe('EPOBCColorDefinition', function() {
         0,
         37
       )
-      epobc.getAffectingInputs(tx, [], bs, function(error, inputs) {
+      epobc.getAffectingInputs(tx, [], undefined, function(error, inputs) {
         expect(error).to.be.null
         expect(inputs).to.deep.equal([])
         done()
