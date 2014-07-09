@@ -135,19 +135,16 @@ var EPOBCColorDefinition = (function() {
    */
   function getXferAffectingInputs(tx, padding, outIndex) {
     var valueWop
+    var outValueWop
     var outPrecSum = 0
 
-    for (var oi = 0; oi < outIndex; ++oi) {
-      valueWop = tx.outs[oi].value - padding
-      if (valueWop <= 0)
+    for (var oi = 0; oi <= outIndex; ++oi) {
+      outValueWop = tx.outs[oi].value - padding
+      if (outValueWop <= 0)
         return []
 
-      outPrecSum += valueWop
+      outPrecSum += outValueWop
     }
-
-    var outValueWop = tx.outs[outIndex].value - padding
-    if (outValueWop <= 0)
-      return []
 
     var affectingInputs = []
     var inputRunningSum = 0
@@ -252,7 +249,7 @@ var EPOBCColorDefinition = (function() {
         var valueWop = tx.outs[0].value - tag.getPadding()
 
         if (valueWop > 0)
-          outColorValues[0] = colorvalue.SimpleColorValue({ colordef: this, value: valueWop })
+          outColorValues[0] = new colorvalue.SimpleColorValue({ colordef: this, value: valueWop })
       }
 
       cb(null, outColorValues)
@@ -276,11 +273,11 @@ var EPOBCColorDefinition = (function() {
         }
 
         var allColored = true
-        var aiColorValue = colorvalue.SimpleColorValue({ colordef: _this, value: 0 })
+        var aiColorValue = new colorvalue.SimpleColorValue({ colordef: _this, value: 0 })
 
         /* jshint ignore:start */
         getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-          if (colorValueSet[ai] === null) // || colorValueSet[ai] === undefined ?
+          if (colorValueSet[ai] === null) // || colorValueSet[ai] === undefined ? // Todo
             allColored = false
           else
             aiColorValue.add(colorValueSet[ai])
@@ -288,7 +285,7 @@ var EPOBCColorDefinition = (function() {
         /* jshint ignore:end */
 
         if (allColored && aiColorValue.getValue() >= outValueWop)
-          outColorValues.push(colorvalue.SimpleColorValue({ colordef: _this, value: outValueWop }))
+          outColorValues.push(new colorvalue.SimpleColorValue({ colordef: _this, value: outValueWop }))
         else
           outColorValues.push(null)
       }
@@ -329,17 +326,30 @@ var EPOBCColorDefinition = (function() {
           cb(null, inputs)
 
         } else {
-          cb(error, [])
+          cb(error, null)
         }
       })
     }
   }
+
+  /* test-code */
+  EPOBCColorDefinition.Tag = Tag
+  EPOBCColorDefinition.Tag.number2bitArray = number2bitArray
+  EPOBCColorDefinition.Tag.bitArray2number = bitArray2number
+  EPOBCColorDefinition.Tag.getTag = getTag
+  EPOBCColorDefinition.getXferAffectingInputs = getXferAffectingInputs
+  EPOBCColorDefinition.ensureInputValues = ensureInputValues
+  /* end-test-code */
 
   return EPOBCColorDefinition
 })();
 
 
 module.exports = {
+  /* test-code */
+  GenesisColorDefinition: GenesisColorDefinition,
+  /* end-test-code */
+
   ColorDefinition: ColorDefinition,
   EPOBCColorDefinition: EPOBCColorDefinition,
 

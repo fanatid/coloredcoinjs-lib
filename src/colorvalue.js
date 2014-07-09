@@ -12,6 +12,13 @@ function ColorValue(data) {
 }
 
 /**
+ * @return {coloredcoinlib.colordef.ColorDefinition}
+ */
+ColorValue.prototype.getColorDefinition = function() {
+  return this.colordef
+}
+
+/**
  * @return {number}
  */
 ColorValue.prototype.getColorID = function() {
@@ -59,10 +66,8 @@ AdditiveColorValue.prototype.getValue = function() {
  * @return {AdditiveColorValue}
  */
 AdditiveColorValue.prototype.add = function(other) {
-  if (!this.checkCompatibility(other))
-    return
-
-  this.value += other.getValue()
+  if (this.checkCompatibility(other))
+    this.value += other.getValue()
 }
 
 
