@@ -1,18 +1,32 @@
+var assert = require('assert')
+var _ = require('underscore')
 var inherits = require('inherits')
+
+var colordef;
+function getColordef() {
+  if (colordef === undefined)
+    colordef = require('./colordef')
+
+  return colordef
+}
 
 
 /**
  * @class ColorValue
  *
  * @param data
- * @param data.colordef coloredcoinlib.colordef.ColorDefinition
+ * @param data.colordef colordef.ColorDefinition
  */
 function ColorValue(data) {
+  assert(_.isObject(data), 'Expected object data, got ' + data)
+  assert(data.colordef instanceof getColordef().ColorDefinition,
+    'Expected ColorDefinition data.colordef, got ' + data.colordef)
+
   this.colordef = data.colordef
 }
 
 /**
- * @return {coloredcoinlib.colordef.ColorDefinition}
+ * @return {colordef.ColorDefinition}
  */
 ColorValue.prototype.getColorDefinition = function() {
   return this.colordef
@@ -32,7 +46,11 @@ ColorValue.prototype.getColorID = function() {
  * @return {boolean}
  */
 ColorValue.prototype.checkCompatibility = function(other) {
-  return this.getColorID() === other.getColorID()
+  var isCompatibility = (
+    other instanceof ColorValue &&
+    this.getColorID() === other.getColorID())
+
+  return isCompatibility
 }
 
 
@@ -40,12 +58,15 @@ ColorValue.prototype.checkCompatibility = function(other) {
  * @class AdditiveColorValue
  *
  * @param data
- * @param data.colordef coloredcoinlib.colordef.ColorDefinition
+ * @param data.colordef colordef.ColorDefinition
  * @param data.value number
  */
 function AdditiveColorValue(data) {
   ColorValue.call(this, data)
-  this.value = data.value // Todo: check value is number?
+
+  assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
+
+  this.value = data.value
 }
 
 inherits(AdditiveColorValue, ColorValue)
@@ -66,7 +87,9 @@ AdditiveColorValue.prototype.getValue = function() {
  * @return {AdditiveColorValue}
  */
 AdditiveColorValue.prototype.add = function(other) {
-  if (this.checkCompatibility(other))
+  var isCompatibility = this.checkCompatibility(other)
+
+  if (isCompatibility)
     this.value += other.getValue()
 }
 
@@ -75,7 +98,7 @@ AdditiveColorValue.prototype.add = function(other) {
  * @class SimpleColorValue
  *
  * @param data
- * @param data.colordef coloredcoinlib.colordef.ColorDefinition
+ * @param data.colordef colordef.ColorDefinition
  * @param data.value number
  */
 function SimpleColorValue(data) {

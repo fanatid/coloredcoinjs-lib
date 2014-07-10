@@ -1,5 +1,14 @@
+var assert = require('assert')
+var _ = require('underscore')
+var inherits = require('inherits')
 var http = require('http')
 var bitcoin = require('bitcoinjs-lib')
+
+
+/**
+ * @class BlockchainStateBase
+ */
+function BlockchainStateBase() {}
 
 
 /**
@@ -7,18 +16,31 @@ var bitcoin = require('bitcoinjs-lib')
  *
  * @class BlockchaininfoDataAPI
  */
-function BlockchaininfoDataAPI() {
-  this.host = 'blockchain.info'
-  this.port = 80
+function BlockchaininfoDataAPI(host, port) {
+  host = host === undefined ? 'blockchain.info' : host
+  port = port === undefined ? 80 : port
+
+  assert(_.isString(host), 'Expected string host, got ' + host)
+  assert(_.isNumber(port), 'Expected number port, got ' + port)
+
+  BlockchainStateBase.call(this)
+
+  this.host = host
+  this.port = port
 }
+
+inherits(BlockchaininfoDataAPI, BlockchainStateBase)
 
 /**
  * Make request to the server
  *
- * @param {String} path Path to resource
- * @param {Function} cb Called on response with params  (error, String)
+ * @param {string} path Path to resource
+ * @param {function} cb Called on response with params  (error, string)
  */
 BlockchaininfoDataAPI.prototype.request = function(path, cb) {
+  assert(_.isString(path), 'Expected string path, got ' + path)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   if (path.indexOf('cors=') === -1)
     path += (path.indexOf('?') === -1 ? '?' : '&') + 'cors=true'
 
@@ -48,9 +70,11 @@ BlockchaininfoDataAPI.prototype.request = function(path, cb) {
 /**
  * Get block count in blockchain
  *
- * @param {Function} cb Called on response with params  (error, Number)
+ * @param {function} cb Called on response with params  (error, number)
  */
 BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   this.request('/latestblock', function(error, response) {
     if (error === null) {
       try {
@@ -70,10 +94,13 @@ BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
 /**
  * Get raw transaction by txHash
  *
- * @param {String} txHash Transaction hash in hex
- * @param {Function} cb Called on response with params  (error, String)
+ * @param {string} txHash Transaction hash in hex
+ * @param {function} cb Called on response with params  (error, string)
  */
 BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
+  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   this.getTx(txHash, function(error, response) {
     if (error === null)
       response = response.toHex()
@@ -85,10 +112,13 @@ BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
 /**
  * Get transaction by txHash
  *
- * @param {String} txHash Transaction hash in hex
- * @param {Function} cb Called on response with params (error, bitcoinjs-lib.Transaction)
+ * @param {string} txHash Transaction hash in hex
+ * @param {function} cb Called on response with params (error, bitcoinjs-lib.Transaction)
  */
 BlockchaininfoDataAPI.prototype.getTx = function(txHash, cb) {
+  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   this.request('/rawtx/' + txHash + '?format=hex', function(error, response) {
     if (error === null) {
       try {
@@ -105,5 +135,6 @@ BlockchaininfoDataAPI.prototype.getTx = function(txHash, cb) {
 
 
 module.exports = {
+  BlockchainStateBase: BlockchainStateBase,
   BlockchaininfoDataAPI: BlockchaininfoDataAPI
 }

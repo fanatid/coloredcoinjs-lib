@@ -1,8 +1,8 @@
 var expect = require('chai').expect
-
 var bitcoin = require('bitcoinjs-lib')
 
 var coloredcoinlib = require('../src/index')
+var blockchain = coloredcoinlib.blockchain
 
 
 describe('blockchain', function() {
@@ -21,7 +21,12 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     }
 
     beforeEach(function() {
-      bs = new coloredcoinlib.blockchain.BlockchaininfoDataAPI()
+      bs = new blockchain.BlockchaininfoDataAPI()
+    })
+
+    it('inherits BlockchainStateBase', function() {
+      expect(bs).to.be.instanceof(blockchain.BlockchainStateBase)
+      expect(bs).to.be.instanceof(blockchain.BlockchaininfoDataAPI)
     })
 
     it('raw request with cors in params', function(done) {

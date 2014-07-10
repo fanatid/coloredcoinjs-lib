@@ -25,7 +25,7 @@ describe('colordef', function() {
 
   describe('GenesisColorDefinition', function() {
     it('inherits ColorDefinition', function() {
-      var colordef1 = new colordef.GenesisColorDefinition(1, {})
+      var colordef1 = new colordef.GenesisColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
       expect(colordef1).to.be.instanceof(colordef.ColorDefinition)
       expect(colordef1).to.be.instanceof(colordef.GenesisColorDefinition)
     })
@@ -38,11 +38,7 @@ describe('colordef', function() {
 
     beforeEach(function() {
       bs = new coloredcoinlib.blockchain.BlockchaininfoDataAPI()
-      epobc = new colordef.EPOBCColorDefinition(1, {
-        'txhash': 'genesis',
-        'outindex': 0,
-        'height': 0
-      })
+      epobc = new colordef.EPOBCColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
       tx = new bitcoin.Transaction()
       tx2 = new bitcoin.Transaction()
     })
@@ -187,7 +183,7 @@ describe('colordef', function() {
     describe('runKernel', function() {
       it('tag is null', function(done) {
         tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-        epobc.runKernel(tx, [], null, function(error, inputs) {
+        epobc.runKernel(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([])
           done()
@@ -197,8 +193,8 @@ describe('colordef', function() {
       it('tag.isGenesis is true and isGenesisHash is true', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 5000000000)
-        epobc.genesis.txhash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
-        epobc.runKernel(tx, [], null, function(error, inputs) {
+        epobc.genesis.txHash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
+        epobc.runKernel(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([new colorvalue.SimpleColorValue({ colordef: epobc, value: 5000000000 })])
           done()
@@ -208,8 +204,8 @@ describe('colordef', function() {
       it('tag.isGenesis is true and isGenesisHash is true, but valueWop equal 0', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (1<<6))
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-        epobc.genesis.txhash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
-        epobc.runKernel(tx, [], null, function(error, inputs) {
+        epobc.genesis.txHash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
+        epobc.runKernel(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([null])
           done()
@@ -270,7 +266,7 @@ describe('colordef', function() {
     describe('getAffectingInputs', function() {
       it('tag is null', function(done) {
         tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-        epobc.getAffectingInputs(tx, [], null, function(error, inputs) {
+        epobc.getAffectingInputs(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([])
           done()
@@ -279,7 +275,7 @@ describe('colordef', function() {
 
       it('tag.isGenesis is true', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
-        epobc.getAffectingInputs(tx, [], null, function(error, inputs) {
+        epobc.getAffectingInputs(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([])
           done()

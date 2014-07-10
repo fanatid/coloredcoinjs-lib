@@ -1,5 +1,9 @@
+var assert = require('assert')
+var _ = require('underscore')
 var inherits = require('inherits')
+var bitcoin = require('bitcoinjs-lib')
 
+var blockchain = require('./blockchain')
 var colorvalue = require('./colorvalue')
 
 
@@ -12,6 +16,8 @@ var colorvalue = require('./colorvalue')
  * @param {number} colorID
  */
 function ColorDefinition(colorID) {
+  assert(_.isNumber(colorID), 'Expected number colorID, got ' + colorID)
+
   this.colorID = colorID
 }
 
@@ -23,18 +29,23 @@ ColorDefinition.prototype.getColorID = function() {
 }
 
 
-var genesisOutputMarker = new ColorDefinition(-1)
-var uncoloredMarker = new ColorDefinition(0)
-
-
 /**
  * @class GenesisColorDefinition
  *
  * @param {number} colorID
- * @param {Object} genesis Contains txhash, outindex, height
+ * @param genesis
+ * @param genesis.txHash string
+ * @param genesis.outIndex number
+ * @param genesis.height number
  */
 function GenesisColorDefinition(colorID, genesis) {
   ColorDefinition.call(this, colorID)
+
+  assert(_.isObject(genesis), 'Expected object genesis, got ' + genesis)
+  assert(_.isString(genesis.txHash), 'Expected string txHash, got ' + genesis.txHash)
+  assert(_.isNumber(genesis.outIndex), 'Expected number outIndex, got ' + genesis.outIndex)
+  assert(_.isNumber(genesis.height), 'Expected number height, got ' + genesis.height)
+
   this.genesis = genesis
 }
 
@@ -52,6 +63,9 @@ var EPOBCColorDefinition = (function() {
    * @param {boolean} isGenesis
    */
   function Tag(paddingCode, isGenesis) {
+    assert(_.isNumber(paddingCode), 'Expected number paddingCode, got ' + paddingCode)
+    assert(_.isBoolean(isGenesis), 'Expected boolean isGenesis, got ' + isGenesis)
+
     this.paddingCode = paddingCode
     this.isGenesis = isGenesis
   }
@@ -72,7 +86,8 @@ var EPOBCColorDefinition = (function() {
    * @return {Array} array bits of n
    */
   function number2bitArray(n) {
-    console.assert(0 <= n <= 4294967295)
+    assert(_.isNumber(n), 'Expected number n, got ' + n)
+    assert(0 <= n <= 4294967295, 'Expected 0 <= n <= 4294967295, got ' + n)
 
     var bits = []
     for (var i = 0; i < 32; ++i)
@@ -85,6 +100,10 @@ var EPOBCColorDefinition = (function() {
    * @return {number}
    */
   function bitArray2number(bits) {
+    assert(_.isArray(bits), 'Expected Array bits, got ' + bits)
+    assert(bits.every(function(bit) { return (bit&1) === bit }),
+      'Expected Array bits (i.e. 0 or 1), got ' + bits)
+
     var n = 0
     var factor = 1
 
@@ -103,6 +122,8 @@ var EPOBCColorDefinition = (function() {
    * @return {Tag|null} Tag instance if tx is genesis or xfer and not coinbase
    */
   function getTag(tx) {
+    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+
     var isCoinbase = (
       tx.ins[0].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
       tx.ins[0].index === 4294967295)
@@ -134,6 +155,10 @@ var EPOBCColorDefinition = (function() {
    * @return {Array}
    */
   function getXferAffectingInputs(tx, padding, outIndex) {
+    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(_.isNumber(padding), 'Expected padding number, got ' + padding)
+    assert(_.isNumber(outIndex), 'Expected outIndex number, got ' + outIndex)
+
     var valueWop
     var outValueWop
     var outPrecSum = 0
@@ -180,6 +205,10 @@ var EPOBCColorDefinition = (function() {
    * @param {function} cb Called on finished with params (error, bitcoinjs-lib.Transaction|null)
    */
   function ensureInputValues(tx, bs, cb) {
+    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
+    assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
     tx = tx.clone()
 
     function processOne(index) {
@@ -216,6 +245,12 @@ var EPOBCColorDefinition = (function() {
 
   /**
    * @class EPOBCColorDefinition
+   *
+   * @param {number} colorID
+   * @param genesis
+   * @param genesis.txHash string
+   * @param genesis.outIndex number
+   * @param genesis.height number
    */
   function EPOBCColorDefinition() {
     GenesisColorDefinition.apply(this, Array.prototype.slice.call(arguments))
@@ -234,6 +269,13 @@ var EPOBCColorDefinition = (function() {
    * @param {function} cb Called on finished with params (error, Array|null)
    */
   EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
+    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(_.isArray(colorValueSet), 'Expected Array colorValueSet, got ' + colorValueSet)
+    assert(colorValueSet.every(function(cv) { return (cv === null || cv instanceof colorvalue.ColorValue) }),
+      'Expected colorValueSet Array colorValues|null, got ' + colorValueSet)
+    assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
+    assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
     var _this = this
 
     var outColorValues = []
@@ -243,7 +285,7 @@ var EPOBCColorDefinition = (function() {
       outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
 
       var txHash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
-      var isGenesisHash = txHash === this.genesis.txhash
+      var isGenesisHash = txHash === this.genesis.txHash
 
       if (tag !== null && isGenesisHash) {
         var valueWop = tx.outs[0].value - tag.getPadding()
@@ -277,7 +319,7 @@ var EPOBCColorDefinition = (function() {
 
         /* jshint ignore:start */
         getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-          if (colorValueSet[ai] === null) // || colorValueSet[ai] === undefined ? // Todo
+          if (colorValueSet[ai] === null || colorValueSet[ai] === undefined) // Todo: need check undefined?
             allColored = false
           else
             aiColorValue.add(colorValueSet[ai])
@@ -304,6 +346,13 @@ var EPOBCColorDefinition = (function() {
    * @param {function} cb Called on finished with params (error, Array)
    */
   EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, cb) {
+    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(_.isArray(outputSet), 'Expected Array outputSet, got ' + outputSet)
+    assert(outputSet.every(function(oi) { return _.isNumber(oi) }),
+      'Expected outputSet Array numbers, got ' + outputSet)
+    assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
+    assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
     var tag = getTag(tx)
 
     if (tag === null || tag.isGenesis) {
@@ -353,6 +402,6 @@ module.exports = {
   ColorDefinition: ColorDefinition,
   EPOBCColorDefinition: EPOBCColorDefinition,
 
-  genesisOutputMarker: genesisOutputMarker,
-  uncoloredMarker: uncoloredMarker
+  genesisOutputMarker: new ColorDefinition(-1),
+  uncoloredMarker: new ColorDefinition(0)
 }
