@@ -57,6 +57,8 @@ ColorValue.prototype.checkCompatibility = function(other) {
 /**
  * @class AdditiveColorValue
  *
+ * Inherits ColorValue
+ *
  * @param data
  * @param data.colordef colordef.ColorDefinition
  * @param data.value number
@@ -96,6 +98,8 @@ AdditiveColorValue.prototype.add = function(other) {
 
 /**
  * @class SimpleColorValue
+ *
+ * Inherits AdditiveColorValue
  *
  * @param data
  * @param data.colordef colordef.ColorDefinition

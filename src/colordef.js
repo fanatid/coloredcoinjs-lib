@@ -32,6 +32,8 @@ ColorDefinition.prototype.getColorID = function() {
 /**
  * @class GenesisColorDefinition
  *
+ * Inherits ColorDefinition
+ *
  * @param {number} colorID
  * @param genesis
  * @param genesis.txHash string
@@ -245,6 +247,8 @@ var EPOBCColorDefinition = (function() {
 
   /**
    * @class EPOBCColorDefinition
+   *
+   * Inherits GenesisColorDefinition
    *
    * @param {number} colorID
    * @param genesis
