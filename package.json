@@ -19,7 +19,6 @@
     "compile": "./node_modules/.bin/browserify ./src/index.js -s coloredcoinlib | ./node_modules/.bin/uglifyjs > coloredcoinlib-min.js; true",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter spec test/*.js; true",
     "coveralls": "npm run-script coverage && node ./node_modules/.bin/coveralls < coverage/lcov.info",
-    "jsdoc": "./node_modules/jsdoc/jsdoc.js -c jsdoc.json ; true",
     "jshint": "./node_modules/.bin/jshint --config jshint.json src/*.js; true",
     "test": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter spec test/*.js; true"
   },
@@ -34,7 +33,6 @@
     "chai": "1.9.1",
     "coveralls": "2.11.1",
     "istanbul": "0.2.14",
-    "jsdoc": "3.3.0-alpha9",
     "jshint": "2.5.1",
     "mocha": "1.20.1",
     "uglify-js": "2.4.14"

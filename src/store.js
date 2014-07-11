@@ -28,6 +28,8 @@ MemoryDB.prototype.get = function(key, value) {
 
 /**
  * @class UnknownTypeDBError
+ *
+ * Inherits Error
  */
 function UnknownTypeDBError() {
   Error.apply(this, Array.prototype.slice.call(arguments))
@@ -43,17 +45,20 @@ inherits(UnknownTypeDBError, Error)
  * @param {object} opts DB options
  */
 function DataStore(type, opts) {
-  assert(_.isString(type), 'Expected string type, got ' + type)
-  var dbTypes = ['memory']
-  if (dbTypes.indexOf(type) === -1)
-    throw new UnknownTypeDBError('Expected type in ' + JSON.stringify(dbTypes) + ', got ' + type)
-
   opts = opts === undefined ? {} : opts
+
+  assert(_.isString(type), 'Expected string type, got ' + type)
   assert(_.isObject(opts), 'Expected object type, got ' + opts)
 
   this.type = type
-  if (type === 'memory')
+
+  if (type === 'memory') {
     this.db = new MemoryDB()
+
+  } else {
+    throw new UnknownTypeDBError('Expected type in ["memory"], got ' + type)
+
+  }
 }
 
 
@@ -111,9 +116,9 @@ ColorDataStore.prototype.get = function(colorID, txHash, outIndex, cb) {
     var value = this.db.get([colorID, txHash, outIndex])
 
     if (_.isUndefined(value))
-      cb(null, null)
+      process.nextTick(function() { cb(null, null) })
     else
-      cb(null, [colorID, txHash, outIndex, value])
+      process.nextTick(function() { cb(null, [colorID, txHash, outIndex, value]) })
   }
 }
 

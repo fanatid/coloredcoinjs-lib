@@ -39,9 +39,8 @@ describe('store', function() {
   })
 
   describe('UnknownTypeDBError', function() {
-    it('type check', function() {
-      var fn = function() { throw new store.UnknownTypeDBError() }
-      expect(fn).to.throw(store.UnknownTypeDBError)
+    it('inherits Error', function() {
+      expect(new store.UnknownTypeDBError()).to.be.instanceof(Error)
     })
   })
 
@@ -57,35 +56,39 @@ describe('store', function() {
       expect(cds).to.be.instanceof(store.ColorDataStore)
     })
 
-    it('throw UnknownTypeDBError', function() {
+    it('UnknownTypeDBError in constructor', function() {
       var fn = function() { new store.ColorDataStore('') }
       expect(fn).to.throw(store.UnknownTypeDBError);
     })
 
-    it('add', function(done) {
-      cds.add(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, 1, function(error) {
-        expect(error).to.be.null
-        done()
-      })
-    })
-
-    it('get', function(done) {
-      cds.add(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, 1, function(error) {
-        expect(error).to.be.null
-        cds.get(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, function(error, record) {
+    function tester() {
+      it('add', function(done) {
+        cds.add(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, 1, function(error) {
           expect(error).to.be.null
-          expect(record).to.deep.equal([1, '0000000000000000000000000000000000000000000000000000000000000000', 0, 1])
           done()
         })
       })
-    })
 
-    it('get null', function(done) {
-      cds.get(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, function(error, record) {
-        expect(error).to.be.null
-        expect(record).to.be.null
-        done()
+      it('get', function(done) {
+        cds.add(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, 1, function(error) {
+          expect(error).to.be.null
+          cds.get(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, function(error, record) {
+            expect(error).to.be.null
+            expect(record).to.deep.equal([1, '0000000000000000000000000000000000000000000000000000000000000000', 0, 1])
+            done()
+          })
+        })
       })
-    })
+
+      it('get null', function(done) {
+        cds.get(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, function(error, record) {
+          expect(error).to.be.null
+          expect(record).to.be.null
+          done()
+        })
+      })
+    }
+
+    describe('MemoryDB', tester)
   })
 })

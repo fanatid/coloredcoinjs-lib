@@ -1,10 +1,9 @@
 var expect = require('chai').expect
 
-var bitcoin = require('bitcoinjs-lib')
-
 var coloredcoinlib = require('../src/index')
 var colordef = coloredcoinlib.colordef
 var colorvalue = coloredcoinlib.colorvalue
+var Transaction = coloredcoinlib.Transaction
 
 
 describe('colordef', function() {
@@ -37,10 +36,10 @@ describe('colordef', function() {
     var tx, tx2
 
     beforeEach(function() {
-      bs = new coloredcoinlib.blockchain.BlockchaininfoDataAPI()
+      bs = new coloredcoinlib.blockchain.BlockchainStateBase()
       epobc = new colordef.EPOBCColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
-      tx = new bitcoin.Transaction()
-      tx2 = new bitcoin.Transaction()
+      tx = new Transaction()
+      tx2 = new Transaction()
     })
 
     it('inherits GenesisColorDefinition', function() {
@@ -142,41 +141,6 @@ describe('colordef', function() {
         tx.ins[1].value = 4
         affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 1, 1)
         expect(affectingInputs).to.deep.equal([1])
-      })
-    })
-
-    describe('EPOBCColorDefinition ensureInputValues', function() {
-      it('isCoinbase is true', function(done) {
-        tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-        colordef.EPOBCColorDefinition.ensureInputValues(tx, bs, function(error, newTx) {
-          expect(error).to.be.null
-          tx.ins[0].value = 0
-          expect(newTx).to.deep.equal(tx)
-          done()
-        })
-      })
-
-      it('bs.getTx return error', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        bs.getTx = function(txHash, cb) { cb('myError', null) }
-        colordef.EPOBCColorDefinition.ensureInputValues(tx, bs, function(error, newTx) {
-          expect(error).to.equal('myError')
-          expect(newTx).to.be.null
-          done()
-        })
-      })
-
-      it('successful get prevTx', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-        bs.getTx = function(txHash, cb) { cb(null, tx2.clone()) }
-        colordef.EPOBCColorDefinition.ensureInputValues(tx, bs, function(error, newTx) {
-          expect(error).to.be.null
-          tx.ins[0].prevTx = tx2.clone()
-          tx.ins[0].value = tx.ins[0].prevTx.outs[0].value
-          expect(newTx).to.deep.equal(tx)
-          done()
-        })
       })
     })
 

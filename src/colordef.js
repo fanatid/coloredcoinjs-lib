@@ -1,10 +1,10 @@
 var assert = require('assert')
 var _ = require('underscore')
 var inherits = require('inherits')
-var bitcoin = require('bitcoinjs-lib')
 
 var blockchain = require('./blockchain')
 var colorvalue = require('./colorvalue')
+var Transaction = require('./transaction')
 
 
 /**
@@ -120,11 +120,11 @@ var EPOBCColorDefinition = (function() {
   }
 
   /**
-   * @param {bitcoinjs-lib.Transaction} tx
+   * @param {Transaction} tx
    * @return {Tag|null} Tag instance if tx is genesis or xfer and not coinbase
    */
   function getTag(tx) {
-    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
 
     var isCoinbase = (
       tx.ins[0].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
@@ -151,13 +151,13 @@ var EPOBCColorDefinition = (function() {
    *  for an output in the transaction tx with output index outIndex
    *  which has a padding of padding (2^n for some n>0 or 0)
    *
-   * @param {bitcoinjs-lib.Transaction} tx
+   * @param {Transaction} tx
    * @param {number} padding
    * @param {number} outIndex
    * @return {Array}
    */
   function getXferAffectingInputs(tx, padding, outIndex) {
-    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
     assert(_.isNumber(padding), 'Expected padding number, got ' + padding)
     assert(_.isNumber(outIndex), 'Expected outIndex number, got ' + outIndex)
 
@@ -198,52 +198,6 @@ var EPOBCColorDefinition = (function() {
     return affectingInputs
   }
 
-  /**
-   * Get previous transaction for all tx.ins and
-   *  return new transaction via callback cb
-   *
-   * @param {bitcoinjs-lib.Transaction} tx
-   * @param {coloredcoinlib.blockchain.BlockchainState} bs
-   * @param {function} cb Called on finished with params (error, bitcoinjs-lib.Transaction|null)
-   */
-  function ensureInputValues(tx, bs, cb) {
-    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
-    assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
-    assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
-
-    tx = tx.clone()
-
-    function processOne(index) {
-      if (index === tx.ins.length) {
-        cb(null, tx)
-        return
-      }
-
-      var isCoinbase = (
-        tx.ins[index].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
-        tx.ins[index].index === 4294967295)
-
-      if (isCoinbase) {
-        tx.ins[index].value = 0
-        process.nextTick(function() { processOne(index+1) })
-
-      } else {
-        bs.getTx(tx.ins[index].hash.toString('hex'), function(error, prevTx) {
-          if (error === null) {
-            tx.ins[index].prevTx = prevTx
-            tx.ins[index].value = prevTx.outs[tx.ins[index].index].value
-            process.nextTick(function() { processOne(index+1) })
-
-          } else {
-            cb(error, null)
-          }
-        })
-      }
-    }
-
-    process.nextTick(function() { processOne(0) })
-  }
-
 
   /**
    * @class EPOBCColorDefinition
@@ -267,13 +221,13 @@ var EPOBCColorDefinition = (function() {
    * Given a transaction tx and the colorValues in a Array colorValueSet,
    *  return the colorValues of the tx.outs in a Array via callback cb
    *
-   * @param {bitcoinjs-lib.Transaction} tx
+   * @param {Transaction} tx
    * @param {Array} colorValueSet
    * @param {coloredcoinlib.blockchain.BlockchainState} bs
    * @param {function} cb Called on finished with params (error, Array|null)
    */
   EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
-    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
     assert(_.isArray(colorValueSet), 'Expected Array colorValueSet, got ' + colorValueSet)
     assert(colorValueSet.every(function(cv) { return (cv === null || cv instanceof colorvalue.ColorValue) }),
       'Expected colorValueSet Array colorValues|null, got ' + colorValueSet)
@@ -302,7 +256,7 @@ var EPOBCColorDefinition = (function() {
       return
     }
 
-    ensureInputValues(tx, bs, function(error, tx) {
+    bs.ensureInputValues(tx, function(error, tx) {
       if (error !== null) {
         cb(error, null)
         return
@@ -344,13 +298,13 @@ var EPOBCColorDefinition = (function() {
    * Given transaction tx, outputIndex in a Array as outputSet and
    *  return affecting inputs of transaction tx in a Array via callback cb
    *
-   * @param {bitcoinjs-lib.Transaction} tx
+   * @param {Transaction} tx
    * @param {Array} outputSet
    * @param {coloredcoinlib.blockchain.BlockchainState} bs
    * @param {function} cb Called on finished with params (error, Array)
    */
   EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, cb) {
-    assert(tx instanceof bitcoin.Transaction, 'Expected Transaction tx, got ' + tx)
+    assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
     assert(_.isArray(outputSet), 'Expected Array outputSet, got ' + outputSet)
     assert(outputSet.every(function(oi) { return _.isNumber(oi) }),
       'Expected outputSet Array numbers, got ' + outputSet)
@@ -363,7 +317,7 @@ var EPOBCColorDefinition = (function() {
       cb(null, [])
 
     } else {
-      ensureInputValues(tx, bs, function(error, tx) {
+      bs.ensureInputValues(tx, function(error, tx) {
         if (error === null) {
           var aii = []
           outputSet.forEach(function(outIndex) {
@@ -391,7 +345,6 @@ var EPOBCColorDefinition = (function() {
   EPOBCColorDefinition.Tag.bitArray2number = bitArray2number
   EPOBCColorDefinition.Tag.getTag = getTag
   EPOBCColorDefinition.getXferAffectingInputs = getXferAffectingInputs
-  EPOBCColorDefinition.ensureInputValues = ensureInputValues
   /* end-test-code */
 
   return EPOBCColorDefinition

@@ -1,14 +1,68 @@
 var expect = require('chai').expect
-var bitcoin = require('bitcoinjs-lib')
 
 var coloredcoinlib = require('../src/index')
 var blockchain = coloredcoinlib.blockchain
+var Transaction = coloredcoinlib.Transaction
 
 
 describe('blockchain', function() {
-  describe('BlockchaininfoDataAPI', function() {
-    var bs
+  var bs
 
+  describe('BlockchainStateBase', function() {
+    var tx, tx2
+
+    beforeEach(function() {
+      bs = new blockchain.BlockchainStateBase()
+      tx = new Transaction()
+      tx2 = new Transaction()
+    })
+
+    it('already ensured', function(done) {
+      tx.ensured = true
+      bs.ensureInputValues(tx, function(error, newTx) {
+        expect(error).to.be.null
+        expect(newTx).to.deep.equal(tx)
+        done()
+      })
+    })
+
+    it('isCoinbase is true', function(done) {
+      tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+      bs.ensureInputValues(tx, function(error, newTx) {
+        expect(error).to.be.null
+        tx.ensured = true
+        tx.ins[0].value = 0
+        expect(newTx).to.deep.equal(tx)
+        done()
+      })
+    })
+
+    it('bs.getTx return error', function(done) {
+      tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
+      bs.getTx = function(txHash, cb) { cb('myError', null) }
+      bs.ensureInputValues(tx, function(error, newTx) {
+        expect(error).to.equal('myError')
+        expect(newTx).to.be.null
+        done()
+      })
+    })
+
+    it('successful get prevTx', function(done) {
+      tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
+      tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
+      bs.getTx = function(txHash, cb) { cb(null, tx2.clone()) }
+      bs.ensureInputValues(tx, function(error, newTx) {
+        expect(error).to.be.null
+        tx.ensured = true
+        tx.ins[0].prevTx = tx2.clone()
+        tx.ins[0].value = tx.ins[0].prevTx.outs[0].value
+        expect(newTx).to.deep.equal(tx)
+        done()
+      })
+    })
+  })
+
+  describe('BlockchaininfoDataAPI', function() {
     var rawTx = {
       'c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48': '\
 010000000126b77c90dff8b58d27e4e00c7e73df612df69f83c106d1aefbb20137b1d3ff1801000\
@@ -86,7 +140,7 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
       bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
         expect(error).to.be.null
         expect(response).to.deep.equal(
-          bitcoin.Transaction.fromHex(rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']))
+          Transaction.fromHex(rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']))
         done()
       })
     })

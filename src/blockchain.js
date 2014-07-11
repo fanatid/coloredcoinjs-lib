@@ -2,7 +2,8 @@ var assert = require('assert')
 var _ = require('underscore')
 var inherits = require('inherits')
 var http = require('http')
-var bitcoin = require('bitcoinjs-lib')
+
+var Transaction = require('./transaction')
 
 
 /**
@@ -10,11 +11,65 @@ var bitcoin = require('bitcoinjs-lib')
  */
 function BlockchainStateBase() {}
 
+/**
+ * Get previous transaction for all tx.ins and
+ *  return new transaction via callback cb
+ *
+ * @param {Transaction} tx
+ * @param {function} cb Called on finished with params (error, Transaction|null)
+ */
+BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
+  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  tx = tx.clone()
+
+  if (tx.ensured === true) {
+    process.nextTick(function() { cb(null, tx) })
+    return
+  }
+
+  var _this = this
+
+  function processOne(index) {
+    if (index === tx.ins.length) {
+      tx.ensured = true
+      cb(null, tx)
+      return
+    }
+
+    var isCoinbase = (
+      tx.ins[index].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
+      tx.ins[index].index === 4294967295)
+
+    if (isCoinbase) {
+      tx.ins[index].value = 0
+      process.nextTick(function() { processOne(index+1) })
+
+    } else {
+      _this.getTx(tx.ins[index].hash.toString('hex'), function(error, prevTx) {
+        if (error === null) {
+          tx.ins[index].prevTx = prevTx
+          tx.ins[index].value = prevTx.outs[tx.ins[index].index].value
+          process.nextTick(function() { processOne(index+1) })
+
+        } else {
+          cb(error, null)
+        }
+      })
+    }
+  }
+
+  process.nextTick(function() { processOne(0) })
+}
+
 
 /**
  * BlockchainState that uses [Blockchain Data API]{@link https://blockchain.info/api/blockchain_api}
  *
  * @class BlockchaininfoDataAPI
+ *
+ * Inherits BlockchainStateBase
  */
 function BlockchaininfoDataAPI(host, port) {
   host = host === undefined ? 'blockchain.info' : host
@@ -113,7 +168,7 @@ BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
  * Get transaction by txHash
  *
  * @param {string} txHash Transaction hash in hex
- * @param {function} cb Called on response with params (error, bitcoinjs-lib.Transaction)
+ * @param {function} cb Called on response with params (error, Transaction)
  */
 BlockchaininfoDataAPI.prototype.getTx = function(txHash, cb) {
   assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
@@ -122,7 +177,7 @@ BlockchaininfoDataAPI.prototype.getTx = function(txHash, cb) {
   this.request('/rawtx/' + txHash + '?format=hex', function(error, response) {
     if (error === null) {
       try {
-        response = bitcoin.Transaction.fromHex(response)
+        response = Transaction.fromHex(response)
       } catch (e) {
         error = e
         response = null
