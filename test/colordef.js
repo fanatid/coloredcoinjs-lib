@@ -28,6 +28,17 @@ describe('colordef', function() {
       expect(colordef1).to.be.instanceof(colordef.ColorDefinition)
       expect(colordef1).to.be.instanceof(colordef.GenesisColorDefinition)
     })
+
+    it('isSpecialTx true', function() {
+      var tx = new Transaction()
+      var colordef1 = new colordef.GenesisColorDefinition(1, { txHash: tx.getId(), outIndex: 0, height: 0 })
+      expect(colordef1.isSpecialTx(tx)).to.be.true
+    })
+
+    it('isSpecialTx false', function() {
+      var colordef1 = new colordef.GenesisColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
+      expect(colordef1.isSpecialTx(new Transaction())).to.be.false
+    })
   })
 
   describe('EPOBCColorDefinition', function() {
@@ -154,10 +165,10 @@ describe('colordef', function() {
         })
       })
 
-      it('tag.isGenesis is true and isGenesisHash is true', function(done) {
+      it('tag.isGenesis and isSpecialTx is true', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 5000000000)
-        epobc.genesis.txHash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
+        epobc.genesis.txHash = tx.getId()
         epobc.runKernel(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([new colorvalue.SimpleColorValue({ colordef: epobc, value: 5000000000 })])
@@ -165,10 +176,10 @@ describe('colordef', function() {
         })
       })
 
-      it('tag.isGenesis is true and isGenesisHash is true, but valueWop equal 0', function(done) {
+      it('tag.isGenesis and isSpecialTx is true, but valueWop equal 0', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (1<<6))
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-        epobc.genesis.txHash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
+        epobc.genesis.txHash = tx.getId()
         epobc.runKernel(tx, [], bs, function(error, inputs) {
           expect(error).to.be.null
           expect(inputs).to.deep.equal([null])

@@ -1,3 +1,4 @@
+var _ = require('underscore')
 var inherits = require('inherits')
 var bitcoin = require('bitcoinjs-lib')
 
@@ -13,7 +14,7 @@ function Transaction() {
 
 inherits(Transaction, bitcoin.Transaction)
 
-// Copy from bitcoinjs-lib.Transaction.prototype.clone
+// Copy from bitcoinjs-lib.Transaction
 Transaction.DEFAULT_SEQUENCE = bitcoin.Transaction.DEFAULT_SEQUENCE
 Transaction.SIGHASH_ALL = bitcoin.Transaction.SIGHASH_ALL
 Transaction.SIGHASH_NONE = bitcoin.Transaction.SIGHASH_NONE
@@ -27,8 +28,8 @@ Transaction.prototype.clone = function() {
   var newTx = new Transaction()
   newTx.version = this.version
   newTx.locktime = this.locktime
-  if (this.hasOwnProperty('ensured'))
-    newTx.ensured = true
+  if (!_.isUndefined(this.ensured))
+    newTx.ensured = this.ensured
 
   newTx.ins = this.ins.map(function(txin) {
     var input = {
@@ -38,9 +39,9 @@ Transaction.prototype.clone = function() {
       sequence: txin.sequence
     }
 
-    if (txin.hasOwnProperty('value'))
+    if (!_.isUndefined(txin.value))
       input.value = txin.value
-    if (txin.hasOwnProperty('prevTx'))
+    if (!_.isUndefined(txin.prevTx))
       input.prevTx = txin.prevTx
 
     return input

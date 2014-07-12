@@ -53,6 +53,18 @@ function GenesisColorDefinition(colorID, genesis) {
 
 inherits(GenesisColorDefinition, ColorDefinition)
 
+/**
+ * @param {Transaction} tx
+ * @return {boolean}
+ */
+GenesisColorDefinition.prototype.isSpecialTx = function(tx) {
+  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
+
+  var isSpecialTx = tx.getId() === this.genesis.txHash
+
+  return isSpecialTx
+}
+
 
 var EPOBCColorDefinition = (function() {
   var xferTagBits = [1, 1, 0, 0, 1, 1]
@@ -242,10 +254,7 @@ var EPOBCColorDefinition = (function() {
     if (tag === null || tag.isGenesis) {
       outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
 
-      var txHash = Array.prototype.reverse.call(tx.getHash()).toString('hex')
-      var isGenesisHash = txHash === this.genesis.txHash
-
-      if (tag !== null && isGenesisHash) {
+      if (tag !== null && this.isSpecialTx(tx)) {
         var valueWop = tx.outs[0].value - tag.getPadding()
 
         if (valueWop > 0)
