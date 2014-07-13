@@ -177,13 +177,17 @@ var EPOBCColorDefinition = (function() {
     var outValueWop
     var outPrecSum = 0
 
-    for (var oi = 0; oi <= outIndex; ++oi) {
-      outValueWop = tx.outs[oi].value - padding
-      if (outValueWop <= 0)
+    for (var oi = 0; oi < outIndex; ++oi) {
+      valueWop = tx.outs[oi].value - padding
+      if (valueWop <= 0)
         return []
 
-      outPrecSum += outValueWop
+      outPrecSum += valueWop
     }
+
+    outValueWop = tx.outs[outIndex].value - padding
+      if (outValueWop <= 0)
+        return []
 
     var affectingInputs = []
     var inputRunningSum = 0

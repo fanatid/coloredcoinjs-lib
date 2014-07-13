@@ -25,8 +25,10 @@ describe('builder', function() {
       expect(cdb).to.be.instanceof(builder.BasicColorDataBuilder)
     })
 
-    it('', function(done) {
-      done()
+    describe('scanTx', function() {
+      it('', function(done) {
+        done()
+      })
     })
   })
 })
