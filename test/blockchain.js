@@ -4,6 +4,8 @@ var coloredcoinlib = require('../src/index')
 var blockchain = coloredcoinlib.blockchain
 var Transaction = coloredcoinlib.Transaction
 
+var fakeRequests = true
+
 
 describe('blockchain', function() {
   var bs
@@ -17,47 +19,49 @@ describe('blockchain', function() {
       tx2 = new Transaction()
     })
 
-    it('already ensured', function(done) {
-      tx.ensured = true
-      bs.ensureInputValues(tx, function(error, newTx) {
-        expect(error).to.be.null
-        expect(newTx).to.deep.equal(tx)
-        done()
-      })
-    })
-
-    it('isCoinbase is true', function(done) {
-      tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      bs.ensureInputValues(tx, function(error, newTx) {
-        expect(error).to.be.null
+    describe('ensureInputValues', function() {
+      it('already ensured', function(done) {
         tx.ensured = true
-        tx.ins[0].value = 0
-        expect(newTx).to.deep.equal(tx)
-        done()
+        bs.ensureInputValues(tx, function(error, newTx) {
+          expect(error).to.be.null
+          expect(newTx).to.deep.equal(tx)
+          done()
+        })
       })
-    })
 
-    it('bs.getTx return error', function(done) {
-      tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-      bs.getTx = function(txHash, cb) { cb('myError', null) }
-      bs.ensureInputValues(tx, function(error, newTx) {
-        expect(error).to.equal('myError')
-        expect(newTx).to.be.null
-        done()
+      it('isCoinbase is true', function(done) {
+        tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+        bs.ensureInputValues(tx, function(error, newTx) {
+          expect(error).to.be.null
+          tx.ensured = true
+          tx.ins[0].value = 0
+          expect(newTx).to.deep.equal(tx)
+          done()
+        })
       })
-    })
 
-    it('successful get prevTx', function(done) {
-      tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-      tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-      bs.getTx = function(txHash, cb) { cb(null, tx2.clone()) }
-      bs.ensureInputValues(tx, function(error, newTx) {
-        expect(error).to.be.null
-        tx.ensured = true
-        tx.ins[0].prevTx = tx2.clone()
-        tx.ins[0].value = tx.ins[0].prevTx.outs[0].value
-        expect(newTx).to.deep.equal(tx)
-        done()
+      it('bs.getTx return error', function(done) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
+        bs.getTx = function(txHash, cb) { cb('myError', null) }
+        bs.ensureInputValues(tx, function(error, newTx) {
+          expect(error).to.equal('myError')
+          expect(newTx).to.be.null
+          done()
+        })
+      })
+
+      it('successful get prevTx', function(done) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
+        bs.getTx = function(txHash, cb) { cb(null, tx2.clone()) }
+        bs.ensureInputValues(tx, function(error, newTx) {
+          expect(error).to.be.null
+          tx.ensured = true
+          tx.ins[0].prevTx = tx2.clone()
+          tx.ins[0].value = tx.ins[0].prevTx.outs[0].value
+          expect(newTx).to.deep.equal(tx)
+          done()
+        })
       })
     })
   })
@@ -83,15 +87,19 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
       expect(bs).to.be.instanceof(blockchain.BlockchaininfoDataAPI)
     })
 
-    it('raw request with cors in params', function(done) {
-      bs.request('/latestblock?cors=false', function(error, response) {
-        expect(error).to.be.null
-        expect(response).to.be.a('string')
-        done()
+    if (!fakeRequests) {
+      it('raw request with cors in params', function(done) {
+        bs.request('/latestblock?cors=false', function(error, response) {
+          expect(error).to.be.null
+          expect(response).to.be.a('string')
+          done()
+        })
       })
-    })
+    }
 
     it('getBlockCount', function(done) {
+      if (fakeRequests)
+        bs.request = function(path, cb) { cb(null, JSON.stringify({ 'height': 1 })) }
       bs.getBlockCount(function(error, response) {
         expect(error).to.be.null
         expect(response).to.be.a('number')
@@ -119,6 +127,8 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     })
 
     it('getRawTx', function(done) {
+      if (fakeRequests)
+        bs.request = function(path, cb) { cb(null, rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']) }
       bs.getRawTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
         expect(error).to.be.null
         expect(response).to.be.equal(
@@ -136,7 +146,9 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
       })
     })
 
-    it ('getTx', function(done) {
+    it('getTx', function(done) {
+      if (fakeRequests)
+        bs.request = function(path, cb) { cb(null, rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']) }
       bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
         expect(error).to.be.null
         expect(response).to.deep.equal(
