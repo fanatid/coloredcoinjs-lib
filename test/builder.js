@@ -9,6 +9,14 @@ var store = coloredcoinlib.store
 
 describe('builder', function() {
   describe('BasicColorDataBuilder', function() {
+    describe('scanTx', function() {
+      it('', function(done) {
+        done()
+      })
+    })
+  })
+
+  describe('AidedColorDataBuilder', function() {
     var bs, epobc, cdstore
     var cdb
 
@@ -17,18 +25,12 @@ describe('builder', function() {
       bs = new blockchain.BlockchainStateBase()
       epobc = new colordef.EPOBCColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
 
-      cdb = new builder.BasicColorDataBuilder(cdstore, bs, epobc)
+      cdb = new builder.AidedColorDataBuilder(cdstore, bs, epobc)
     })
 
-    it('inherits DataStore', function() {
-      expect(cdb).to.be.instanceof(builder.ColorDataBuilder)
+    it('inherits BasicColorDataBuilder', function() {
       expect(cdb).to.be.instanceof(builder.BasicColorDataBuilder)
-    })
-
-    describe('scanTx', function() {
-      it('', function(done) {
-        done()
-      })
+      expect(cdb).to.be.instanceof(builder.AidedColorDataBuilder)
     })
   })
 })

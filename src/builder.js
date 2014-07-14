@@ -10,37 +10,25 @@ var Transaction = require('./transaction')
 
 
 /**
- * @class ColorDataBuilder
- */
-function ColorDataBuilder() {}
-
-
-/**
  * @class BasicColorDataBuilder
- *
- * Inherits ColorDataBuilder
  *
  * @param {store.ColorDataStore} colorDataStore
  * @param {blockchain.BlockchainStateBase} blockchainState
  * @param {colordef.ColorDefinition} colorDefinition
  */
 function BasicColorDataBuilder(colorDataStore, blockchainState, colorDefinition) {
-  ColorDataBuilder.call(this)
-
   assert(colorDataStore instanceof store.ColorDataStore,
     'Expected store.ColorDataStore colorDataStore, got ' + colorDataStore)
   assert(blockchainState instanceof blockchain.BlockchainStateBase,
-    'Expected store.ColorDataStore blockchainState, got ' + blockchainState)
+    'Expected blockchain.BlockchainStateBase blockchainState, got ' + blockchainState)
   assert(colorDefinition instanceof colordef.ColorDefinition,
-    'Expected store.ColorDataStore colorDefinition, got ' + colorDefinition)
+    'Expected colordef.ColorDefinition colorDefinition, got ' + colorDefinition)
 
   this.colorDataStore = colorDataStore
   this.blockchainState = blockchainState
   this.colorDefinition = colorDefinition
   this.colorDefinitionID = colorDefinition.getColorID()
 }
-
-inherits(BasicColorDataBuilder, ColorDataBuilder)
 
 /**
  * @param {Transaction} tx
@@ -81,7 +69,7 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
         } else {
           empty = false
           inColorValues.push(
-            new colorvalue.SimpleColorValue({ colordef: _this.colorDefinition, value: result[3] }))
+            new colorvalue.SimpleColorValue({ colordef: _this.colorDefinition, value: result.value }))
         }
 
         process.nextTick(function() { getValue(index+1) })
@@ -126,10 +114,22 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
 }
 
 
+/**
+ * @class AidedColorDataBuilder
+ *
+ * Inherits BasicColorDataBuilder
+ */
+function AidedColorDataBuilder() {
+  BasicColorDataBuilder.apply(this, Array.prototype.slice.call(arguments))
+}
+
+inherits(AidedColorDataBuilder, BasicColorDataBuilder)
+
+
 module.exports = {
   /* test-code */
-  ColorDataBuilder: ColorDataBuilder,
+  BasicColorDataBuilder: BasicColorDataBuilder,
   /* end-test-code */
 
-  BasicColorDataBuilder: BasicColorDataBuilder
+  AidedColorDataBuilder: AidedColorDataBuilder
 }

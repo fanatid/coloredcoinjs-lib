@@ -4,7 +4,7 @@ var coloredcoinlib = require('../src/index')
 var colordata = coloredcoinlib.colordata
 
 
-describe('colordata', function() {
+describe.skip('colordata', function() {
   describe('StoredColorData', function() {
   })
 
