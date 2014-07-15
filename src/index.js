@@ -3,7 +3,6 @@ module.exports = {
   builder: require('./builder'),
   colordata: require('./colordata'),
   colordef: require('./colordef'),
-  ColorMap: require('./colormap'),
   colorvalue: require('./colorvalue'),
   store: require('./store'),
   Transaction: require('./transaction')

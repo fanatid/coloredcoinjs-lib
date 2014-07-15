@@ -10,8 +10,8 @@ var colordef = require('./colordef')
  * @param {colordef.ColorDefinition} colorDefinitionStore
  */
 function ColorMap(colorDefinitionStore) {
-  assert(colorDefinitionStore instanceof colordef.colorDefinitionID,
-    'Expected colordef.colorDefinitionID colorDefinitionStore, got ' + colorDefinitionStore)
+  assert(colorDefinitionStore instanceof colordef.colorDefinitionId,
+    'Expected colordef.colorDefinitionId colorDefinitionStore, got ' + colorDefinitionStore)
 
   this.colorDefinitionStore = colorDefinitionStore
 }
@@ -19,15 +19,15 @@ function ColorMap(colorDefinitionStore) {
 /**
  * Finds a color definition given an id or description
  *
- * @param {string|number} colorDescOrID
+ * @param {string|number} colorDescOrId
  * @param {function} cb Called on finished with params (error, colordef.ColorDefinition)
  */
-ColorMap.prototype.getColorDefinition = function(colorDescOrID, cb) {
-  assert(!_.isString(colorDescOrID) && !_.isNumber(colorDescOrID),
-    'Expected string|number colorDescOrID, got ' + colorDescOrID)
+ColorMap.prototype.getColorDefinition = function(colorDescOrId, cb) {
+  assert(!_.isString(colorDescOrId) && !_.isNumber(colorDescOrId),
+    'Expected string|number colorDescOrId, got ' + colorDescOrId)
   assert(!_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  if (colorDescOrID === 0 || colorDescOrID === '') {
+  if (colorDescOrId === 0 || colorDescOrId === '') {
     process.nextTick(function() { cb(null, colordef.uncoloredMarker) })
     return
   }

@@ -35,8 +35,8 @@ ColorValue.prototype.getColorDefinition = function() {
 /**
  * @return {number}
  */
-ColorValue.prototype.getColorID = function() {
-  return this.colordef.getColorID()
+ColorValue.prototype.getColorId = function() {
+  return this.colordef.getColorId()
 }
 
 /**
@@ -48,7 +48,7 @@ ColorValue.prototype.getColorID = function() {
 ColorValue.prototype.checkCompatibility = function(other) {
   var isCompatibility = (
     other instanceof ColorValue &&
-    this.getColorID() === other.getColorID())
+    this.getColorId() === other.getColorId())
 
   return isCompatibility
 }

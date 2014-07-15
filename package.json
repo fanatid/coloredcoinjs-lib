@@ -1,19 +1,18 @@
 {
-  "name": "coloredcoinlib",
+  "name": "coloredcoinjs-lib",
   "version": "",
   "description": "",
   "main": "./src/index.js",
   "keywords": [],
   "contributors": [
     {
-      "name": "",
-      "email": "",
-      "url": ""
+      "name": "Fomichev Kirill",
+      "email": "fanatid@ya.ru"
     }
   ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/fanatid/coloredcoinjs-lib"
   },
   "scripts": {
     "compile": "./node_modules/.bin/browserify ./src/index.js -s coloredcoinlib | ./node_modules/.bin/uglifyjs > coloredcoinlib-min.js; true",

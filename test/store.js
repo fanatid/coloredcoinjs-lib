@@ -75,7 +75,7 @@ describe('store', function() {
             cds.get(1, '0000000000000000000000000000000000000000000000000000000000000000', 0, function(error, record) {
               expect(error).to.be.null
               expect(record).to.deep.equal({
-                colorID: 1,
+                colorId: 1,
                 txHash: '0000000000000000000000000000000000000000000000000000000000000000',
                 outIndex: 0,
                 value: 1
@@ -102,7 +102,7 @@ describe('store', function() {
             cds.getAny('0000000000000000000000000000000000000000000000000000000000000000', 0, function(error, records) {
               expect(error).to.be.null
               expect(records).to.deep.equal([{
-                colorID: 1,
+                colorId: 1,
                 txHash: '0000000000000000000000000000000000000000000000000000000000000000',
                 outIndex: 0,
                 value: 1
@@ -131,23 +131,23 @@ describe('store', function() {
 
     function tester() {
       it('not exists and autoAdd is false', function(done) {
-        cms.resolveColorDesc('desc', false, function(error, colorID) {
+        cms.resolveColorDesc('desc', false, function(error, colorId) {
           expect(error).to.be.null
-          expect(colorID).to.be.null
+          expect(colorId).to.be.null
           done()
         })
       })
 
       it('resolveColorDesc thrice', function(done) {
-        cms.resolveColorDesc('desc', true, function(error, colorID) {
+        cms.resolveColorDesc('desc', true, function(error, colorId) {
           expect(error).to.be.null
-          expect(colorID).to.equal(1)
-          cms.resolveColorDesc('desc2', true, function(error, colorID) {
+          expect(colorId).to.equal(1)
+          cms.resolveColorDesc('desc2', true, function(error, colorId) {
             expect(error).to.be.null
-            expect(colorID).to.equal(2)
-            cms.resolveColorDesc('desc', true, function(error, colorID) {
+            expect(colorId).to.equal(2)
+            cms.resolveColorDesc('desc', true, function(error, colorId) {
               expect(error).to.be.null
-              expect(colorID).to.equal(1)
+              expect(colorId).to.equal(1)
               done()
             })
           })
@@ -155,9 +155,9 @@ describe('store', function() {
       })
 
       it('findColorDesc', function(done) {
-        cms.resolveColorDesc('desc', true, function(error, colorID) {
+        cms.resolveColorDesc('desc', true, function(error, colorId) {
           expect(error).to.be.null
-          cms.findColorDesc(colorID, function(error, colorDesc) {
+          cms.findColorDesc(colorId, function(error, colorDesc) {
             expect(error).to.be.null
             expect(colorDesc).to.equal('desc')
             done()
@@ -166,9 +166,9 @@ describe('store', function() {
       })
 
       it('findColorDesc not found', function(done) {
-        cms.resolveColorDesc('desc', true, function(error, colorID) {
+        cms.resolveColorDesc('desc', true, function(error, colorId) {
           expect(error).to.be.null
-          cms.findColorDesc(colorID+1, function(error, colorDesc) {
+          cms.findColorDesc(colorId+1, function(error, colorDesc) {
             expect(error).to.be.null
             expect(colorDesc).to.be.null
             done()

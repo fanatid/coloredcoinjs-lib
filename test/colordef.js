@@ -10,17 +10,17 @@ var fixtures = require('./fixtures/colordef')
 
 describe('colordef', function() {
   describe('ColorDefinition', function() {
-    it('getColorID', function() {
+    it('getColorId', function() {
       var colordef1 = new colordef.ColorDefinition(1)
-      expect(colordef1.getColorID()).to.equal(1)
+      expect(colordef1.getColorId()).to.equal(1)
     })
 
     it('genesisOutputMarker', function() {
-      expect(colordef.genesisOutputMarker.getColorID()).to.equal(-1)
+      expect(colordef.genesisOutputMarker.getColorId()).to.equal(-1)
     })
 
     it('uncoloredMarker', function() {
-      expect(colordef.uncoloredMarker.getColorID()).to.equal(0)
+      expect(colordef.uncoloredMarker.getColorId()).to.equal(0)
     })
   })
 

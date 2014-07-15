@@ -74,14 +74,14 @@ inherits(ColorDataStore, DataStore)
 /**
  * Add data to storage
  *
- * @param {number} colorID
+ * @param {number} colorId
  * @param {string} txHash
  * @param {number} outIndex
  * @param {number} value
  * @param {function} cb Called on added with params (error)
  */
-ColorDataStore.prototype.add = function(colorID, txHash, outIndex, value, cb) {
-  assert(_.isNumber(colorID), 'Expected number colorID, got ' + colorID)
+ColorDataStore.prototype.add = function(colorId, txHash, outIndex, value, cb) {
+  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
   assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(_.isNumber(value), 'Expected number value, got ' + value)
@@ -91,7 +91,7 @@ ColorDataStore.prototype.add = function(colorID, txHash, outIndex, value, cb) {
     var error = null
 
     this.db.data.some(function(record) {
-      if (record[0] === colorID && record[1] === txHash && record[2] === outIndex) {
+      if (record[0] === colorId && record[1] === txHash && record[2] === outIndex) {
         error = new UniqueConstraintError()
         return true
       }
@@ -100,7 +100,7 @@ ColorDataStore.prototype.add = function(colorID, txHash, outIndex, value, cb) {
     })
 
     if (error === null)
-      this.db.data.push([colorID, txHash, outIndex, value])
+      this.db.data.push([colorId, txHash, outIndex, value])
 
     process.nextTick(function() { cb(error) })
   }
@@ -109,13 +109,13 @@ ColorDataStore.prototype.add = function(colorID, txHash, outIndex, value, cb) {
 /**
  * Add data to storage
  *
- * @param {number} colorID
+ * @param {number} colorId
  * @param {string} txHash
  * @param {number} outIndex
  * @param {function} cb Called on fetched with params (error, record|null)
  */
-ColorDataStore.prototype.get = function(colorID, txHash, outIndex, cb) {
-  assert(_.isNumber(colorID), 'Expected number colorID, got ' + colorID)
+ColorDataStore.prototype.get = function(colorId, txHash, outIndex, cb) {
+  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
   assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -124,9 +124,9 @@ ColorDataStore.prototype.get = function(colorID, txHash, outIndex, cb) {
     var result = null
 
     this.db.data.some(function(record) {
-      if (record[0] === colorID && record[1] === txHash && record[2] === outIndex) {
+      if (record[0] === colorId && record[1] === txHash && record[2] === outIndex) {
         result = {
-          colorID: record[0],
+          colorId: record[0],
           txHash: record[1],
           outIndex: record[2],
           value: record[3]
@@ -159,7 +159,7 @@ ColorDataStore.prototype.getAny = function(txHash, outIndex, cb) {
     this.db.data.forEach(function(record) {
       if (record[1] === txHash && record[2] === outIndex)
         records.push({
-          colorID: record[0],
+          colorId: record[0],
           txHash: record[1],
           outIndex: record[2],
           value: record[3]
@@ -211,16 +211,16 @@ ColorDefinitionStore.prototype.resolveColorDesc = function(colorDesc, autoAdd, c
     })
 
     if (!exists && autoAdd) {
-      var maxColorID = 0
+      var maxColorId = 0
 
       this.db.data.forEach(function(record) {
-        if (record[0] > maxColorID)
-          maxColorID = record[0]
+        if (record[0] > maxColorId)
+          maxColorId = record[0]
       })
 
-      var newColorID = maxColorID + 1
-      this.db.data.push([newColorID, colorDesc])
-      process.nextTick(function() { cb(null, newColorID) })
+      var newColorId = maxColorId + 1
+      this.db.data.push([newColorId, colorDesc])
+      process.nextTick(function() { cb(null, newColorId) })
 
     } else if (!exists) {
       process.nextTick(function() { cb(null, null) })
@@ -229,20 +229,20 @@ ColorDefinitionStore.prototype.resolveColorDesc = function(colorDesc, autoAdd, c
 }
 
 /**
- * Return colorDesc by colorID
+ * Return colorDesc by colorId
  *
- * @param {number} colorID
+ * @param {number} colorId
  * @param {function} cb Called on finished with params (error, string)
  */
-ColorDefinitionStore.prototype.findColorDesc = function(colorID, cb) {
-  assert(_.isNumber(colorID), 'Expected number colorID, got ' + colorID)
+ColorDefinitionStore.prototype.findColorDesc = function(colorId, cb) {
+  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   if (this.dbType === 'memory') {
     var result = null
 
     this.db.data.some(function(record) {
-      if (record[0] === colorID) {
+      if (record[0] === colorId) {
         result = record[1]
         return true
       }

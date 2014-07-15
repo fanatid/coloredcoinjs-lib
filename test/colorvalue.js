@@ -17,8 +17,8 @@ describe('colorvalue', function() {
       expect(colorValue.getColorDefinition()).to.deep.equal(colordef.uncoloredMarker)
     })
 
-    it('getColorID', function() {
-      expect(colorValue.getColorID()).to.equal(0)
+    it('getColorId', function() {
+      expect(colorValue.getColorId()).to.equal(0)
     })
 
     it('checkCompatibility return true', function() {

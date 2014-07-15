@@ -12,36 +12,37 @@ var Transaction = require('./transaction')
 /**
  * @class BasicColorDataBuilder
  *
+ * Base class for color data builder algorithms
+ *
  * @param {store.ColorDataStore} colorDataStore
  * @param {blockchain.BlockchainStateBase} blockchainState
  * @param {colordef.ColorDefinition} colorDefinition
  */
-function BasicColorDataBuilder(colorDataStore, blockchainState, colorDefinition) {
+function BasicColorDataBuilder(colorDefinition, colorDataStore, blockchainState) {
+  assert(colorDefinition instanceof colordef.ColorDefinition,
+    'Expected colordef.ColorDefinition colorDefinition, got ' + colorDefinition)
   assert(colorDataStore instanceof store.ColorDataStore,
     'Expected store.ColorDataStore colorDataStore, got ' + colorDataStore)
   assert(blockchainState instanceof blockchain.BlockchainStateBase,
     'Expected blockchain.BlockchainStateBase blockchainState, got ' + blockchainState)
-  assert(colorDefinition instanceof colordef.ColorDefinition,
-    'Expected colordef.ColorDefinition colorDefinition, got ' + colorDefinition)
 
   this.colorDataStore = colorDataStore
   this.blockchainState = blockchainState
   this.colorDefinition = colorDefinition
-  this.colorDefinitionID = colorDefinition.getColorID()
 }
 
 /**
+ * Scan transaction to obtain color data for its outputs
+ *
  * @param {Transaction} tx
- * @param {Array|null} outputIndices
+ * @param {Array} outputIndices
  * @param {function} cb Called on finished with params (error)
  */
 BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
-  if (outputIndices !== null) {
-    assert(_.isArray(outputIndices), 'Expected Array outputIndices, got ' + outputIndices)
-    assert(outputIndices.every(function(oi) { return _.isNumber(oi) }),
-      'Expected outputIndices Array numbers, got ' + outputIndices)
-  }
+  assert(_.isArray(outputIndices), 'Expected Array outputIndices, got ' + outputIndices)
+  assert(outputIndices.every(function(oi) { return _.isNumber(oi) }),
+    'Expected outputIndices Array numbers, got ' + outputIndices)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   var _this = this
@@ -52,44 +53,45 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
   function getValue(index) {
     if (tx.ins.length === index) {
       if (empty && !_this.colorDefinition.isSpecialTx(tx))
-        process.nextTick(function() { cb(null) })
+        cb(null)
       else
         _this.colorDefinition.runKernel(tx, inColorValues, _this.blockchainState, runKernelCallback)
 
       return
     }
 
+    var colorId = _this.colorDefinition.getColorId()
     var txHash = Array.prototype.reverse.call(tx.ins[index].hash).toString('hex')
 
-    _this.colorDataStore.get(_this.colorDefinitionID, txHash, tx.ins[index].index, function(error, result) {
+    _this.colorDataStore.get(colorId, txHash, tx.ins[index].index, function(error, result) {
       if (error === null) {
-        if (result === null) {
-          inColorValues.push(null)
+        var colorValue = null
 
-        } else {
+        if (result !== null) {
           empty = false
-          inColorValues.push(
-            new colorvalue.SimpleColorValue({ colordef: _this.colorDefinition, value: result.value }))
+          colorValue = new colorvalue.SimpleColorValue({ colordef: _this.colorDefinition, value: result.value })
         }
+
+        inColorValues.push(colorValue)
 
         process.nextTick(function() { getValue(index+1) })
 
       } else {
-        process.nextTick(function() { cb(error) })
+        cb(error)
       }
     })
   }
 
   function runKernelCallback(error, outColorValues) {
     if (error === null)
-      process.nextTick(function() { addValue(outColorValues, 0) })
+      addValue(outColorValues, 0)
     else
-      process.nextTick(function() { cb(error) })
+      cb(error)
   }
 
   function addValue(outColorValues, index) {
     if (index === outColorValues.length) {
-      process.nextTick(function() { cb(null) })
+      cb(null)
       return
     }
 
@@ -98,14 +100,15 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
       process.nextTick(function() { addValue(outColorValues, index+1) })
 
     } else {
+      var colorId = _this.colorDefinition.getColorId()
       var txHash = tx.getId()
       var value = outColorValues[index].getValue()
 
-      _this.colorDataStore.add(_this.colorDefinitionID, txHash, index, value, function(error) {
+      _this.colorDataStore.add(colorId, txHash, index, value, function(error) {
         if (error === null)
-          process.nextTick(function() { addValue(outColorValues, index+1) })
+          addValue(outColorValues, index+1)
         else
-          process.nextTick(function() { cb(error) })
+          cb(error)
       })
     }
   }
@@ -118,6 +121,13 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
  * @class AidedColorDataBuilder
  *
  * Inherits BasicColorDataBuilder
+ *
+ * Color data builder based on following output spending transactions
+ *  from the color's genesis transaction output, for one specific color
+ *
+ * @param {store.ColorDataStore} colorDataStore
+ * @param {blockchain.BlockchainStateBase} blockchainState
+ * @param {colordef.ColorDefinition} colorDefinition
  */
 function AidedColorDataBuilder() {
   BasicColorDataBuilder.apply(this, Array.prototype.slice.call(arguments))

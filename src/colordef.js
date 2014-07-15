@@ -13,19 +13,19 @@ var Transaction = require('./transaction')
  *
  * @class ColorDefinition
  *
- * @param {number} colorID
+ * @param {number} colorId
  */
-function ColorDefinition(colorID) {
-  assert(_.isNumber(colorID), 'Expected number colorID, got ' + colorID)
+function ColorDefinition(colorId) {
+  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
 
-  this.colorID = colorID
+  this.colorId = colorId
 }
 
 /**
  * @return {number}
  */
-ColorDefinition.prototype.getColorID = function() {
-  return this.colorID
+ColorDefinition.prototype.getColorId = function() {
+  return this.colorId
 }
 
 
@@ -34,14 +34,14 @@ ColorDefinition.prototype.getColorID = function() {
  *
  * Inherits ColorDefinition
  *
- * @param {number} colorID
+ * @param {number} colorId
  * @param genesis
  * @param genesis.txHash string
  * @param genesis.outIndex number
  * @param genesis.height number
  */
-function GenesisColorDefinition(colorID, genesis) {
-  ColorDefinition.call(this, colorID)
+function GenesisColorDefinition(colorId, genesis) {
+  ColorDefinition.call(this, colorId)
 
   assert(_.isObject(genesis), 'Expected object genesis, got ' + genesis)
   assert(_.isString(genesis.txHash), 'Expected string txHash, got ' + genesis.txHash)
@@ -220,7 +220,7 @@ var EPOBCColorDefinition = (function() {
    *
    * Inherits GenesisColorDefinition
    *
-   * @param {number} colorID
+   * @param {number} colorId
    * @param genesis
    * @param genesis.txHash string
    * @param genesis.outIndex number
