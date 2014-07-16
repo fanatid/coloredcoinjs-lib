@@ -1,0 +1,91 @@
+{
+  "StoredColorData": {
+    "fetchColorvalues": [
+      {
+        "description": "not found",
+        "store": [
+          {
+            "colorId": 1,
+            "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+            "outIndex": 0,
+            "value": 1
+          }
+        ],
+        "colorDefinitionIds": [2],
+        "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+        "outIndex": 0,
+        "expect": []
+      },
+      {
+        "description": "return [colorvalue]",
+        "store": [
+          {
+            "colorId": 1,
+            "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+            "outIndex": 0,
+            "value": 1
+          }
+        ],
+        "colorDefinitionIds": [1],
+        "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+        "outIndex": 0,
+        "expect": [
+          {
+            "colorId": 1,
+            "value": 1
+          }
+        ]
+      },
+      {
+        "description": "return [colorvalue] and not found",
+        "store": [
+          {
+            "colorId": 1,
+            "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+            "outIndex": 0,
+            "value": 5
+          }
+        ],
+        "colorDefinitionIds": [1, 2],
+        "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+        "outIndex": 0,
+        "expect": [
+          {
+            "colorId": 1,
+            "value": 5
+          }
+        ]
+      },
+      {
+        "description": "return [colorvalue, colorvalue]",
+        "store": [
+          {
+            "colorId": 1,
+            "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+            "outIndex": 0,
+            "value": 5
+          },
+          {
+            "colorId": 2,
+            "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+            "outIndex": 0,
+            "value": 3
+          }
+        ],
+        "colorDefinitionIds": [1, 2],
+        "txHash": "0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff",
+        "outIndex": 0,
+        "expect": [
+          {
+            "colorId": 1,
+            "value": 5
+          },
+          {
+            "colorId": 2,
+            "value": 3
+          }
+        ]
+      }
+    ]
+  }
+}

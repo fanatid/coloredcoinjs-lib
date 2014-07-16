@@ -44,14 +44,16 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
 
     if (isCoinbase) {
       tx.ins[index].value = 0
-      process.nextTick(function() { processOne(index+1) })
+      processOne(index+1)
 
     } else {
-      _this.getTx(tx.ins[index].hash.toString('hex'), function(error, prevTx) {
+      var txHash = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
+
+      _this.getTx(txHash, function(error, prevTx) {
         if (error === null) {
           tx.ins[index].prevTx = prevTx
           tx.ins[index].value = prevTx.outs[tx.ins[index].index].value
-          process.nextTick(function() { processOne(index+1) })
+          processOne(index+1)
 
         } else {
           cb(error, null)

@@ -44,12 +44,16 @@ StoredColorData.prototype.fetchColorvalues = function(colorDefinitionSet, txHash
     'Expected colorDefinitionSet Array colordef.ColorDefinition, got ' + colorDefinitionSet)
   assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-// how check colorValueClass? colorValueClass.super_ ?
+  function isDerived(cls, baseCls) {
+    return (cls === baseCls || (cls.super_ !== undefined && isDerived(cls.super_, baseCls)))
+  }
+  assert(isDerived(colorValueClass, colorvalue.ColorValue),
+    'Expected colorValueClass colorvalue.ColorValue, got ' + colorValueClass)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   this.colorDataStore.getAny(txHash, outIndex, function(error, records) {
     if (error !== null) {
-      cb(error, null)
+      cb(error)
       return
     }
 
@@ -164,7 +168,7 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txHash, ou
         return
       }
 
-      var txHash = Array.prototype.reverse.call(inputs[index].hash).toString('hex')
+      var txHash = Array.prototype.reverse.call(new Buffer(inputs[index].hash)).toString('hex')
 
       processOne(txHash, inputs[index].index, function(error) {
         if (error === null)
@@ -198,7 +202,7 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txHash, ou
       if (error === null)
         _this.fetchColorvalues(colorDefinitionSet, txHash, outIndex, colorvalue.SimpleColorValue, cb)
       else
-        cb(error, null)
+        cb(error)
     })
   })
 }

@@ -53,7 +53,7 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
   function getValue(index) {
     if (tx.ins.length === index) {
       if (empty && !_this.colorDefinition.isSpecialTx(tx))
-        cb(null)
+        process.nextTick(function() { cb(null) })
       else
         _this.colorDefinition.runKernel(tx, inColorValues, _this.blockchainState, runKernelCallback)
 
@@ -61,7 +61,7 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
     }
 
     var colorId = _this.colorDefinition.getColorId()
-    var txHash = Array.prototype.reverse.call(tx.ins[index].hash).toString('hex')
+    var txHash = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
 
     _this.colorDataStore.get(colorId, txHash, tx.ins[index].index, function(error, result) {
       if (error === null) {
@@ -74,7 +74,7 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
 
         inColorValues.push(colorValue)
 
-        process.nextTick(function() { getValue(index+1) })
+        getValue(index+1)
 
       } else {
         cb(error)
@@ -84,20 +84,20 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
 
   function runKernelCallback(error, outColorValues) {
     if (error === null)
-      addValue(outColorValues, 0)
+      addValue(0, outColorValues)
     else
       cb(error)
   }
 
-  function addValue(outColorValues, index) {
+  function addValue(index, outColorValues) {
     if (index === outColorValues.length) {
-      cb(null)
+      process.nextTick(function() { cb(null) })
       return
     }
 
     var skipAdd = outColorValues[index] === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
     if (skipAdd) {
-      process.nextTick(function() { addValue(outColorValues, index+1) })
+      addValue(index+1, outColorValues)
 
     } else {
       var colorId = _this.colorDefinition.getColorId()
@@ -106,7 +106,7 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
 
       _this.colorDataStore.add(colorId, txHash, index, value, function(error) {
         if (error === null)
-          addValue(outColorValues, index+1)
+          addValue(index+1, outColorValues)
         else
           cb(error)
       })

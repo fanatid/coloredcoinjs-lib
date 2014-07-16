@@ -7,6 +7,9 @@ var Transaction = coloredcoinlib.Transaction
 
 var fixtures = require('./fixtures/colordef')
 
+var mocks = require('./mocks')
+var stubs = require('./stubs')
+
 
 describe('colordef', function() {
   describe('ColorDefinition', function() {
@@ -121,18 +124,18 @@ describe('colordef', function() {
       })
 
       it('prevTag is null', function() {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx2.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+        tx.addInput(tx2.getId(), 0, 4294967295)
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 0)
         expect(affectingInputs).to.deep.equal([])
       })
 
       it('valueWop equal 0 for tx.ins[0].value', function() {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
+        tx.addInput(tx2.getId(), 0, 4294967295)
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         tx.ins[0].value = 0
         affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 0)
@@ -140,9 +143,9 @@ describe('colordef', function() {
       })
 
       it('isAffectingInput is true', function() {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
+        tx.addInput(tx2.getId(), 0, 4294967295)
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         tx.ins[0].value = 2
         affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 0)
@@ -150,10 +153,10 @@ describe('colordef', function() {
       })
 
       it('isAffectingInput is false', function() {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
+        tx.addInput(tx2.getId(), 0, 4294967295)
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         tx.ins[0].value = 1
         affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 1)
@@ -162,146 +165,36 @@ describe('colordef', function() {
     })
 
     describe('runKernel', function() {
-      it('tag is null', function(done) {
-        tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-        epobc.runKernel(tx, [], bs, function(error, inputs) {
-          expect(error).to.be.null
-          expect(inputs).to.deep.equal([])
-          done()
-        })
-      })
-
-      it('tag.isGenesis and isSpecialTx is true', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 5000000000)
-        epobc.genesis.txHash = tx.getId()
-        epobc.runKernel(tx, [], bs, function(error, inputs) {
-          expect(error).to.be.null
-          expect(inputs).to.deep.equal([new colorvalue.SimpleColorValue({ colordef: epobc, value: 5000000000 })])
-          done()
-        })
-      })
-
-      it('tag.isGenesis and isSpecialTx is true, but valueWop equal 0', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (1<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-        epobc.genesis.txHash = tx.getId()
-        epobc.runKernel(tx, [], bs, function(error, inputs) {
-          expect(error).to.be.null
-          expect(inputs).to.deep.equal([null])
-          done()
-        })
-      })
-
       it('ensureInputValues return error', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-        bs.getTx = function(txHash, cb) { cb('myError', null) }
-        epobc.runKernel(tx, [], bs, function(error, inputs) {
-          expect(error).to.equal('myError')
-          expect(inputs).to.be.null
+        bs.getTx = stubs.getTxStub([])
+        epobc.runKernel(tx, [], bs, function(error, result) {
+          expect(error).to.equal('notFoundTx')
+          expect(result).to.be.undefined
           done()
         })
       })
-
-      it('outValueWop equal 0', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 2)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
-        epobc.runKernel(tx, [], bs, function(error, inputs) {
-          expect(error).to.be.null
-          expect(inputs).to.deep.equal([null])
-          done()
-        })
-      })
-
-      it('colorValueSet[ai] is null', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
-        epobc.runKernel(tx, [null], bs, function(error, inputs) {
-          expect(error).to.be.null
-          expect(inputs).to.deep.equal([null])
-          done()
-        })
-      })
-
-      it('aiColorValue.add', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
-        var colorValue = new colorvalue.SimpleColorValue({ colordef: epobc, value: 6 })
-        epobc.runKernel(tx, [colorValue], bs, function(error, inputs) {
-          expect(error).to.be.null
-          expect(inputs).to.deep.equal([new colorvalue.SimpleColorValue({ colordef: epobc, value: 6 })])
-          done()
-        })
-      })
-
-      function runKernelTest(inputs, outputs, inColorValues, txHash, inputSequenceIndices, cb) {
-        var colorValueSet = []
-
-        inColorValues.forEach(function(cvValue) {
-          if (cvValue === null)
-            colorValueSet.push(null)
-          else
-            colorValueSet.push(new colorvalue.SimpleColorValue({ colordef: epobc, value: cvValue }))
-        })
-
-        function createTx(txHash, inputs, outputs, inputSequenceIndices) {
-          var tx = new Transaction()
-
-          tx.getId = function() { return txHash }
-
-          inputs.forEach(function(satoshis) {
-            var index = tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1)
-            tx.ins[index].value = satoshis
-            tx.ins[index].prevTx = createTx('tmp', [], [], [0,1,4,5,6,7])
-          })
-
-          if (tx.ins.length === 0) 
-            tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 0)
-
-          tx.ins[0].sequence = inputSequenceIndices.reduce(
-            function(x, i) { return x + Math.pow(2, i) }, 0)
-
-          outputs.forEach(function(satoshis) {
-            tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', satoshis)
-          })
-
-          return tx
-        }
-
-        var tx = createTx(txHash, inputs, outputs, inputSequenceIndices)
-
-        bs.ensureInputValues = function(tx, cb) {
-          process.nextTick(function() { cb(null, tx.clone()) })
-        }
-
-        epobc.runKernel(tx, colorValueSet, bs, function(error, result) {
-          if (error === null) {
-            result = result.map(function(cv) {
-              return (cv === null ? null : cv.getValue())
-            })
-
-            process.nextTick(function() { cb(null, result) })
-
-          } else {
-            process.nextTick(function() { cb(error, null) })
-          }
-        })
-      }
 
       fixtures.EPOBCColorDefinition.runKernel.forEach(function(f) {
         it(f.description, function(done) {
-          runKernelTest(f.inputs, f.outputs, f.inColorValues, f.txHash, f.inputSequenceIndices, function(error, result) {
+          var colorValueSet = []
+
+          f.inColorValues.forEach(function(cvValue) {
+            if (cvValue === null)
+              colorValueSet.push(null)
+            else
+              colorValueSet.push(new colorvalue.SimpleColorValue({ colordef: epobc, value: cvValue }))
+          })
+
+          tx = mocks.createTx(f.txHash, f.inputs, f.outputs, f.inputSequenceIndices)
+
+          epobc.runKernel(tx, colorValueSet, bs, function(error, result) {
             expect(error).to.be.null
+            expect(result).to.be.instanceof(Array)
+
+            result = result.map(function(cv) { return (cv === null ? null : cv.getValue()) })
             expect(result).to.deep.equal(f.expect)
+
             done()
           })
         })
@@ -329,25 +222,25 @@ describe('colordef', function() {
 
       it('ensureInputValues return error', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-        bs.getTx = function(txHash, cb) { cb('myError', null) }
+        bs.getTx = stubs.getTxStub([])
         epobc.getAffectingInputs(tx, [], bs, function(error, inputs) {
-          expect(error).to.equal('myError')
+          expect(error).to.equal('notFoundTx')
           expect(inputs).to.be.null
           done()
         })
       })
 
       it('return [tx.ins[0]]', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
-        epobc.getAffectingInputs(tx, [0, 0], bs, function(error, inputs) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
+        epobc.getAffectingInputs(tx2, [0, 0], bs, function(error, inputs) {
           expect(error).to.be.null
-          tx.ins[0].prevTx = tx2
-          tx.ins[0].value = 11
-          expect(inputs).to.deep.equal([tx.ins[0]])
+          tx2.ins[0].prevTx = tx
+          tx2.ins[0].value = 11
+          expect(inputs).to.deep.equal([tx2.ins[0]])
           done()
         })
       })

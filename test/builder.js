@@ -7,6 +7,8 @@ var colordef = coloredcoinlib.colordef
 var store = coloredcoinlib.store
 var Transaction = coloredcoinlib.Transaction
 
+var stubs = require('./stubs')
+
 
 describe('builder', function() {
   var epobc, cdstore, bs, tx, tx2, cdbuilder
@@ -62,14 +64,14 @@ describe('builder', function() {
       })
 
       it('index not in outputIndices', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
         cdstore.add(1, '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 6, function(error) {
           expect(error).to.be.null
-          cdbuilder.scanTx(tx, [], function(error) {
+          cdbuilder.scanTx(tx2, [], function(error) {
             expect(error).to.be.null
             done()
           })
@@ -77,15 +79,15 @@ describe('builder', function() {
       })
 
       it('ColorDataStore.add return error', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
-        cdstore.add(1, '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 6, function(error) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
+        cdstore.add(1, tx.getId(), 0, 6, function(error) {
           expect(error).to.be.null
           cdstore.add = function(_, _, _, _, cb) { cb('myError') }
-          cdbuilder.scanTx(tx, [0], function(error) {
+          cdbuilder.scanTx(tx2, [0], function(error) {
             expect(error).to.equal('myError')
             done()
           })
@@ -93,16 +95,16 @@ describe('builder', function() {
       })
 
       it('add record', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51 | (2<<6))
-        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-        tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-        bs.getTx = function(txHash, cb) { cb(null, tx2) }
-        cdstore.add(1, '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 6, function(error) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
+        cdstore.add(1, tx.getId(), 0, 6, function(error) {
           expect(error).to.be.null
-          cdbuilder.scanTx(tx, [0], function(error) {
+          cdbuilder.scanTx(tx2, [0], function(error) {
             expect(error).to.be.null
-            cdstore.get(1, tx.getId(), 0, function(error, record) {
+            cdstore.get(1, tx2.getId(), 0, function(error, record) {
               expect(error).to.be.null
               expect(record.value).to.equal(6)
               done()

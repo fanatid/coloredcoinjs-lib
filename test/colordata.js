@@ -10,6 +10,11 @@ var colorvalue = coloredcoinlib.colorvalue
 var store = coloredcoinlib.store
 var Transaction = coloredcoinlib.Transaction
 
+var fixtures = require('./fixtures/colordata')
+
+var mocks = require('./mocks')
+var stubs = require('./stubs')
+
 
 describe('colordata', function() {
   var cdstore, bs, epobc, tx, tx2, storedcd
@@ -32,23 +37,41 @@ describe('colordata', function() {
         cdstore.getAny = function(_, _, cb) { cb('myError') }
         storedcd.fetchColorvalues([epobc], tx.getId(), 0, colorvalue.SimpleColorValue, function(error, records) {
           expect(error).to.equal('myError')
-          expect(records).to.be.null
+          expect(records).to.be.undefined
           done()
         })
       })
 
-      it('return [colorvalue]', function(done) {
-        cdstore.add(epobc.getColorId(), tx.getId(), 0, 1, function(error) {
-          expect(error).to.be.null
-          cdstore.add(epobc.getColorId()+1, tx.getId(), 0, 2, function(error) {
-            expect(error).to.be.null
-            storedcd.fetchColorvalues([epobc], tx.getId(), 0, colorvalue.SimpleColorValue, function(error, colorValues) {
-              expect(error).to.be.null
-              var cv = new colorvalue.SimpleColorValue({ colordef: epobc, value: 1 })
-              expect(colorValues).to.deep.equal([cv])
-              done()
-            })
+      fixtures.StoredColorData.fetchColorvalues.forEach(function(f) {
+        it(f.description, function(done) {
+          var colorDefinitionSet = f.colorDefinitionIds.map(function(colorId) {
+            return new colordef.EPOBCColorDefinition(colorId, { txHash: 'genesis', outIndex: 0, height: 0 })
           })
+
+          function add(index) {
+            if (index === f.store.length) {
+              storedcd.fetchColorvalues(colorDefinitionSet, f.txHash, f.outIndex, colorvalue.SimpleColorValue, fetchColorvaluesCallback)
+              return
+            }
+
+            var record = f.store[index]
+            cdstore.add(record.colorId, record.txHash, record.outIndex, record.value, function(error) {
+              expect(error).to.be.null
+              add(index+1)
+            })
+          }
+
+          function fetchColorvaluesCallback(error, colorValues) {
+            expect(error).to.be.null
+            expect(colorValues).to.be.instanceof(Array).and.to.have.length(f.expect.length)
+            f.expect.forEach(function(cv, i) {
+              expect(colorValues[i].getColorId()).to.be.equal(cv.colorId)
+              expect(colorValues[i].getValue()).to.be.equal(cv.value)
+            })
+            done()
+          }
+
+          add(0)
         })
       })
     })
@@ -65,39 +88,32 @@ describe('colordata', function() {
     })
 
     describe('getColorValues', function() {
-      var red, blue
-
-      beforeEach(function() {
-        red = new colordef.EPOBCColorDefinition(2, { txHash: 'genesis', outIndex: 0, height: 0 })
-        blue = new colordef.EPOBCColorDefinition(3, { txHash: 'genesis', outIndex: 0, height: 0 })
-      })
-
       it('fetchColorvalues return error', function(done) {
         storedcd.fetchColorvalues = function(_, _, _, _, cb) { cb('error.fetchColorvalues', null) }
         storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
           expect(error).to.equal('error.fetchColorvalues')
-          expect(colorValues).to.be.null
+          expect(colorValues).to.be.undefined
           done()
         })
       })
 
       it('getTx return error', function(done) {
         storedcd.fetchColorvalues = function(_, _, _, _, cb) { cb(null, []) }
-        bs.getTx = function(_, cb) { cb('error.getTx') }
+        bs.getTx = stubs.getTxStub([])
         storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
-          expect(error).to.equal('error.getTx')
-          expect(colorValues).to.be.null
+          expect(error).to.equal('notFoundTx')
+          expect(colorValues).to.be.undefined
           done()
         })
       })
 
       it('getAffectingInputs return error', function(done) {
         storedcd.fetchColorvalues = function(_, _, _, _, cb) { cb(null, []) }
-        bs.getTx = function(_, cb) { cb(null, tx2.clone()) }
+        bs.getTx = stubs.getTxStub([tx])
         epobc.getAffectingInputs = function(_, _, _, cb) { cb('error.getAffectingInputs') }
         storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
           expect(error).to.equal('error.getAffectingInputs')
-          expect(colorValues).to.be.null
+          expect(colorValues).to.be.undefined
           done()
         })
       })
@@ -108,11 +124,11 @@ describe('colordata', function() {
           storedcd.fetchColorvalues = function(_, _, _, _, cb) { cb('error.processOne') }
           cb(null, [])
         }
-        bs.getTx = function(_, cb) { cb(null, tx2.clone()) }
+        bs.getTx = stubs.getTxStub([tx])
         epobc.getAffectingInputs = function(_, _, _, cb) { cb(null, [tx.ins[0]]) }
         storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
           expect(error).to.equal('error.processOne')
-          expect(colorValues).to.be.null
+          expect(colorValues).to.be.undefined
           done()
         })
       })
@@ -123,14 +139,44 @@ describe('colordata', function() {
         ErrorColorDataBuilder.prototype.scanTx = function(_, _, cb) { cb('error.scanTx') }
         storedcd = new colordata.ThinColorData(cdstore, bs, ErrorColorDataBuilder)
 
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
+        tx.addInput(tx2.getId(), 0, 37)
         storedcd.fetchColorvalues = function(_, _, _, _, cb) { cb(null, []) }
-        bs.getTx = function(_, cb) { cb(null, tx2.clone()) }
+        bs.getTx = stubs.getTxStub([tx, tx2])
         epobc.getAffectingInputs = function(_, _, _, cb) { cb(null, [tx.ins[0]]) }
         storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
           expect(error).to.equal('error.scanTx')
-          expect(colorValues).to.be.null
+          expect(colorValues).to.be.undefined
           done()
+        })
+      })
+
+      it('already in store', function(done) {
+        cdstore.add(epobc.getColorId(), tx.getId(), 0, 1, function(error) {
+          expect(error).to.be.null
+          storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
+            expect(error).to.be.null
+            expect(colorValues).to.be.instanceof(Array).and.to.have.length(1)
+            expect(colorValues[0].getColorId()).to.be.equal(epobc.getColorId())
+            expect(colorValues[0].getValue()).to.be.equal(1)
+            done()
+          })
+        })
+      })
+
+      it('add to store and return value', function(done) {
+        cdstore.add(epobc.getColorId(), '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 1, function(error) {
+          expect(error).to.be.null
+
+          tx = mocks.createTx('xfer', [9], [9], [0, 1, 4, 5, 6, 7])
+          bs.getTx = stubs.getTxStub([tx])
+
+          storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
+            expect(error).to.be.null
+            expect(colorValues).to.be.instanceof(Array).and.to.have.length(1)
+            expect(colorValues[0].getColorId()).to.be.equal(epobc.getColorId())
+            expect(colorValues[0].getValue()).to.be.equal(1)
+            done()
+          })
         })
       })
     })

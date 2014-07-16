@@ -186,8 +186,8 @@ var EPOBCColorDefinition = (function() {
     }
 
     outValueWop = tx.outs[outIndex].value - padding
-      if (outValueWop <= 0)
-        return []
+    if (outValueWop <= 0)
+      return []
 
     var affectingInputs = []
     var inputRunningSum = 0
@@ -240,7 +240,7 @@ var EPOBCColorDefinition = (function() {
    * @param {Transaction} tx
    * @param {Array} colorValueSet
    * @param {coloredcoinlib.blockchain.BlockchainState} bs
-   * @param {function} cb Called on finished with params (error, Array|null)
+   * @param {function} cb Called on finished with params (error, Array)
    */
   EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
     assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
@@ -271,7 +271,7 @@ var EPOBCColorDefinition = (function() {
 
     bs.ensureInputValues(tx, function(error, tx) {
       if (error !== null) {
-        cb(error, null)
+        cb(error)
         return
       }
 

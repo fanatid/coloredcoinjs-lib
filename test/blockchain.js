@@ -4,6 +4,8 @@ var coloredcoinlib = require('../src/index')
 var blockchain = coloredcoinlib.blockchain
 var Transaction = coloredcoinlib.Transaction
 
+var stubs = require('./stubs')
+
 var fakeRequests = true
 
 
@@ -42,24 +44,24 @@ describe('blockchain', function() {
 
       it('bs.getTx return error', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        bs.getTx = function(txHash, cb) { cb('myError', null) }
+        bs.getTx = stubs.getTxStub([])
         bs.ensureInputValues(tx, function(error, newTx) {
-          expect(error).to.equal('myError')
+          expect(error).to.equal('notFoundTx')
           expect(newTx).to.be.null
           done()
         })
       })
 
       it('successful get prevTx', function(done) {
-        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-        bs.getTx = function(txHash, cb) { cb(null, tx2.clone()) }
-        bs.ensureInputValues(tx, function(error, newTx) {
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
+        tx2.addInput(tx.getId(), 0, 4294967295)
+        bs.getTx = stubs.getTxStub([tx])
+        bs.ensureInputValues(tx2, function(error, newTx) {
           expect(error).to.be.null
-          tx.ensured = true
-          tx.ins[0].prevTx = tx2.clone()
-          tx.ins[0].value = tx.ins[0].prevTx.outs[0].value
-          expect(newTx).to.deep.equal(tx)
+          tx2.ensured = true
+          tx2.ins[0].prevTx = tx.clone()
+          tx2.ins[0].value = tx2.ins[0].prevTx.outs[0].value
+          expect(newTx).to.deep.equal(tx2)
           done()
         })
       })
