@@ -2,11 +2,36 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     browserify: {
-      'coloredcoinlib.js': 'src/index.js',
-      options: {
-        bundleOptions: {
-          standalone: 'coloredcoinlib'
+      production: {
+        src: ['src_production/index.js'],
+        dest: 'coloredcoinlib.js',
+        options: {
+          bundleOptions: {
+            standalone: 'coloredcoinlib'
+          }
         }
+      },
+      test: {
+        src: ['src/index.js'],
+        dest: 'coloredcoinlib.test.js',
+        options: {
+          bundleOptions: {
+            standalone: 'coloredcoinlib'
+          }
+        }
+      }
+    },
+    clean: {
+      production: {
+        src: ['src_production']
+      }
+    },
+    copy: {
+      production: {
+        expand: true,
+        cwd: 'src',
+        src: '**',
+        dest: 'src_production'
       }
     },
     jshint: {
@@ -50,8 +75,26 @@ module.exports = function(grunt) {
         }
       }
     },
+    strip_code: {
+      production: {
+        options: {
+          start_comment: 'test-code',
+          end_comment: 'end-test-code',
+        },
+        src: 'src_production/*.js'
+      }
+    },
     uglify: {
-      'coloredcoinlib-min.js': 'coloredcoinlib.js'
+      production: {
+        files: {
+          'coloredcoinlib-min.js': 'coloredcoinlib.js'
+        }
+      },
+      test: {
+        files: {
+          'coloredcoinlib-min.test.js': 'coloredcoinlib.test.js'
+        }
+      }
     }
   })
 
@@ -65,11 +108,24 @@ module.exports = function(grunt) {
   })
 
   grunt.loadNpmTasks('grunt-browserify')
+  grunt.loadNpmTasks('grunt-contrib-clean')
+  grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-mocha-istanbul')
+  grunt.loadNpmTasks('grunt-strip-code')
 
-  grunt.registerTask('compile', ['browserify', 'uglify'])
+  grunt.registerTask('compile', [
+    'copy:production',
+    'strip_code:production',
+    'browserify:production',
+    'uglify:production',
+    'clean:production'
+  ])
+  grunt.registerTask('compile_test', [
+    'browserify:test',
+    'uglify:test'
+  ])
   grunt.registerTask('coverage', ['mocha_istanbul:coverage'])
   grunt.registerTask('coveralls', ['mocha_istanbul:coveralls'])
 }
