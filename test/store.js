@@ -76,7 +76,7 @@ describe('store', function() {
               expect(error).to.be.null
               expect(record).to.deep.equal({
                 colorId: 1,
-                txHash: '0000000000000000000000000000000000000000000000000000000000000000',
+                txId: '0000000000000000000000000000000000000000000000000000000000000000',
                 outIndex: 0,
                 value: 1
               })
@@ -103,7 +103,7 @@ describe('store', function() {
               expect(error).to.be.null
               expect(records).to.deep.equal([{
                 colorId: 1,
-                txHash: '0000000000000000000000000000000000000000000000000000000000000000',
+                txId: '0000000000000000000000000000000000000000000000000000000000000000',
                 outIndex: 0,
                 value: 1
               }])

@@ -14,6 +14,21 @@ function Transaction() {
 
 inherits(Transaction, bitcoin.Transaction)
 
+/**
+ * Check txId is 32 bytes hex string
+ *
+ * @param {string} txId
+ * @return {boolean}
+ */
+Transaction.isTxId = function(txId) {
+  var set = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
+
+  return (_.isString(txId) &&
+          txId.length === 64 &&
+          txId.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
+}
+
+
 // Copy from bitcoinjs-lib.Transaction
 Transaction.DEFAULT_SEQUENCE = bitcoin.Transaction.DEFAULT_SEQUENCE
 Transaction.SIGHASH_ALL = bitcoin.Transaction.SIGHASH_ALL

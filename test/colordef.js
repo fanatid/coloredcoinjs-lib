@@ -29,19 +29,21 @@ describe('colordef', function() {
 
   describe('GenesisColorDefinition', function() {
     it('inherits ColorDefinition', function() {
-      var colordef1 = new colordef.GenesisColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
+      var colordef1 = new colordef.GenesisColorDefinition(1,
+        { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
       expect(colordef1).to.be.instanceof(colordef.ColorDefinition)
       expect(colordef1).to.be.instanceof(colordef.GenesisColorDefinition)
     })
 
     it('isSpecialTx true', function() {
       var tx = new Transaction()
-      var colordef1 = new colordef.GenesisColorDefinition(1, { txHash: tx.getId(), outIndex: 0, height: 0 })
+      var colordef1 = new colordef.GenesisColorDefinition(1, { txId: tx.getId(), outIndex: 0, height: 0 })
       expect(colordef1.isSpecialTx(tx)).to.be.true
     })
 
     it('isSpecialTx false', function() {
-      var colordef1 = new colordef.GenesisColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
+      var colordef1 = new colordef.GenesisColorDefinition(1,
+        { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
       expect(colordef1.isSpecialTx(new Transaction())).to.be.false
     })
   })
@@ -53,7 +55,8 @@ describe('colordef', function() {
 
     beforeEach(function() {
       bs = new coloredcoinlib.blockchain.BlockchainStateBase()
-      epobc = new colordef.EPOBCColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
+      epobc = new colordef.EPOBCColorDefinition(1,
+        { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
       tx = new Transaction()
       tx2 = new Transaction()
     })
@@ -177,16 +180,16 @@ describe('colordef', function() {
 
       fixtures.EPOBCColorDefinition.runKernel.forEach(function(f) {
         it(f.description, function(done) {
-          var colorValueSet = []
+          if (f.description.indexOf('genesis') !== -1)
+            epobc.genesis.txId = f.txId
 
-          f.inColorValues.forEach(function(cvValue) {
-            if (cvValue === null)
-              colorValueSet.push(null)
-            else
-              colorValueSet.push(new colorvalue.SimpleColorValue({ colordef: epobc, value: cvValue }))
+          tx = mocks.createTx(f.txId, f.inputs, f.outputs, f.inputSequenceIndices)
+
+          var colorValueSet = f.inColorValues.map(function(cv) {
+            if (cv !== null)
+              cv = new colorvalue.SimpleColorValue({ colordef: epobc, value: cv })
+            return cv
           })
-
-          tx = mocks.createTx(f.txHash, f.inputs, f.outputs, f.inputSequenceIndices)
 
           epobc.runKernel(tx, colorValueSet, bs, function(error, result) {
             expect(error).to.be.null

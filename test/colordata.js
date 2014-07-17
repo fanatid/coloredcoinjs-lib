@@ -22,7 +22,8 @@ describe('colordata', function() {
   beforeEach(function() {
     cdstore = new store.ColorDataStore('memory')
     bs = new blockchain.BlockchainStateBase()
-    epobc = new colordef.EPOBCColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
+    epobc = new colordef.EPOBCColorDefinition(1,
+      { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
     tx = new Transaction()
     tx2 = new Transaction()
   })
@@ -45,17 +46,18 @@ describe('colordata', function() {
       fixtures.StoredColorData.fetchColorvalues.forEach(function(f) {
         it(f.description, function(done) {
           var colorDefinitionSet = f.colorDefinitionIds.map(function(colorId) {
-            return new colordef.EPOBCColorDefinition(colorId, { txHash: 'genesis', outIndex: 0, height: 0 })
+            return new colordef.EPOBCColorDefinition(colorId,
+              { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
           })
 
           function add(index) {
             if (index === f.store.length) {
-              storedcd.fetchColorvalues(colorDefinitionSet, f.txHash, f.outIndex, colorvalue.SimpleColorValue, fetchColorvaluesCallback)
+              storedcd.fetchColorvalues(colorDefinitionSet, f.txId, f.outIndex, colorvalue.SimpleColorValue, fetchColorvaluesCallback)
               return
             }
 
             var record = f.store[index]
-            cdstore.add(record.colorId, record.txHash, record.outIndex, record.value, function(error) {
+            cdstore.add(record.colorId, record.txId, record.outIndex, record.value, function(error) {
               expect(error).to.be.null
               add(index+1)
             })
@@ -167,7 +169,7 @@ describe('colordata', function() {
         cdstore.add(epobc.getColorId(), '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 1, function(error) {
           expect(error).to.be.null
 
-          tx = mocks.createTx('xfer', [9], [9], [0, 1, 4, 5, 6, 7])
+          tx = mocks.createTx('ff00111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', [9], [9], [0, 1, 4, 5, 6, 7])
           bs.getTx = stubs.getTxStub([tx])
 
           storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {

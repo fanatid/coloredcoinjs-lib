@@ -2,9 +2,9 @@ var assert = require('assert')
 var _ = require('underscore')
 var inherits = require('inherits')
 
-var colordef;
+var colordef
 function getColordef() {
-  if (colordef === undefined)
+  if (_.isUndefined(colordef))
     colordef = require('./colordef')
 
   return colordef

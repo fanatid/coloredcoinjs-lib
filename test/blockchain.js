@@ -120,9 +120,9 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     })
 
     it('getBlockCount with error', function(done) {
-      bs.request = function(path, cb) { cb('myError', null) }
+      bs.request = function(path, cb) { cb('error.request', null) }
       bs.getBlockCount(function(error, response) {
-        expect(error).to.equal('myError')
+        expect(error).to.equal('error.request')
         expect(response).to.be.null
         done()
       })
@@ -140,9 +140,9 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     })
 
     it('getRawTx with error', function(done) {
-      bs.request = function(path, cb) { cb('myError', null) }
+      bs.request = function(path, cb) { cb('error.request', null) }
       bs.getRawTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
-        expect(error).to.equal('myError')
+        expect(error).to.equal('error.request')
         expect(response).to.be.null
         done()
       })
@@ -160,8 +160,8 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     })
 
     it('getTx with bad Transaction', function(done) {
-      bs.request = function(path, cb) { cb(null, '') }
-      bs.getTx('unknow tx', function(error, response) {
+      bs.request = function(path, cb) { cb(null, 'tatata') }
+      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
         expect(error).not.to.be.null
         expect(response).to.be.null
         done()
@@ -169,9 +169,9 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     })
 
     it('getTx with error', function(done) {
-      bs.request = function(path, cb) { cb('myError', null) }
-      bs.getTx('unknow tx', function(error, response) {
-        expect(error).to.equal('myError')
+      bs.request = function(path, cb) { cb('error.request', null) }
+      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
+        expect(error).to.equal('error.request')
         expect(response).to.be.null
         done()
       })

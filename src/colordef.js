@@ -36,7 +36,7 @@ ColorDefinition.prototype.getColorId = function() {
  *
  * @param {number} colorId
  * @param genesis
- * @param genesis.txHash string
+ * @param genesis.txId transaction id
  * @param genesis.outIndex number
  * @param genesis.height number
  */
@@ -44,7 +44,7 @@ function GenesisColorDefinition(colorId, genesis) {
   ColorDefinition.call(this, colorId)
 
   assert(_.isObject(genesis), 'Expected object genesis, got ' + genesis)
-  assert(_.isString(genesis.txHash), 'Expected string txHash, got ' + genesis.txHash)
+  assert(Transaction.isTxId(genesis.txId), 'Expected transaction id txId, got ' + genesis.txId)
   assert(_.isNumber(genesis.outIndex), 'Expected number outIndex, got ' + genesis.outIndex)
   assert(_.isNumber(genesis.height), 'Expected number height, got ' + genesis.height)
 
@@ -60,7 +60,7 @@ inherits(GenesisColorDefinition, ColorDefinition)
 GenesisColorDefinition.prototype.isSpecialTx = function(tx) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
 
-  var isSpecialTx = tx.getId() === this.genesis.txHash
+  var isSpecialTx = tx.getId() === this.genesis.txId
 
   return isSpecialTx
 }
@@ -222,7 +222,7 @@ var EPOBCColorDefinition = (function() {
    *
    * @param {number} colorId
    * @param genesis
-   * @param genesis.txHash string
+   * @param genesis.txId transaction id
    * @param genesis.outIndex number
    * @param genesis.height number
    */
@@ -290,7 +290,7 @@ var EPOBCColorDefinition = (function() {
 
         /* jshint ignore:start */
         getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-          if (colorValueSet[ai] === null || colorValueSet[ai] === undefined) // Todo: need check undefined?
+          if (colorValueSet[ai] === null || _.isUndefined(colorValueSet[ai])) // Todo: need check undefined?
             allColored = false
           else
             aiColorValue.add(colorValueSet[ai])
@@ -361,7 +361,7 @@ var EPOBCColorDefinition = (function() {
   /* end-test-code */
 
   return EPOBCColorDefinition
-})();
+})()
 
 
 module.exports = {

@@ -14,7 +14,8 @@ describe('builder', function() {
   var epobc, cdstore, bs, tx, tx2, cdbuilder
 
   beforeEach(function() {
-    epobc = new colordef.EPOBCColorDefinition(1, { txHash: 'genesis', outIndex: 0, height: 0 })
+    epobc = new colordef.EPOBCColorDefinition(1,
+      { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
     cdstore = new store.ColorDataStore('memory')
     bs = new blockchain.BlockchainStateBase()
     tx = new Transaction()
@@ -56,7 +57,7 @@ describe('builder', function() {
 
       it('runKernel return error', function(done) {
         epobc.runKernel = function(_, _, _, cb) { cb('myError') }
-        epobc.genesis.txHash = tx.getId()
+        epobc.genesis.txId = tx.getId()
         cdbuilder.scanTx(tx, [], function(error) {
           expect(error).to.equal('myError')
           done()

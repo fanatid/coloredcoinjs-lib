@@ -61,9 +61,9 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
     }
 
     var colorId = _this.colorDefinition.getColorId()
-    var txHash = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
+    var txId = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
 
-    _this.colorDataStore.get(colorId, txHash, tx.ins[index].index, function(error, result) {
+    _this.colorDataStore.get(colorId, txId, tx.ins[index].index, function(error, result) {
       if (error === null) {
         var colorValue = null
 
@@ -101,10 +101,10 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
 
     } else {
       var colorId = _this.colorDefinition.getColorId()
-      var txHash = tx.getId()
+      var txId = tx.getId()
       var value = outColorValues[index].getValue()
 
-      _this.colorDataStore.add(colorId, txHash, index, value, function(error) {
+      _this.colorDataStore.add(colorId, txId, index, value, function(error) {
         if (error === null)
           addValue(index+1, outColorValues)
         else

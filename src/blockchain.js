@@ -47,9 +47,9 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
       processOne(index+1)
 
     } else {
-      var txHash = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
+      var txId = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
 
-      _this.getTx(txHash, function(error, prevTx) {
+      _this.getTx(txId, function(error, prevTx) {
         if (error === null) {
           tx.ins[index].prevTx = prevTx
           tx.ins[index].value = prevTx.outs[tx.ins[index].index].value
@@ -74,8 +74,8 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
  * Inherits BlockchainStateBase
  */
 function BlockchaininfoDataAPI(host, port) {
-  host = host === undefined ? 'blockchain.info' : host
-  port = port === undefined ? 80 : port
+  host = _.isUndefined(host) ? 'blockchain.info' : host
+  port = _.isUndefined(port) ? 80 : port
 
   assert(_.isString(host), 'Expected string host, got ' + host)
   assert(_.isNumber(port), 'Expected number port, got ' + port)
@@ -149,16 +149,16 @@ BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
 }
 
 /**
- * Get raw transaction by txHash
+ * Get raw transaction by transaction id
  *
- * @param {string} txHash Transaction hash in hex
+ * @param {string} txId Transaction id
  * @param {function} cb Called on response with params  (error, string)
  */
-BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
-  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+BlockchaininfoDataAPI.prototype.getRawTx = function(txId, cb) {
+  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  this.getTx(txHash, function(error, response) {
+  this.getTx(txId, function(error, response) {
     if (error === null)
       response = response.toHex()
 
@@ -167,16 +167,16 @@ BlockchaininfoDataAPI.prototype.getRawTx = function(txHash, cb) {
 }
 
 /**
- * Get transaction by txHash
+ * Get transaction by txId
  *
- * @param {string} txHash Transaction hash in hex
+ * @param {string} txId Transaction id
  * @param {function} cb Called on response with params (error, Transaction)
  */
-BlockchaininfoDataAPI.prototype.getTx = function(txHash, cb) {
-  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+BlockchaininfoDataAPI.prototype.getTx = function(txId, cb) {
+  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  this.request('/rawtx/' + txHash + '?format=hex', function(error, response) {
+  this.request('/rawtx/' + txId + '?format=hex', function(error, response) {
     if (error === null) {
       try {
         response = Transaction.fromHex(response)

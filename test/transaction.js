@@ -17,6 +17,24 @@ describe('transaction', function() {
     expect(tx).to.be.instanceof(Transaction)
   })
 
+  describe('isTxId', function() {
+    it('not string', function() {
+      expect(Transaction.isTxId(1)).to.be.false
+    })
+
+    it('not 64 symbols', function() {
+      expect(Transaction.isTxId('0000111122223333444455556666777788889999aaaabbbbcCCcddddeeeefff')).to.be.false
+    })
+
+    it('not hex', function() {
+      expect(Transaction.isTxId('0000111122223333444455556666777788889999aaaabbbbccccddddeeeefffZ')).to.be.false
+    })
+
+    it('return true', function() {
+      expect(Transaction.isTxId('0000111122223333444455556666777788889999aaaabbbbccccdddDEeeeFFff')).to.be.true
+    })
+  })
+
   describe('clone', function() {
     it('not ensured', function() {
       expect(tx.clone()).to.deep.equal(tx)

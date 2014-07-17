@@ -2,6 +2,8 @@ var assert = require('assert')
 var _ = require('underscore')
 var inherits = require('inherits')
 
+var Transaction = require('./transaction')
+
 
 /**
  * @class MemoryDB
@@ -40,7 +42,7 @@ inherits(UniqueConstraintError, Error)
  * @param {object} opts DB options
  */
 function DataStore(type, opts) {
-  opts = opts === undefined ? {} : opts
+  opts = _.isUndefined(opts) ? {} : opts
 
   assert(_.isString(type), 'Expected string type, got ' + type)
   assert(_.isObject(opts), 'Expected object type, got ' + opts)
@@ -75,14 +77,14 @@ inherits(ColorDataStore, DataStore)
  * Add data to storage
  *
  * @param {number} colorId
- * @param {string} txHash
+ * @param {string} txId
  * @param {number} outIndex
  * @param {number} value
  * @param {function} cb Called on added with params (error)
  */
-ColorDataStore.prototype.add = function(colorId, txHash, outIndex, value, cb) {
+ColorDataStore.prototype.add = function(colorId, txId, outIndex, value, cb) {
   assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
-  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(_.isNumber(value), 'Expected number value, got ' + value)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -91,7 +93,7 @@ ColorDataStore.prototype.add = function(colorId, txHash, outIndex, value, cb) {
     var error = null
 
     this.db.data.some(function(record) {
-      if (record[0] === colorId && record[1] === txHash && record[2] === outIndex) {
+      if (record[0] === colorId && record[1] === txId && record[2] === outIndex) {
         error = new UniqueConstraintError()
         return true
       }
@@ -100,7 +102,7 @@ ColorDataStore.prototype.add = function(colorId, txHash, outIndex, value, cb) {
     })
 
     if (error === null)
-      this.db.data.push([colorId, txHash, outIndex, value])
+      this.db.data.push([colorId, txId, outIndex, value])
 
     process.nextTick(function() { cb(error) })
   }
@@ -110,13 +112,13 @@ ColorDataStore.prototype.add = function(colorId, txHash, outIndex, value, cb) {
  * Add data to storage
  *
  * @param {number} colorId
- * @param {string} txHash
+ * @param {string} txId
  * @param {number} outIndex
  * @param {function} cb Called on fetched with params (error, record|null)
  */
-ColorDataStore.prototype.get = function(colorId, txHash, outIndex, cb) {
+ColorDataStore.prototype.get = function(colorId, txId, outIndex, cb) {
   assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
-  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
@@ -124,10 +126,10 @@ ColorDataStore.prototype.get = function(colorId, txHash, outIndex, cb) {
     var result = null
 
     this.db.data.some(function(record) {
-      if (record[0] === colorId && record[1] === txHash && record[2] === outIndex) {
+      if (record[0] === colorId && record[1] === txId && record[2] === outIndex) {
         result = {
           colorId: record[0],
-          txHash: record[1],
+          txId: record[1],
           outIndex: record[2],
           value: record[3]
         }
@@ -142,14 +144,14 @@ ColorDataStore.prototype.get = function(colorId, txHash, outIndex, cb) {
 }
 
 /**
- * Get all records for a given txHash and outIndex
+ * Get all records for a given txId and outIndex
  *
- * @param {string} txHash
+ * @param {string} txId
  * @param {number} outIndex
  * @param {function} cb Called on fetched with params (error, record|null)
  */
-ColorDataStore.prototype.getAny = function(txHash, outIndex, cb) {
-  assert(_.isString(txHash), 'Expected string txHash, got ' + txHash)
+ColorDataStore.prototype.getAny = function(txId, outIndex, cb) {
+  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
@@ -157,10 +159,10 @@ ColorDataStore.prototype.getAny = function(txHash, outIndex, cb) {
     var records = []
 
     this.db.data.forEach(function(record) {
-      if (record[1] === txHash && record[2] === outIndex)
+      if (record[1] === txId && record[2] === outIndex)
         records.push({
           colorId: record[0],
-          txHash: record[1],
+          txId: record[1],
           outIndex: record[2],
           value: record[3]
         })
