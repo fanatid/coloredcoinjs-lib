@@ -23,10 +23,10 @@ function getTxStub(transactions) {
   })
 
   function getTx(txId, cb) {
-    if (txMap[txId] !== undefined)
-      cb(null, txMap[txId].clone())
-    else
+    if (_.isUndefined(txMap[txId]))
       cb('notFoundTx')
+    else
+      cb(null, txMap[txId].clone())
   }
 
   return getTx

@@ -159,7 +159,8 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txId, outI
         return
       }
 
-      colorDefinitionSet[index].getAffectingInputs(tx, [outIndex], _this.blockchainState, function(error, affectingInputs) {
+      var colorDefinition = colorDefinitionSet[index]
+      colorDefinition.getAffectingInputs(tx, [outIndex], _this.blockchainState, function(error, affectingInputs) {
         if (error !== null) {
           cb(error)
           return

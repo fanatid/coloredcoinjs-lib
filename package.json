@@ -14,13 +14,6 @@
     "type": "git",
     "url": "https://github.com/fanatid/coloredcoinjs-lib"
   },
-  "scripts": {
-    "compile": "./node_modules/.bin/browserify ./src/index.js -s coloredcoinlib | ./node_modules/.bin/uglifyjs > coloredcoinlib-min.js; true",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter spec test/*.js; true",
-    "coveralls": "npm run-script coverage && node ./node_modules/.bin/coveralls < coverage/lcov.info",
-    "jshint": "./node_modules/.bin/jshint --config jshint.json src/*.js; true",
-    "test": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter spec test/*.js; true"
-  },
   "dependencies": {
     "bitcoinjs-lib": "1.0.0",
     "http-browserify": "1.3.2",
@@ -31,9 +24,11 @@
     "browserify": "4.2.0",
     "chai": "1.9.1",
     "coveralls": "2.11.1",
-    "istanbul": "0.2.14",
-    "jshint": "2.5.1",
-    "mocha": "1.20.1",
-    "uglify-js": "2.4.14"
+    "grunt": "0.4.5",
+    "grunt-browserify": "2.1.3",
+    "grunt-contrib-jshint": "0.10.0",
+    "grunt-contrib-uglify": "0.5.0",
+    "grunt-mocha-istanbul": "1.5.0",
+    "mocha": "1.20.1"
   }
 }
