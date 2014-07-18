@@ -6,7 +6,7 @@ var Transaction = coloredcoinlib.Transaction
 
 var stubs = require('./stubs')
 
-var fakeRequests = true
+var fakeRequests = false
 
 
 describe('blockchain', function() {
@@ -90,7 +90,7 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     })
 
     if (!fakeRequests) {
-      it('raw request with cors in params', function(done) {
+      it('raw request without cors in params', function(done) {
         bs.request('/latestblock?cors=false', function(error, response) {
           expect(error).to.be.null
           expect(response).to.be.a('string')

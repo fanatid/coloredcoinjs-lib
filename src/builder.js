@@ -1,6 +1,6 @@
 var assert = require('assert')
 var _ = require('underscore')
-var inherits = require('inherits')
+var inherits = require('util').inherits
 
 var store = require('./store')
 var blockchain = require('./blockchain')

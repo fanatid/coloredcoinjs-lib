@@ -1,5 +1,5 @@
 var expect = require('chai').expect
-var inherits = require('inherits')
+var inherits = require('util').inherits
 
 var coloredcoinlib = require('../src/index')
 var blockchain = coloredcoinlib.blockchain

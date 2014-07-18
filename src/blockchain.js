@@ -1,6 +1,6 @@
 var assert = require('assert')
 var _ = require('underscore')
-var inherits = require('inherits')
+var inherits = require('util').inherits
 var http = require('http')
 
 var Transaction = require('./transaction')
@@ -102,12 +102,14 @@ BlockchaininfoDataAPI.prototype.request = function(path, cb) {
     path += (path.indexOf('?') === -1 ? '?' : '&') + 'cors=true'
 
   var opts = {
-    path: path,
+    scheme: 'http',
     host: this.host,
-    port: this.port
+    port: this.port,
+    path: path,
+    method: 'GET'
   }
 
-  http.get(opts, function(res) {
+  http.request(opts, function(res) {
     var buf = ''
 
     res.on('data', function(data) {
@@ -121,7 +123,7 @@ BlockchaininfoDataAPI.prototype.request = function(path, cb) {
     res.on('error', function(error) {
       cb(error, null)
     })
-  })
+  }).end()
 }
 
 /**

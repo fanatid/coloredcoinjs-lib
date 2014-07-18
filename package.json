@@ -16,8 +16,6 @@
   },
   "dependencies": {
     "bitcoinjs-lib": "1.0.1",
-    "http-browserify": "1.4.1",
-    "inherits": "2.0.1",
     "underscore": "1.6.0"
   },
   "devDependencies": {

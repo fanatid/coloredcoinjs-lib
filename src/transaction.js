@@ -1,5 +1,5 @@
 var _ = require('underscore')
-var inherits = require('inherits')
+var inherits = require('util').inherits
 var bitcoin = require('bitcoinjs-lib')
 
 
