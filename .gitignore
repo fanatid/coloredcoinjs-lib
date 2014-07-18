@@ -1,7 +1,6 @@
-node_modules
 coverage
+node_modules
+
 coloredcoinlib.js
 coloredcoinlib.test.js
 coloredcoinlib-min.js
-coloredcoinlib-min.test.js
-

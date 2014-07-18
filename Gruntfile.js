@@ -12,16 +12,14 @@ module.exports = function(grunt) {
         }
       },
       test: {
-        src: ['src/index.js'],
-        dest: 'coloredcoinlib.test.js',
-        options: {
-          bundleOptions: {
-            standalone: 'coloredcoinlib'
-          }
-        }
+        src: ['test/*.js'],
+        dest: 'coloredcoinlib.test.js'
       }
     },
     clean: {
+      builds: {
+        src: ['coloredcoinlib.js', 'coloredcoinlib.test.js', 'coloredcoinlib-min.js']
+      },
       production: {
         src: ['src_production']
       }
@@ -89,11 +87,6 @@ module.exports = function(grunt) {
         files: {
           'coloredcoinlib-min.js': 'coloredcoinlib.js'
         }
-      },
-      test: {
-        files: {
-          'coloredcoinlib-min.test.js': 'coloredcoinlib.test.js'
-        }
       }
     }
   })
@@ -122,10 +115,7 @@ module.exports = function(grunt) {
     'uglify:production',
     'clean:production'
   ])
-  grunt.registerTask('compile_test', [
-    'browserify:test',
-    'uglify:test'
-  ])
+  grunt.registerTask('compile_test', ['browserify:test'])
   grunt.registerTask('coverage', ['mocha_istanbul:coverage'])
   grunt.registerTask('coveralls', ['mocha_istanbul:coveralls'])
 }
