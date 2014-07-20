@@ -67,14 +67,14 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
 
 
 /**
- * BlockchainState that uses [Blockchain Data API]{@link https://blockchain.info/api/blockchain_api}
+ * BlockchainState that uses [Blockr.io API]{@link http://btc.blockr.io/documentation/api}
  *
- * @class BlockchaininfoDataAPI
+ * @class BlockrIOAPI
  *
  * Inherits BlockchainStateBase
  */
-function BlockchaininfoDataAPI(host, port) {
-  host = _.isUndefined(host) ? 'blockchain.info' : host
+function BlockrIOAPI(host, port) {
+  host = _.isUndefined(host) ? 'btc.blockr.io' : host
   port = _.isUndefined(port) ? 80 : port
 
   assert(_.isString(host), 'Expected string host, got ' + host)
@@ -86,7 +86,7 @@ function BlockchaininfoDataAPI(host, port) {
   this.port = port
 }
 
-inherits(BlockchaininfoDataAPI, BlockchainStateBase)
+inherits(BlockrIOAPI, BlockchainStateBase)
 
 /**
  * Make request to the server
@@ -94,19 +94,17 @@ inherits(BlockchaininfoDataAPI, BlockchainStateBase)
  * @param {string} path Path to resource
  * @param {function} cb Called on response with params  (error, string)
  */
-BlockchaininfoDataAPI.prototype.request = function(path, cb) {
+BlockrIOAPI.prototype.request = function(path, cb) {
   assert(_.isString(path), 'Expected string path, got ' + path)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
-
-  if (path.indexOf('cors=') === -1)
-    path += (path.indexOf('?') === -1 ? '?' : '&') + 'cors=true'
 
   var opts = {
     scheme: 'http',
     host: this.host,
     port: this.port,
     path: path,
-    method: 'GET'
+    method: 'GET',
+    withCredentials: false
   }
 
   http.request(opts, function(res) {
@@ -117,7 +115,19 @@ BlockchaininfoDataAPI.prototype.request = function(path, cb) {
     })
 
     res.on('end', function() {
-      cb(null, buf)
+
+      try {
+        var result = JSON.parse(buf)
+
+        if (result.status === 'success')
+          cb(null, result.data)
+        else
+          cb(result.message || new Error('Bad data'))
+
+      } catch (error) {
+        cb(error)
+
+      }
     })
 
     res.on('error', function(error) {
@@ -131,40 +141,16 @@ BlockchaininfoDataAPI.prototype.request = function(path, cb) {
  *
  * @param {function} cb Called on response with params  (error, number)
  */
-BlockchaininfoDataAPI.prototype.getBlockCount = function(cb) {
+BlockrIOAPI.prototype.getBlockCount = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  this.request('/latestblock', function(error, response) {
-    if (error === null) {
-      try {
-        response = parseInt(JSON.parse(response).height)
-        if (isNaN(response))
-          throw 'heght not number'
-      } catch (e) {
-        error = e
-        response = null
-      }
-    }
+  this.request('/api/v1/block/info/last', function(error, response) {
+    var blockCount = parseInt(response.nb)
 
-    cb(error, response)
-  })
-}
-
-/**
- * Get raw transaction by transaction id
- *
- * @param {string} txId Transaction id
- * @param {function} cb Called on response with params  (error, string)
- */
-BlockchaininfoDataAPI.prototype.getRawTx = function(txId, cb) {
-  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
-
-  this.getTx(txId, function(error, response) {
-    if (error === null)
-      response = response.toHex()
-
-    cb(error, response)
+    if (isNaN(blockCount))
+      cb(new Error('Bad block number'))
+    else
+      cb(error, blockCount)
   })
 }
 
@@ -174,26 +160,28 @@ BlockchaininfoDataAPI.prototype.getRawTx = function(txId, cb) {
  * @param {string} txId Transaction id
  * @param {function} cb Called on response with params (error, Transaction)
  */
-BlockchaininfoDataAPI.prototype.getTx = function(txId, cb) {
+BlockrIOAPI.prototype.getTx = function(txId, cb) {
   assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  this.request('/rawtx/' + txId + '?format=hex', function(error, response) {
+  this.request('/api/v1/tx/raw/' + txId, function(error, response) {
     if (error === null) {
       try {
-        response = Transaction.fromHex(response)
-      } catch (e) {
-        error = e
-        response = null
+        response = Transaction.fromHex(response.tx.hex)
+      } catch (newError) {
+        error = newError
       }
     }
 
-    cb(error, response)
+    if (error === null)
+      cb(null, response)
+    else
+      cb(error)
   })
 }
 
 
 module.exports = {
   BlockchainStateBase: BlockchainStateBase,
-  BlockchaininfoDataAPI: BlockchaininfoDataAPI
+  BlockrIOAPI: BlockrIOAPI
 }

@@ -68,7 +68,7 @@ describe('blockchain', function() {
     })
   })
 
-  describe('BlockchaininfoDataAPI', function() {
+  describe('BlockrIOAPI', function() {
     var rawTx = {
       'c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48': '\
 010000000126b77c90dff8b58d27e4e00c7e73df612df69f83c106d1aefbb20137b1d3ff1801000\
@@ -81,27 +81,24 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
     }
 
     beforeEach(function() {
-      bs = new blockchain.BlockchaininfoDataAPI()
+      bs = new blockchain.BlockrIOAPI()
     })
 
     it('inherits BlockchainStateBase', function() {
       expect(bs).to.be.instanceof(blockchain.BlockchainStateBase)
-      expect(bs).to.be.instanceof(blockchain.BlockchaininfoDataAPI)
+      expect(bs).to.be.instanceof(blockchain.BlockrIOAPI)
     })
 
-    if (!fakeRequests) {
-      it('raw request without cors in params', function(done) {
-        bs.request('/latestblock?cors=false', function(error, response) {
-          expect(error).to.be.null
-          expect(response).to.be.a('string')
-          done()
-        })
+    it('getBlockCount, parseInt error', function(done) {
+      bs.request = function(_, cb) { cb(null, {}) }
+      bs.getBlockCount(function(error, response) {
+        expect(error).to.deep.equal(new Error('Bad block number'))
+        expect(response).to.be.undefined
+        done()
       })
-    }
+    })
 
     it('getBlockCount', function(done) {
-      if (fakeRequests)
-        bs.request = function(path, cb) { cb(null, JSON.stringify({ 'height': 1 })) }
       bs.getBlockCount(function(error, response) {
         expect(error).to.be.null
         expect(response).to.be.a('number')
@@ -110,69 +107,19 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
       })
     })
 
-    it('getBlockCount with bad height', function(done) {
-      bs.request = function(path, cb) { cb(null, JSON.stringify({ 'height': 'notNumber' })) }
-      bs.getBlockCount(function(error, response) {
-        expect(error).to.equal('heght not number')
-        expect(response).to.be.null
-        done()
-      })
-    })
-
-    it('getBlockCount with error', function(done) {
-      bs.request = function(path, cb) { cb('error.request', null) }
-      bs.getBlockCount(function(error, response) {
-        expect(error).to.equal('error.request')
-        expect(response).to.be.null
-        done()
-      })
-    })
-
-    it('getRawTx', function(done) {
-      if (fakeRequests)
-        bs.request = function(path, cb) { cb(null, rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']) }
-      bs.getRawTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
-        expect(error).to.be.null
-        expect(response).to.be.equal(
-          rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48'])
-        done()
-      })
-    })
-
-    it('getRawTx with error', function(done) {
-      bs.request = function(path, cb) { cb('error.request', null) }
-      bs.getRawTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
-        expect(error).to.equal('error.request')
-        expect(response).to.be.null
+    it('getTx, Transaction.fromHex error', function(done) {
+      bs.request = function(_, cb) { cb(null, {tx: {hex: null}}) }
+      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, tx) {
+        expect(error).to.deep.equal(new TypeError("Cannot read property 'length' of null"))
+        expect(tx).to.be.undefined
         done()
       })
     })
 
     it('getTx', function(done) {
-      if (fakeRequests)
-        bs.request = function(path, cb) { cb(null, rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']) }
-      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
+      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, tx) {
         expect(error).to.be.null
-        expect(response).to.deep.equal(
-          Transaction.fromHex(rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48']))
-        done()
-      })
-    })
-
-    it('getTx with bad Transaction', function(done) {
-      bs.request = function(path, cb) { cb(null, 'tatata') }
-      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
-        expect(error).not.to.be.null
-        expect(response).to.be.null
-        done()
-      })
-    })
-
-    it('getTx with error', function(done) {
-      bs.request = function(path, cb) { cb('error.request', null) }
-      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, response) {
-        expect(error).to.equal('error.request')
-        expect(response).to.be.null
+        expect(tx.toHex()).to.equal(rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48'])
         done()
       })
     })
