@@ -69,17 +69,6 @@ describe('blockchain', function() {
   })
 
   describe('BlockrIOAPI', function() {
-    var rawTx = {
-      'c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48': '\
-010000000126b77c90dff8b58d27e4e00c7e73df612df69f83c106d1aefbb20137b1d3ff1801000\
-0008b483045022100f3dc71270e2c0dcdfae8242b0aaf42680296e7975d10c61cc32412b9d49257\
-af02207538621932e0bf63767143c44729a9ac712ce99fb3a72148f455c1cf11352da6014104250\
-d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
-5e4d6df6adcebdf86052b7e2279fbfceb1ef63794cc656ffffffff023435f600000000001976a91\
-4602933102e619fd8487a7a874b968c04890ebd1b88ac1790d004000000001976a914f967e52ac8\
-6bb648792e706985d5f98ace722b6288ac00000000'
-    }
-
     beforeEach(function() {
       bs = new blockchain.BlockrIOAPI()
     })
@@ -109,17 +98,33 @@ d1ef07e0d9bc58d9d52bb8e642e63468cbc1fc179eccfe2bbe261bf0df06527cdd170c1d8c4c005\
 
     it('getTx, Transaction.fromHex error', function(done) {
       bs.request = function(_, cb) { cb(null, {tx: {hex: null}}) }
-      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, tx) {
+      bs.getTx('0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098', function(error, tx) {
         expect(error).to.deep.equal(new TypeError("Cannot read property 'length' of null"))
         expect(tx).to.be.undefined
         done()
       })
     })
 
-    it('getTx', function(done) {
-      bs.getTx('c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48', function(error, tx) {
+    it('getTx from mainnet', function(done) {
+      bs.getTx('0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098', function(error, tx) {
         expect(error).to.be.null
-        expect(tx.toHex()).to.equal(rawTx['c6c606f7b584b7f13cc50b823875c4ec3a4ac04f7bfc66790e25cc6281b25e48'])
+        expect(tx.toHex()).to.equal('\
+01000000010000000000000000000000000000000000000000000000000000000000000000fffff\
+fff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec1\
+1600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf6\
+21e73a82cbf2342c858eeac00000000')
+        done()
+      })
+    })
+
+    it('getTx from testnet', function(done) {
+      bs = new blockchain.BlockrIOAPI({ isTestnet: true })
+      bs.getTx('f0315ffc38709d70ad5647e22048358dd3745f3ce3874223c80a7c92fab0c8ba', function(error, tx) {
+        expect(error).to.be.null
+        expect(tx.toHex()).to.equal('\
+01000000010000000000000000000000000000000000000000000000000000000000000000fffff\
+fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
+9a3156fbe7e5ef635226b0bafd495ff03afe2c843d7e3a4b51ac00000000')
         done()
       })
     })

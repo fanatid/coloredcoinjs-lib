@@ -72,18 +72,19 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
  * @class BlockrIOAPI
  *
  * Inherits BlockchainStateBase
+ *
+ * @param opts
+ * @param opts.isTestnet boolean
  */
-function BlockrIOAPI(host, port) {
-  host = _.isUndefined(host) ? 'btc.blockr.io' : host
-  port = _.isUndefined(port) ? 80 : port
+function BlockrIOAPI(opts) {
+  opts = opts || {}
+  opts.isTestnet = _.isUndefined(opts.isTestnet) ? false : opts.isTestnet
 
-  assert(_.isString(host), 'Expected string host, got ' + host)
-  assert(_.isNumber(port), 'Expected number port, got ' + port)
+  assert(_.isBoolean(opts.isTestnet), 'Expected boolean opts.isTestnet, got ' + opts.isTestnet)
 
   BlockchainStateBase.call(this)
 
-  this.host = host
-  this.port = port
+  this.isTestnet = opts.isTestnet
 }
 
 inherits(BlockrIOAPI, BlockchainStateBase)
@@ -100,8 +101,8 @@ BlockrIOAPI.prototype.request = function(path, cb) {
 
   var opts = {
     scheme: 'http',
-    host: this.host,
-    port: this.port,
+    host: this.isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io',
+    port: 80,
     path: path,
     method: 'GET',
     withCredentials: false
