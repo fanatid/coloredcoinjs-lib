@@ -3,7 +3,7 @@ var _ = require('underscore')
 var inherits = require('util').inherits
 var http = require('http')
 
-var Transaction = require('./transaction')
+var Transaction = require('./Transaction')
 
 
 /**

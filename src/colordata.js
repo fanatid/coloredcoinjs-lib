@@ -7,7 +7,7 @@ var builder = require('./builder')
 var colordef = require('./colordef')
 var colorvalue = require('./colorvalue')
 var store = require('./store')
-var Transaction = require('./transaction')
+var Transaction = require('./Transaction')
 
 
 /**

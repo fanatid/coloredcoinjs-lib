@@ -6,7 +6,7 @@ var store = require('./store')
 var blockchain = require('./blockchain')
 var colordef = require('./colordef')
 var colorvalue = require('./colorvalue')
-var Transaction = require('./transaction')
+var Transaction = require('./Transaction')
 
 
 /**

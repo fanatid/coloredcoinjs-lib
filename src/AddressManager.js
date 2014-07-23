@@ -88,7 +88,7 @@ AddressManager.prototype.getMasterKey = function(format) {
 
   assert(_.isString(format), 'Expected string format, got ' + format)
   assert.notEqual(['buffer', 'hex', 'base58'].indexOf(format), -1,
-    'Expected format in [\'buffer\', \'hex\', \'base58\'], got ' + format)
+    'Expected format in ["buffer", "hex", "base58"], got ' + format)
 
   var masterKey
 

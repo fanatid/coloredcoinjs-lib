@@ -5,7 +5,7 @@ var coloredcoinlib = require('../src/index')
 var Transaction = coloredcoinlib.Transaction
 
 
-describe('transaction', function() {
+describe('Transaction', function() {
   var tx, newTx
 
   beforeEach(function() {
