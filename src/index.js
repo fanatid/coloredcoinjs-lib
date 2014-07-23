@@ -1,4 +1,5 @@
 module.exports = {
+  AddressManager: require('./addressmanager'),
   blockchain: require('./blockchain'),
   builder: require('./builder'),
   colordata: require('./colordata'),

@@ -6,8 +6,6 @@ var Transaction = coloredcoinlib.Transaction
 
 var stubs = require('./stubs')
 
-var fakeRequests = false
-
 
 describe('blockchain', function() {
   var bs

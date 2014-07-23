@@ -78,7 +78,7 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
  */
 function BlockrIOAPI(opts) {
   opts = opts || {}
-  opts.isTestnet = _.isUndefined(opts.isTestnet) ? false : opts.isTestnet
+  opts.isTestnet = opts.isTestnet || false
 
   assert(_.isBoolean(opts.isTestnet), 'Expected boolean opts.isTestnet, got ' + opts.isTestnet)
 

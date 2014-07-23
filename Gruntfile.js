@@ -18,7 +18,7 @@ module.exports = function(grunt) {
     },
     clean: {
       builds: {
-        src: ['coloredcoinlib.js', 'coloredcoinlib.test.js', 'coloredcoinlib-min.js']
+        src: ['coloredcoinlib.js', 'coloredcoinlib.test.js', 'coloredcoinlib.min.js']
       },
       production: {
         src: ['src_production']
@@ -85,7 +85,7 @@ module.exports = function(grunt) {
     uglify: {
       production: {
         files: {
-          'coloredcoinlib-min.js': 'coloredcoinlib.js'
+          'coloredcoinlib.min.js': 'coloredcoinlib.js'
         }
       }
     }
