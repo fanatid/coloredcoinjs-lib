@@ -2,18 +2,49 @@ var assert = require('assert')
 var _ = require('underscore')
 
 var bitcoin = require('bitcoinjs-lib')
-var ECKey = bitcoin.ECKey
 var ECPubKey = bitcoin.ECPubKey
 var HDNode = bitcoin.HDNode
 
 var networks = Object.keys(bitcoin.networks).map(function(key) { return bitcoin.networks[key] })
+
+var store = require('./store')
 
 
 function isHexString(s) {
   var set = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
 
   return (_.isString(s) &&
+          s.length % 2 === 0 &&
           s.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
+}
+
+/**
+ * @param {bitcoinjs-lib.HDNode} rootNode
+ * @param {number} account
+ * @param {number} chain
+ * @param {number} index
+ * @return {bitcoinjs-lib.HDNode}
+ */
+function derive(rootNode, account, chain, index) {
+  assert(rootNode instanceof HDNode, 'Expected bitcoinjs-lib.HDNode rootNode, got ' + rootNode)
+  assert(_.isNumber(account), 'Expected number account, got ' + account)
+  assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
+  assert(_.isNumber(index), 'Expected number index, got ' + index)
+
+  var node = rootNode
+  var path = account + '\'/' + chain + '\'/' + index
+
+  path.split('/').forEach(function(value) {
+    var usePrivate = (value.length > 1) && (value[value.length - 1] === '\'')
+    var childIndex = parseInt(usePrivate ? value.slice(0, value.length - 1) : value) & 0x7fffffff
+
+    if (usePrivate)
+      childIndex += 0x80000000
+
+    node = node.derive(childIndex)
+  })
+
+  return node
 }
 
 
@@ -21,21 +52,14 @@ function isHexString(s) {
  * @class Address
  *
  * @param {Object} opts
- * @param {string} opts.path
- * @param {bitcoinjs-lib.ECKey} opts.privKey
  * @param {bitcoinjs-lib.ECPubKey} opts.pubKey
  * @param {Object} opts.network Network description from bitcoinjs-lib.networks
  */
 function Address(opts) {
-  opts = opts || {}
-
-  assert(_.isString(opts.path), 'Expected string opts.path, got ' + opts.path)
-  assert(opts.privKey instanceof ECKey, 'Expected bitcoinjs-lib.ECKey opts.privKey, got ' + opts.privKey)
+  assert(_.isObject(opts), 'Expected Object opts, got ' + opts)
   assert(opts.pubKey instanceof ECPubKey, 'Expected bitcoinjs-lib.ECPubKey opts.pubKey, got ' + opts.pubKey)
   assert(networks.indexOf(opts.network) !== -1, 'Unknow network type, got ' + opts.network)
 
-  this.path = opts.path
-  this.privKey = opts.privKey
   this.pubKey = opts.pubKey
   this.network = opts.network
 }
@@ -53,23 +77,28 @@ Address.prototype.toString = Address.prototype.getAddress
 /**
  * @class AddressManager
  *
- * @param {Buffer|string} masterKey
+ * @param {store.AddressManagerStore} amStore
  */
-function AddressManager(masterKey) {
-  if (Buffer.isBuffer(masterKey))
-    this.rootHDNode = HDNode.fromBuffer(masterKey)
-  else if (isHexString(masterKey))
-    this.rootHDNode = HDNode.fromHex(masterKey)
-  else
-    this.rootHDNode = HDNode.fromBase58(masterKey)
+function AddressManager(amStore) {
+  assert(amStore instanceof store.AddressManagerStore, 'Expected AddressManagerStore amStore, got ' + amStore)
+
+  this.amStore = amStore
+  this.account = 0
+  this.chain = 0
 }
 
 /**
- * @param {Buffer|string} seed
+ * Set masterKey from seed and drop all created addresses
+ *
+ * @param {Buffer|string} seed Buffer or hex string
  * @param {Object} network Network description from bitcoinjs-lib.networks
- * @return {string}
+ * @param {function} cb Called on finished with params (error, changed)
  */
-AddressManager.getMasterKeyFromSeed = function(seed, network) {
+AddressManager.prototype.setMasterKeyFromSeed = function(seed, network, cb) {
+  assert(Buffer.isBuffer(seed) || isHexString(seed), 'Expected Buffer or hex string seed, got ' + seed)
+  assert(networks.indexOf(network) !== -1, 'Unknow network type, got ' + network)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   var node
 
   if (Buffer.isBuffer(seed))
@@ -77,82 +106,111 @@ AddressManager.getMasterKeyFromSeed = function(seed, network) {
   else
     node = HDNode.fromSeedHex(seed, network)
 
-  return node.toHex()
+  this.setMasterKey(node.toBase58(), cb)
 }
 
 /**
- * @param {string} [format=hex] buffer, hex or base58
+ * Set masterKey and drop all created addresses
+ *
+ * @param {string} masterKey String in base58 format
+ * @param {function} cb Called on finished with params (error, changed)
  */
-AddressManager.prototype.getMasterKey = function(format) {
-  format = format || 'hex'
+AddressManager.prototype.setMasterKey = function(masterKey, cb) {
+  HDNode.fromBase58(masterKey) // Check masterKey
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  assert(_.isString(format), 'Expected string format, got ' + format)
-  assert.notEqual(['buffer', 'hex', 'base58'].indexOf(format), -1,
-    'Expected format in ["buffer", "hex", "base58"], got ' + format)
+  this.amStore.setMasterKey(masterKey, cb)
+}
 
-  var masterKey
+/**
+ * Get masterKey from storage in base58 format or null if not exists
+ *
+ * @param {function} cb Called on finished with params (error, string|null)
+ */
+AddressManager.prototype.getMasterKey = function(cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  switch (format) {
-    case 'buffer':
-      masterKey = this.rootHDNode.toBuffer(true)
-      break
-    case 'hex':
-      masterKey = this.rootHDNode.toHex(true)
-      break
-    case 'base58':
-      masterKey = this.rootHDNode.toBase58(true)
-      break
+  this.amStore.getMasterKey(cb)
+}
+
+/**
+ * Get new address and save it to db
+ *
+ * @param {function} cb Called on finished with params (error, Address)
+ */
+AddressManager.prototype.getNewAddress = function(cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  var _this = this
+
+  function tryCreateNewAddress(rootNode) {
+    _this.amStore.getMaxIndex(_this.account, _this.chain, function(error, index) {
+      if (error) {
+        cb(error)
+        return
+      }
+
+      index = index === null ? 0 : index + 1
+      var pubKey = derive(rootNode, _this.account, _this.chain, index).pubKey
+
+      _this.amStore.addPubKey(_this.account, _this.chain, index, pubKey, function(error, added) {
+        if (error) {
+          cb(error)
+          return
+        }
+
+        if (added)
+          cb(null, new Address({ pubKey: pubKey, network: rootNode.network }))
+        else
+          tryCreateNewAddress(rootNode)
+      })
+    })
   }
 
-  return masterKey
+  this.getMasterKey(function(error, masterKey) {
+    if (error === null && masterKey === null)
+      error = new Error('masterKey not found')
+
+    if (error)
+      cb(error)
+    else
+      tryCreateNewAddress(HDNode.fromBase58(masterKey))
+  })
 }
 
 /**
- * @param {bitcoinjs-lib.HDNode} rootNode
- * @param {string} path
- * @return {bitcoinjs-lib.HDNode}
+ * Get all addresses
+ *
+ * @param {function} cb Called on finished with params (error, array)
  */
-function derive(rootNode, path) {
-  if (path == 'm' || path == 'M' || path == 'm\'' || path == 'M\'')
-    return rootNode
+AddressManager.prototype.getAllAddresses = function(cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var node = rootNode
-  path.split('/').forEach(function(value, index) {
-    if (index === 0) {
-      if (value !== 'm')
-        throw new Error('invalid path')
+  var _this = this
 
+  this.getMasterKey(function(error, masterKey) {
+    if (error === null && masterKey === null)
+      error = new Error('masterKey not found')
+
+    if (error) {
+      cb(error)
       return
     }
 
-    var usePrivate = (value.length > 1) && (value[value.length - 1] === '\'')
-    var childIndex = parseInt(usePrivate ? value.slice(0, value.length - 1) : value) & 0x7fffffff
+    _this.amStore.getAllPubKeys(_this.account, _this.chain, function(error, records) {
+      if (error) {
+        cb(error)
+        return
+      }
 
-    if (usePrivate)
-      childIndex += 0x80000000
+      var network = HDNode.fromBase58(masterKey).network
 
-    node = node.derive(childIndex)
-  })
+      var addresses = records.map(function(record) {
+        return new Address({ pubKey: record.pubKey, network: network })
+      })
 
-  return node
-}
-
-/**
- * @param {number} index address number in chain
- */
-AddressManager.prototype.getAddress = function(index) {
-  assert(_.isNumber(index), 'Expected number index, got ' + index)
-
-  // first account, external chain, index address
-  var path = "m/0'/0'/" + index
-
-  var node = derive(this.rootHDNode, path)
-
-  return new Address({
-    path: path,
-    privKey: node.privKey,
-    pubKey: node.pubKey,
-    network: node.network
+      cb(null, addresses)
+    })
   })
 }
 

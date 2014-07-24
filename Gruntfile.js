@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     browserify: {
       production: {
-        src: ['src_production/index.js'],
+        src: ['.src_production/index.js'],
         dest: 'coloredcoinlib.js',
         options: {
           bundleOptions: {
@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         src: ['coloredcoinlib.js', 'coloredcoinlib.test.js', 'coloredcoinlib.min.js']
       },
       production: {
-        src: ['src_production']
+        src: ['.src_production']
       }
     },
     copy: {
@@ -29,7 +29,7 @@ module.exports = function(grunt) {
         expand: true,
         cwd: 'src',
         src: '**',
-        dest: 'src_production'
+        dest: '.src_production'
       }
     },
     jshint: {
@@ -79,7 +79,7 @@ module.exports = function(grunt) {
           start_comment: 'test-code',
           end_comment: 'end-test-code',
         },
-        src: 'src_production/*.js'
+        src: '.src_production/*.js'
       }
     },
     uglify: {
@@ -87,6 +87,18 @@ module.exports = function(grunt) {
         files: {
           'coloredcoinlib.min.js': 'coloredcoinlib.js'
         }
+      }
+    },
+    watch: {
+      configFiles: {
+        files: ['Gruntfile.js'],
+        options: {
+          reload: true
+        }
+      },
+      src: {
+        files: ['src/**.js', 'test/*.js', 'test/fixtures/*.json'],
+        tasks: ['jshint', 'coverage']
       }
     }
   })
@@ -105,6 +117,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-contrib-uglify')
+  grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-mocha-istanbul')
   grunt.loadNpmTasks('grunt-strip-code')
 

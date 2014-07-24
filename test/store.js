@@ -31,6 +31,7 @@ describe('store', function() {
 
   describe('AddressManagerStore', function() {
     var ams
+    var masterKey1 = 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73'
     var pubKeyHex1 = '021c10af30f8380f1ff05a02e10a69bd323a7305c43dc461f79c2b27c13532a12c'
     var pubKeyHex2 = '0375d65343d5dcf4527cf712168b41059cb1df513ba89b44108899835329eb643c'
 
@@ -44,67 +45,91 @@ describe('store', function() {
     function getTestFn(beforeEachFn) { return function() {
       beforeEach(beforeEachFn)
 
-      it('addPubKey', function(done) {
-        ams.addPubKey('m/0\'/0\'/0', ECPubKey.fromHex(pubKeyHex1), function(error) {
-          expect(error).to.be.null
+      it('setMasterKey, getMasterKey return error', function(done) {
+        ams.getMasterKey = function(cb) { cb('error.getMasterKey') }
+        ams.setMasterKey(masterKey1, function(error, changed) {
+          expect(error).to.deep.equal('error.getMasterKey')
+          expect(changed).to.be.undefined
           done()
         })
       })
 
-      it('getPubKey return null', function(done) {
-        ams.getPubKey(0, 0, 0, function(error, result) {
+      it('setMasterKey, changed is true', function(done) {
+        ams.setMasterKey(masterKey1, function(error, changed) {
           expect(error).to.be.null
-          expect(result).to.be.null
+          expect(changed).to.be.true
           done()
         })
       })
 
-      it('getPubKey', function(done) {
-        ams.addPubKey('m/0\'/0\'/0', ECPubKey.fromHex(pubKeyHex1), function(error) {
+      it('setMasterKey, changed is false', function(done) {
+        ams.setMasterKey(masterKey1, function(error, changed) {
           expect(error).to.be.null
-          ams.getPubKey(0, 0, 0, function(error, result) {
+          expect(changed).to.be.true
+          ams.setMasterKey(masterKey1, function(error, changed) {
             expect(error).to.be.null
-            expect(result).to.deep.equal({ path: 'm/0\'/0\'/0', pubKey: ECPubKey.fromHex(pubKeyHex1) })
+            expect(changed).to.be.false
             done()
           })
         })
       })
 
-      it('getAllPubKeys return empty list', function(done) {
-        ams.getAllPubKeys(0, 0, function(error, result) {
+      it('getMasterKey return null', function(done) {
+        ams.getMasterKey(function(error, masterKey) {
           expect(error).to.be.null
-          expect(result).to.deep.equal([])
+          expect(masterKey).to.be.null
           done()
         })
       })
 
-      it('getAllPubKeys', function(done) {
-        ams.addPubKey('m/0\'/0\'/0', ECPubKey.fromHex(pubKeyHex1), function(error) {
+      it('addPubKey', function(done) {
+        ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
           expect(error).to.be.null
-          ams.addPubKey('m/0\'/1\'/0', ECPubKey.fromHex(pubKeyHex2), function(error) {
+          expect(added).to.be.true
+          ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
             expect(error).to.be.null
+            expect(added).to.be.false
+            done()
+          })
+        })
+      })
+
+      it('getAllPubKeys', function(done) {
+        ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
+          expect(error).to.be.null
+          expect(added).to.be.true
+          ams.addPubKey(0, 1, 0, ECPubKey.fromHex(pubKeyHex2), function(error, added) {
+            expect(error).to.be.null
+            expect(added).to.be.true
             ams.getAllPubKeys(0, 0, function(error, result) {
               expect(error).to.be.null
-              expect(result).to.deep.equal([{ path: 'm/0\'/0\'/0', pubKey: ECPubKey.fromHex(pubKeyHex1) }])
+              expect(result).to.deep.equal([{
+                account: 0,
+                chain: 0,
+                index: 0,
+                pubKey: ECPubKey.fromHex(pubKeyHex1)
+              }])
               done()
             })
           })
         })
       })
 
-      it('getMaxIndex return undefined', function(done) {
+      it('getMaxIndex return null', function(done) {
         ams.getMaxIndex(0, 0, function(error, index) {
           expect(error).to.be.null
-          expect(index).to.be.undefined
+          expect(index).to.be.null
           done()
         })
       })
 
       it('getMaxIndex', function(done) {
-        ams.addPubKey('m/0\'/0\'/0', ECPubKey.fromHex(pubKeyHex1), function(error) {
+        ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
           expect(error).to.be.null
-          ams.addPubKey('m/0\'/1\'/0', ECPubKey.fromHex(pubKeyHex2), function(error) {
+          expect(added).to.be.true
+          ams.addPubKey(0, 1, 0, ECPubKey.fromHex(pubKeyHex2), function(error, added) {
             expect(error).to.be.null
+            expect(added).to.be.true
             ams.getMaxIndex(0, 0, function(error, index) {
               expect(error).to.be.null
               expect(index).to.equal(0)

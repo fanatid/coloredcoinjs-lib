@@ -19,8 +19,10 @@ var Transaction = require('../Transaction')
 function ColorDataStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  if (!_.isArray(this._db.data))
-    this._db.data = []
+  if (this._dbType === 'memory') {
+    if (!_.isArray(this._db.colorTxs))
+      this._db.colorTxs = []
+  }
 }
 
 inherits(ColorDataStore, DataStore)
@@ -44,7 +46,7 @@ ColorDataStore.prototype.add = function(colorId, txId, outIndex, value, cb) {
   if (this._dbType === 'memory') {
     var error = null
 
-    this._db.data.every(function(record) {
+    this._db.colorTxs.every(function(record) {
       if (record[0] === colorId && record[1] === txId && record[2] === outIndex) {
         error = new errors.UniqueConstraintError()
         return false
@@ -54,7 +56,7 @@ ColorDataStore.prototype.add = function(colorId, txId, outIndex, value, cb) {
     })
 
     if (error === null)
-      this._db.data.push([colorId, txId, outIndex, value])
+      this._db.colorTxs.push([colorId, txId, outIndex, value])
 
     process.nextTick(function() { cb(error) })
   }
@@ -77,7 +79,7 @@ ColorDataStore.prototype.get = function(colorId, txId, outIndex, cb) {
   if (this._dbType === 'memory') {
     var result = null
 
-    this._db.data.every(function(record) {
+    this._db.colorTxs.every(function(record) {
       if (record[0] === colorId && record[1] === txId && record[2] === outIndex) {
         result = {
           colorId: record[0],
@@ -110,7 +112,7 @@ ColorDataStore.prototype.getAny = function(txId, outIndex, cb) {
   if (this._dbType === 'memory') {
     var records = []
 
-    this._db.data.forEach(function(record) {
+    this._db.colorTxs.forEach(function(record) {
       if (record[1] === txId && record[2] === outIndex)
         records.push({
           colorId: record[0],

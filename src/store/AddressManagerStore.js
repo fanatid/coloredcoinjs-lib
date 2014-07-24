@@ -4,6 +4,7 @@ var inherits = require('util').inherits
 
 var bitcoin = require('bitcoinjs-lib')
 var ECPubKey = bitcoin.ECPubKey
+var HDNode = bitcoin.HDNode
 
 var DataStore = require('./DataStore')
 
@@ -19,51 +20,92 @@ var DataStore = require('./DataStore')
 function AddressManagerStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  if (!_.isObject(this._db.pubKeys))
-    this._db.pubKeys = {}
+  if (this._dbType === 'memory') {
+    if (!_.isArray(this._db.pubKeys))
+      this._db.pubKeys = []
+
+    if (!_.isString(this._db.masterKey)) {
+      delete this._db.masterKey
+      this._db.pubKeys = []
+    }
+  }
 }
 
 inherits(AddressManagerStore, DataStore)
 
-/*
- * Add derivation path and pubKey to storage
+/**
+ * Save masterKey in base58 format
  *
- * @param {string} path Derivation path
- * @param {bitcoinjs-lib.ECPubKey} pubKey
- * @param {function} cb Called on finished with params (error)
+ * @param {string} masterKey
+ * @param {function} cb Called on finished with params (error, changed)
  */
-AddressManagerStore.prototype.addPubKey = function(path, pubKey, cb) {
-  assert(_.isString(path), 'Expected string path, got ' + path)
-  assert(pubKey instanceof ECPubKey, 'Expected bitcoinjs-lib.ECPubKey pubKey, got ' + pubKey)
+AddressManagerStore.prototype.setMasterKey = function(newMasterKey, cb) {
+  HDNode.fromBase58(newMasterKey) // Check masterKey
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  if (this._dbType === 'memory') {
-    this._db.pubKeys[path] = pubKey
+  var _this = this
 
-    process.nextTick(function() { cb(null) })
-  }
+  this.getMasterKey(function(error, masterKey) {
+    if (error) {
+      cb(error)
+      return
+    }
+
+    if (_this._dbType === 'memory') {
+      _this._db.masterKey = newMasterKey
+      _this._db.pubKeys = []
+      process.nextTick(function() { cb(null, masterKey !== newMasterKey) })
+    }
+  })
 }
 
 /**
- * Get pubKey by account, chain and index
+ * Get masterKey from storage in base58
+ *
+ * @param {function} cb Called on finished with params (error, string|null)
+ */
+AddressManagerStore.prototype.getMasterKey = function(cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  var _this = this
+
+  if (this._dbType === 'memory') {
+    process.nextTick(function() { cb(null, _this._db.masterKey || null) })
+  }
+}
+
+/*
+ * Add pubKey for account, chain and index to storage
  *
  * @param {number} account
  * @param {number} chain
  * @param {number} index
- * @param {function} cb Called on finished with params (error, object)
+ * @param {bitcoinjs-lib.ECPubKey} pubKey
+ * @param {function} cb Called on finished with params (error, added)
  */
-AddressManagerStore.prototype.getPubKey = function(account, chain, index, cb) {
+AddressManagerStore.prototype.addPubKey = function(account, chain, index, pubKey, cb) {
   assert(_.isNumber(account), 'Expected number account, got ' + account)
   assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
   assert(_.isNumber(index), 'Expected number index, got ' + index)
+  assert(pubKey instanceof ECPubKey, 'Expected bitcoinjs-lib.ECPubKey pubKey, got ' + pubKey)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var path = 'm/' + account + '\'/' + chain + '\'/' + index
-
   if (this._dbType === 'memory') {
-    var pubKey = this._db.pubKeys[path]
+    var exists = this._db.pubKeys.some(function(record) {
+      return (record.account === account && 
+              record.chain === chain &&
+              record.index === index)
+    })
 
-    process.nextTick(function() { cb(null, pubKey ? { path: path, pubKey: pubKey } : null) })
+    if (!exists)
+      this._db.pubKeys.push({
+        account: account,
+        chain: chain,
+        index: index,
+        pubKey: pubKey
+      })
+
+    process.nextTick(function() { cb(null, !exists) })
   }
 }
 
@@ -79,18 +121,9 @@ AddressManagerStore.prototype.getAllPubKeys = function(account, chain, cb) {
   assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  account = account + '\''
-  chain = chain + '\''
-
-  var _this = this
-  var result = []
-
   if (this._dbType === 'memory') {
-    Object.keys(this._db.pubKeys).forEach(function(path) {
-      var items = path.split('/')
-
-      if (items[0] === 'm' && items[1] === account && items[2] === chain && !isNaN(parseInt(items[3])))
-        result.push({ path: path, pubKey: _this._db.pubKeys[path] })
+    var result = this._db.pubKeys.filter(function(record) {
+      return (record.account === account && record.chain === chain)
     })
 
     process.nextTick(function() { cb(null, result) })
@@ -102,29 +135,22 @@ AddressManagerStore.prototype.getAllPubKeys = function(account, chain, cb) {
  *
  * @param {number} account
  * @param {number} chain
- * @param {function} cb Called on finished with params (error, index|undefined)
+ * @param {function} cb Called on finished with params (error, index|null)
  */
 AddressManagerStore.prototype.getMaxIndex = function(account, chain, cb) {
   assert(_.isNumber(account), 'Expected number account, got ' + account)
   assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  account = account + '\''
-  chain = chain + '\''
-
   var maxIndex
 
   if (this._dbType === 'memory') {
-    Object.keys(this._db.pubKeys).forEach(function(path) {
-      var items = path.split('/')
-      var index = parseInt(items[3])
-
-      if (items[0] === 'm' && items[1] === account && items[2] === chain &&
-          !isNaN(index) && (index > maxIndex || _.isUndefined(maxIndex)))
-        maxIndex = index
+    this._db.pubKeys.forEach(function(record) {
+      if (record.account === account && record.chain === chain && (record.index > maxIndex || _.isUndefined(maxIndex)))
+        maxIndex = record.index
     })
 
-    process.nextTick(function() { cb(null, maxIndex) })
+    process.nextTick(function() { cb(null, _.isUndefined(maxIndex) ? null : maxIndex) })
   }
 }
 
