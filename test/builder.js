@@ -16,7 +16,7 @@ describe('builder', function() {
   beforeEach(function() {
     epobc = new colordef.EPOBCColorDefinition(1,
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
-    cdstore = new store.ColorDataStore('memory')
+    cdstore = new store.ColorDataStore()
     bs = new blockchain.BlockchainStateBase()
     tx = new Transaction()
     tx2 = new Transaction()
@@ -27,39 +27,30 @@ describe('builder', function() {
       cdbuilder = new builder.BasicColorDataBuilder(epobc, cdstore, bs)
     })
 
+    afterEach(function() {
+      cdstore.removeAll()
+    })
+
     describe('scanTx', function() {
-      it('ColorDataStore.get return error', function(done) {
-        tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-        cdstore.get = function(_, _, _, cb) { cb('myError') }
-        cdbuilder.scanTx(tx, [], function(error) {
-          expect(error).to.equal('myError')
-          done()
-        })
-      })
-
-      it('ColorDataStore empty and not isSpecialTx', function(done) {
-        cdbuilder.scanTx(tx, [], function(error) {
-          expect(error).to.be.null
-          done()
-        })
-      })
-
       it('ColorDataStore not empty', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 37)
-        cdstore.add(1, '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 1, function(error) {
+        cdstore.add({
+          colorId: 1,
+          txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
+          outIndex: 1,
+          value: 1
+        })
+        cdbuilder.scanTx(tx, [], function(error) {
           expect(error).to.be.null
-          cdbuilder.scanTx(tx, [], function(error) {
-            expect(error).to.be.null
-            done()
-          })
+          done()
         })
       })
 
       it('runKernel return error', function(done) {
-        epobc.runKernel = function(_, _, _, cb) { cb('myError') }
+        epobc.runKernel = function(_, _, _, cb) { cb('error.runKernel') }
         epobc.genesis.txId = tx.getId()
         cdbuilder.scanTx(tx, [], function(error) {
-          expect(error).to.equal('myError')
+          expect(error).to.equal('error.runKernel')
           done()
         })
       })
@@ -70,28 +61,29 @@ describe('builder', function() {
         tx2.addInput(tx.getId(), 0, 51 | (2<<6))
         tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
         bs.getTx = stubs.getTxStub([tx])
-        cdstore.add(1, '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 6, function(error) {
+        cdstore.add({
+          colorId: 1,
+          txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
+          outIndex: 0,
+          value: 6
+        })
+        cdbuilder.scanTx(tx2, [], function(error) {
           expect(error).to.be.null
-          cdbuilder.scanTx(tx2, [], function(error) {
-            expect(error).to.be.null
-            done()
-          })
+          done()
         })
       })
 
-      it('ColorDataStore.add return error', function(done) {
+      it('ColorDataStore.add throw error', function(done) {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
         tx2.addInput(tx.getId(), 0, 51 | (2<<6))
         tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
         bs.getTx = stubs.getTxStub([tx])
-        cdstore.add(1, tx.getId(), 0, 6, function(error) {
-          expect(error).to.be.null
-          cdstore.add = function(_, _, _, _, cb) { cb('myError') }
-          cdbuilder.scanTx(tx2, [0], function(error) {
-            expect(error).to.equal('myError')
-            done()
-          })
+        cdstore.add({ colorId: 1, txId: tx.getId(), outIndex: 0, value: 6 })
+        cdstore.add = function() { throw new Error('error.scanTx') }
+        cdbuilder.scanTx(tx2, [0], function(error) {
+          expect(error).to.deep.equal(new Error('error.scanTx'))
+          done()
         })
       })
 
@@ -101,16 +93,16 @@ describe('builder', function() {
         tx2.addInput(tx.getId(), 0, 51 | (2<<6))
         tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
         bs.getTx = stubs.getTxStub([tx])
-        cdstore.add(1, tx.getId(), 0, 6, function(error) {
+        cdstore.add({ colorId: 1, txId: tx.getId(), outIndex: 0, value: 6 })
+        cdbuilder.scanTx(tx2, [0], function(error) {
           expect(error).to.be.null
-          cdbuilder.scanTx(tx2, [0], function(error) {
-            expect(error).to.be.null
-            cdstore.get(1, tx2.getId(), 0, function(error, record) {
-              expect(error).to.be.null
-              expect(record.value).to.equal(6)
-              done()
-            })
+          var record = cdstore.get({
+            colorId: 1,
+            txId: tx2.getId(),
+            outIndex: 0
           })
+          expect(record.value).to.equal(6)
+          done()
         })
       })
     })

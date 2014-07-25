@@ -2,7 +2,6 @@ var assert = require('assert')
 var _ = require('underscore')
 var inherits = require('util').inherits
 
-var errors = require('./errors')
 var DataStore = require('./DataStore')
 
 var Transaction = require('../Transaction')
@@ -12,118 +11,108 @@ var Transaction = require('../Transaction')
  * @class ColorDataStore
  *
  * Inherits DataStore
- *
- * @param {string} type DB type
- * @param {Object} opts DB options
  */
 function ColorDataStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  if (this._dbType === 'memory') {
-    if (!_.isArray(this._db.colorTxs))
-      this._db.colorTxs = []
-  }
+  this.colorTxsDBKey = 'colorTxs'
+  /* test-code */
+  this.colorTxsDBKey = 'colorTxs_tests'
+  /* end-test-code */
+
+  if (!_.isArray(this.store.get(this.colorTxsDBKey)))
+    this.store.set(this.colorTxsDBKey, [])
 }
 
 inherits(ColorDataStore, DataStore)
 
 /**
- * Add data to storage
+ * Add colorId txOutput to store
  *
- * @param {number} colorId
- * @param {string} txId
- * @param {number} outIndex
- * @param {number} value
- * @param {function} cb Called on added with params (error)
+ * @param {Object} data
+ * @param {number} data.colorId
+ * @param {string} data.txId
+ * @param {number} data.outIndex
+ * @param {number} data.value
  */
-ColorDataStore.prototype.add = function(colorId, txId, outIndex, value, cb) {
-  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
-  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
-  assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(_.isNumber(value), 'Expected number value, got ' + value)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ColorDataStore.prototype.add = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
+  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
+  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
+  assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
 
-  if (this._dbType === 'memory') {
-    var error = null
+  var colorTxs = this.store.get(this.colorTxsDBKey)
 
-    this._db.colorTxs.every(function(record) {
-      if (record[0] === colorId && record[1] === txId && record[2] === outIndex) {
-        error = new errors.UniqueConstraintError()
-        return false
-      }
+  colorTxs.forEach(function(record) {
+    if (record.colorId === data.colorId && record.txId === data.txId && record.outIndex === data.outIndex)
+      throw new Error('UniqueConstraint')
+  })
 
-      return true
-    })
+  colorTxs.push({
+    colorId: data.colorId,
+    txId: data.txId,
+    outIndex: data.outIndex,
+    value: data.value
+  })
 
-    if (error === null)
-      this._db.colorTxs.push([colorId, txId, outIndex, value])
-
-    process.nextTick(function() { cb(error) })
-  }
+  this.store.set(this.colorTxsDBKey, colorTxs)
 }
 
 /**
- * Add data to storage
+ * Get data from store or null if not found
  *
- * @param {number} colorId
- * @param {string} txId
- * @param {number} outIndex
- * @param {function} cb Called on fetched with params (error, record|null)
+ * @param {Object} data
+ * @param {number} data.colorId
+ * @param {string} data.txId
+ * @param {number} data.outIndex
+ * @return {Object|null}
  */
-ColorDataStore.prototype.get = function(colorId, txId, outIndex, cb) {
-  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
-  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
-  assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ColorDataStore.prototype.get = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
+  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
+  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
 
-  if (this._dbType === 'memory') {
-    var result = null
+  var result = null
 
-    this._db.colorTxs.every(function(record) {
-      if (record[0] === colorId && record[1] === txId && record[2] === outIndex) {
-        result = {
-          colorId: record[0],
-          txId: record[1],
-          outIndex: record[2],
-          value: record[3]
-        }
-        return false
-      }
-
+  this.store.get(this.colorTxsDBKey).some(function(record) {
+    if (record.colorId === data.colorId && record.txId === data.txId && record.outIndex === data.outIndex) {
+      result = record
       return true
-    })
+    }
 
-    process.nextTick(function() { cb(null, result) } )
-  }
+    return false
+  })
+
+  return result
 }
 
 /**
- * Get all records for a given txId and outIndex
+ * Get all color txOutput for a given txId and outIndex
  *
- * @param {string} txId
- * @param {number} outIndex
- * @param {function} cb Called on fetched with params (error, record|null)
+ * @param {Object} data
+ * @param {string} data.txId
+ * @param {number} data.outIndex
+ * @return {Array}
  */
-ColorDataStore.prototype.getAny = function(txId, outIndex, cb) {
-  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
-  assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ColorDataStore.prototype.getAny = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
+  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
 
-  if (this._dbType === 'memory') {
-    var records = []
-
-    this._db.colorTxs.forEach(function(record) {
-      if (record[1] === txId && record[2] === outIndex)
-        records.push({
-          colorId: record[0],
-          txId: record[1],
-          outIndex: record[2],
-          value: record[3]
-        })
-    })
-
-    process.nextTick(function() { cb(null, records) })
+  function isGoodRecord(record) {
+    return (record.txId === data.txId && record.outIndex === data.outIndex)
   }
+
+  return this.store.get(this.colorTxsDBKey).filter(isGoodRecord)
+}
+
+/**
+ * Remove all colorTxs
+ */
+ColorDataStore.prototype.removeAll = function() {
+  this.store.remove(this.colorTxsDBKey)
 }
 
 

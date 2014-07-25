@@ -1,6 +1,7 @@
 var assert = require('assert')
-var _ = require('underscore')
 var inherits = require('util').inherits
+
+var _ = require('underscore')
 
 var store = require('./store')
 var blockchain = require('./blockchain')
@@ -50,70 +51,49 @@ BasicColorDataBuilder.prototype.scanTx = function(tx, outputIndices, cb) {
   var inColorValues = []
   var empty = true
 
-  function getValue(index) {
-    if (tx.ins.length === index) {
-      if (empty && !_this.colorDefinition.isSpecialTx(tx))
-        process.nextTick(function() { cb(null) })
-      else
-        _this.colorDefinition.runKernel(tx, inColorValues, _this.blockchainState, runKernelCallback)
-
-      return
-    }
-
-    var colorId = _this.colorDefinition.getColorId()
-    var txId = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
-
-    _this.colorDataStore.get(colorId, txId, tx.ins[index].index, function(error, result) {
-      if (error === null) {
-        var colorValue = null
-
-        if (result !== null) {
-          empty = false
-          colorValue = new colorvalue.SimpleColorValue({ colordef: _this.colorDefinition, value: result.value })
-        }
-
-        inColorValues.push(colorValue)
-
-        getValue(index+1)
-
-      } else {
-        cb(error)
-      }
+  tx.ins.forEach(function(currentTx) {
+    var colorData = _this.colorDataStore.get({
+      colorId: _this.colorDefinition.getColorId(),
+      txId: Array.prototype.reverse.call(new Buffer(currentTx.hash)).toString('hex'),
+      outIndex: currentTx.index
     })
-  }
 
-  function runKernelCallback(error, outColorValues) {
-    if (error === null)
-      addValue(0, outColorValues)
-    else
+    var colorValue = null
+    if (colorData !== null) {
+      empty = false
+      colorValue = new colorvalue.SimpleColorValue({ colordef: _this.colorDefinition, value: colorData.value })
+    }
+    inColorValues.push(colorValue)
+  })
+
+  _this.colorDefinition.runKernel(tx, inColorValues, _this.blockchainState, function(error, outColorValues) {
+    if (error) {
       cb(error)
-  }
-
-  function addValue(index, outColorValues) {
-    if (index === outColorValues.length) {
-      process.nextTick(function() { cb(null) })
       return
     }
 
-    var skipAdd = outColorValues[index] === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
-    if (skipAdd) {
-      addValue(index+1, outColorValues)
+    outColorValues.every(function(colorValue, index) {
+      var skipAdd = colorValue === null || outputIndices.indexOf(index) === -1
+      if (!skipAdd) {
+        try {
+          _this.colorDataStore.add({
+            colorId: _this.colorDefinition.getColorId(),
+            txId: tx.getId(),
+            outIndex: index,
+            value: colorValue.getValue()
+          })
 
-    } else {
-      var colorId = _this.colorDefinition.getColorId()
-      var txId = tx.getId()
-      var value = outColorValues[index].getValue()
+        } catch (e) {
+          error = e
+          return false
+        }
+      }
 
-      _this.colorDataStore.add(colorId, txId, index, value, function(error) {
-        if (error === null)
-          addValue(index+1, outColorValues)
-        else
-          cb(error)
-      })
-    }
-  }
+      return true
+    })
 
-  process.nextTick(function() { getValue(0) })
+    cb(error)
+  })
 }
 
 

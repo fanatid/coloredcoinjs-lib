@@ -1,30 +1,15 @@
-var assert = require('assert')
-var _ = require('underscore')
-
-var errors = require('./errors')
+global.localStorage = require('localStorage')
+var store = require('store')
 
 
 /**
  * @class DataStore
- *
- * @param {string} type DB type, now available only memory
- * @param {Object} opts DB options
  */
-function DataStore(type, opts) {
-  opts = opts || {}
+function DataStore() {
+  if (store.disabled)
+    throw new Error('localStorage is not supported!')
 
-  assert(_.isString(type), 'Expected string type, got ' + type)
-  assert(_.isObject(opts), 'Expected object type, got ' + opts)
-
-  this._dbType = type
-
-  if (type === 'memory') {
-    this._db = {}
-
-  } else {
-    throw new errors.UnknownTypeDBError('Expected type in ["memory"], got ' + type)
-
-  }
+  this.store = store
 }
 
 

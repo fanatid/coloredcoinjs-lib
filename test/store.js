@@ -8,24 +8,19 @@ var store = coloredcoinlib.store
 
 
 describe('store', function() {
-  describe('UnknownTypeDBError', function() {
-    it('inherits Error', function() {
-      expect(new store.errors.UnknownTypeDBError()).to.be.instanceof(Error)
-      expect(new store.errors.UnknownTypeDBError()).to.be.instanceof(store.errors.UnknownTypeDBError)
-    })
-  })
-
-  describe('UniqueConstraintError', function() {
-    it('inherits Error', function() {
-      expect(new store.errors.UniqueConstraintError()).to.be.instanceof(Error)
-      expect(new store.errors.UniqueConstraintError()).to.be.instanceof(store.errors.UniqueConstraintError)
-    })
-  })
+  function getAvailableDBTest(cls) {
+    var availableDB = cls.getAvailableDB()
+    expect(availableDB).to.be.instanceof(Array)
+    expect(availableDB).to.have.length.of.at.least(1)
+  }
 
   describe('DataStore', function() {
-    it('UnknownTypeDBError in constructor', function() {
-      var fn = function() { new store.ColorDataStore('') }
-      expect(fn).to.throw(store.errors.UnknownTypeDBError)
+    var ds
+
+    it('constructor', function() {
+      ds = new store.DataStore()
+      expect(ds).to.be.instanceof(store.DataStore)
+      expect(ds.store).not.to.be.undefined
     })
   })
 
@@ -35,202 +30,108 @@ describe('store', function() {
     var pubKeyHex1 = '021c10af30f8380f1ff05a02e10a69bd323a7305c43dc461f79c2b27c13532a12c'
     var pubKeyHex2 = '0375d65343d5dcf4527cf712168b41059cb1df513ba89b44108899835329eb643c'
 
-    it('inherits DataStore', function() {
-      ams = new store.AddressManagerStore('memory')
+    beforeEach(function() {
+      ams = new store.AddressManagerStore()
+    })
 
+    afterEach(function() {
+      ams.removeAll()
+    })
+
+    it('inherits DataStore', function() {
       expect(ams).to.be.instanceof(store.DataStore)
       expect(ams).to.be.instanceof(store.AddressManagerStore)
     })
 
-    function getTestFn(beforeEachFn) { return function() {
-      beforeEach(beforeEachFn)
+    it('setMasterKey reset all records', function() {
+      ams.addPubKey({ account: 0, chain: 0, index: 0, pubKey: pubKeyHex1 })
+      ams.setMasterKey(masterKey1)
+      expect(ams.getAllPubKeys({ account: 0, chain: 0 })).to.have.length(0)
+    })
 
-      it('setMasterKey, getMasterKey return error', function(done) {
-        ams.getMasterKey = function(cb) { cb('error.getMasterKey') }
-        ams.setMasterKey(masterKey1, function(error, changed) {
-          expect(error).to.deep.equal('error.getMasterKey')
-          expect(changed).to.be.undefined
-          done()
-        })
-      })
+    it('getMasterKey return null', function() {
+      expect(ams.getMasterKey()).to.be.undefined
+    })
 
-      it('setMasterKey, changed is true', function(done) {
-        ams.setMasterKey(masterKey1, function(error, changed) {
-          expect(error).to.be.null
-          expect(changed).to.be.true
-          done()
-        })
-      })
+    it('getMasterKey', function() {
+      ams.setMasterKey(masterKey1)
+      expect(ams.getMasterKey()).to.equal(masterKey1)
+    })
 
-      it('setMasterKey, changed is false', function(done) {
-        ams.setMasterKey(masterKey1, function(error, changed) {
-          expect(error).to.be.null
-          expect(changed).to.be.true
-          ams.setMasterKey(masterKey1, function(error, changed) {
-            expect(error).to.be.null
-            expect(changed).to.be.false
-            done()
-          })
-        })
-      })
+    it('addPubKey throw UniqueConstraint for account, chain and index', function() {
+      ams.addPubKey({ account: 0, chain: 0, index: 0, pubKey: pubKeyHex1 })
+      var fn = function() { ams.addPubKey({ account: 0, chain: 0, index: 0, pubKey: pubKeyHex2 }) }
+      expect(fn).to.throw(Error)
+    })
 
-      it('getMasterKey return null', function(done) {
-        ams.getMasterKey(function(error, masterKey) {
-          expect(error).to.be.null
-          expect(masterKey).to.be.null
-          done()
-        })
-      })
+    it('addPubKey throw UniqueConstraint for pubKey', function() {
+      ams.addPubKey({ account: 0, chain: 0, index: 0, pubKey: pubKeyHex1 })
+      var fn = function() { ams.addPubKey({ account: 1, chain: 0, index: 0, pubKey: pubKeyHex1 }) }
+      expect(fn).to.throw(Error)
+    })
 
-      it('addPubKey', function(done) {
-        ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
-          expect(error).to.be.null
-          expect(added).to.be.true
-          ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
-            expect(error).to.be.null
-            expect(added).to.be.false
-            done()
-          })
-        })
-      })
+    it('getAllPubKeys', function() {
+      ams.addPubKey({ account: 0, chain: 0, index: 0, pubKey: pubKeyHex1 })
+      ams.addPubKey({ account: 1, chain: 0, index: 0, pubKey: pubKeyHex2 })
+      var pubKeys = ams.getAllPubKeys({ account: 0, chain: 0 })
+      expect(pubKeys).to.deep.equal([{ account: 0, chain: 0, index: 0, pubKey: pubKeyHex1 }])
+    })
 
-      it('getAllPubKeys', function(done) {
-        ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
-          expect(error).to.be.null
-          expect(added).to.be.true
-          ams.addPubKey(0, 1, 0, ECPubKey.fromHex(pubKeyHex2), function(error, added) {
-            expect(error).to.be.null
-            expect(added).to.be.true
-            ams.getAllPubKeys(0, 0, function(error, result) {
-              expect(error).to.be.null
-              expect(result).to.deep.equal([{
-                account: 0,
-                chain: 0,
-                index: 0,
-                pubKey: ECPubKey.fromHex(pubKeyHex1)
-              }])
-              done()
-            })
-          })
-        })
-      })
+    it('getMaxIndex for empty db', function() {
+      var maxIndex = ams.getMaxIndex({ account: 0, chain: 0 })
+      expect(maxIndex).to.be.undefined
+    })
 
-      it('getMaxIndex return null', function(done) {
-        ams.getMaxIndex(0, 0, function(error, index) {
-          expect(error).to.be.null
-          expect(index).to.be.null
-          done()
-        })
-      })
-
-      it('getMaxIndex', function(done) {
-        ams.addPubKey(0, 0, 0, ECPubKey.fromHex(pubKeyHex1), function(error, added) {
-          expect(error).to.be.null
-          expect(added).to.be.true
-          ams.addPubKey(0, 1, 0, ECPubKey.fromHex(pubKeyHex2), function(error, added) {
-            expect(error).to.be.null
-            expect(added).to.be.true
-            ams.getMaxIndex(0, 0, function(error, index) {
-              expect(error).to.be.null
-              expect(index).to.equal(0)
-              done()
-            })
-          })
-        })
-      })
-    }}
-
-    describe('memory as db', getTestFn(function() {
-      ams = new store.AddressManagerStore('memory')
-    }))
+    it('getMaxIndex', function() {
+      ams.addPubKey({ account: 0, chain: 0, index: 0, pubKey: pubKeyHex1 })
+      ams.addPubKey({ account: 0, chain: 0, index: 3, pubKey: pubKeyHex2 })
+      var maxIndex = ams.getMaxIndex({ account: 0, chain: 0 })
+      expect(maxIndex).to.equal(3)
+    })
   })
 
   describe('ColorDataStore', function() {
     var cds
+    var txId1 = '0000000000000000000000000000000000000000000000000000000000000000'
+    var txId2 = '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff'
+
+    beforeEach(function() {
+      cds = new store.ColorDataStore()
+    })
+
+    afterEach(function() {
+      cds.removeAll()
+    })
 
     it('inherits DataStore', function() {
-      cds = new store.ColorDataStore('memory')
-
       expect(cds).to.be.instanceof(store.DataStore)
       expect(cds).to.be.instanceof(store.ColorDataStore)
     })
 
-    function getTestFn(beforeEachFn) { return function() {
-      var txId1 = '0000000000000000000000000000000000000000000000000000000000000000'
-      var txId2 = '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff'
+    it('add/get', function() {
+      cds.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+      var result = cds.get({ colorId: 1, txId: txId1, outIndex: 0})
+      expect(result).to.deep.equal({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+    })
 
-      beforeEach(beforeEachFn)
+    it('add, throw error uniqueConstraint', function() {
+      var fn = function() { cds.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 }) }
+      fn()
+      expect(fn).to.throw(Error)
+    })
 
-      it('add', function(done) {
-        cds.add(1, txId1, 0, 1, function(error) {
-          expect(error).to.be.null
-          done()
-        })
-      })
+    it('get return null', function() {
+      cds.add({ colorId: 2, txId: txId1, outIndex: 0, value: 1 })
+      var result = cds.get({ colorId: 1, txId: txId1, outIndex: 0})
+      expect(result).to.be.null
+    })
 
-      it('add, UniqueConstraintError', function(done) {
-        cds.add(1, txId1, 0, 1, function(error) {
-          expect(error).to.be.null
-          cds.add(1, txId1, 1, 1, function(error) {
-            expect(error).to.be.null
-            cds.add(1, txId1, 1, 2, function(error) {
-              expect(error).to.be.instanceof(store.errors.UniqueConstraintError)
-              done()
-            })
-          })
-        })
-      })
-
-      it('get', function(done) {
-        cds.add(1, txId1, 1, 1, function(error) {
-          expect(error).to.be.null
-          cds.add(1, txId1, 0, 1, function(error) {
-          expect(error).to.be.null
-            cds.get(1, txId1, 0, function(error, record) {
-              expect(error).to.be.null
-              expect(record).to.deep.equal({
-                colorId: 1,
-                txId: txId1,
-                outIndex: 0,
-                value: 1
-              })
-              done()
-            })
-          })
-        })
-      })
-
-      it('get null', function(done) {
-        cds.get(1, txId1, 0, function(error, record) {
-          expect(error).to.be.null
-          expect(record).to.be.null
-          done()
-        })
-      })
-
-      it('getAny', function(done) {
-        cds.add(1, txId1, 0, 1, function(error) {
-          expect(error).to.be.null
-          cds.add(1, txId2, 0, 1, function(error) {
-            expect(error).to.be.null
-            cds.getAny(txId1, 0, function(error, records) {
-              expect(error).to.be.null
-              expect(records).to.deep.equal([{
-                colorId: 1,
-                txId: txId1,
-                outIndex: 0,
-                value: 1
-              }])
-              done()
-            })
-          })
-        })
-      })
-    }}
-
-    describe('memory as db', getTestFn(function() {
-      cds = new store.ColorDataStore('memory')
-    }))
+    it('getAny', function() {
+      cds.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+      cds.add({ colorId: 1, txId: txId2, outIndex: 0, value: 1 })
+      var result = cds.getAny({ txId: txId1, outIndex: 0 })
+      expect(result).to.deep.equal([{ colorId: 1, txId: txId1, outIndex: 0, value: 1 }])
+    })
   })
 /*
   describe('ColorDefinitionStore', function() {

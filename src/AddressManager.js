@@ -92,12 +92,10 @@ function AddressManager(amStore) {
  *
  * @param {Buffer|string} seed Buffer or hex string
  * @param {Object} network Network description from bitcoinjs-lib.networks
- * @param {function} cb Called on finished with params (error, changed)
  */
-AddressManager.prototype.setMasterKeyFromSeed = function(seed, network, cb) {
+AddressManager.prototype.setMasterKeyFromSeed = function(seed, network) {
   assert(Buffer.isBuffer(seed) || isHexString(seed), 'Expected Buffer or hex string seed, got ' + seed)
   assert(networks.indexOf(network) !== -1, 'Unknow network type, got ' + network)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   var node
 
@@ -106,112 +104,76 @@ AddressManager.prototype.setMasterKeyFromSeed = function(seed, network, cb) {
   else
     node = HDNode.fromSeedHex(seed, network)
 
-  this.setMasterKey(node.toBase58(), cb)
+  this.setMasterKey(node.toBase58())
 }
 
 /**
  * Set masterKey and drop all created addresses
  *
  * @param {string} masterKey String in base58 format
- * @param {function} cb Called on finished with params (error, changed)
  */
-AddressManager.prototype.setMasterKey = function(masterKey, cb) {
+AddressManager.prototype.setMasterKey = function(masterKey) {
   HDNode.fromBase58(masterKey) // Check masterKey
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  this.amStore.setMasterKey(masterKey, cb)
+  this.amStore.setMasterKey(masterKey)
 }
 
 /**
- * Get masterKey from storage in base58 format or null if not exists
+ * Get masterKey from storage in base58 format or undefined if not exists
  *
- * @param {function} cb Called on finished with params (error, string|null)
+ * @return {string|undefined} masterKey in base58 format
  */
-AddressManager.prototype.getMasterKey = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
-
-  this.amStore.getMasterKey(cb)
+AddressManager.prototype.getMasterKey = function() {
+  return this.amStore.getMasterKey()
 }
 
 /**
  * Get new address and save it to db
  *
- * @param {function} cb Called on finished with params (error, Address)
+ * @return {Address}
  */
-AddressManager.prototype.getNewAddress = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+AddressManager.prototype.getNewAddress = function() {
+  var masterKey = this.getMasterKey()
+  if (_.isUndefined(masterKey))
+    throw new Error('set masterKey first')
 
-  var _this = this
+  var maxIndex = this.amStore.getMaxIndex({ account: this.account, chain: this.chain })
+  var newIndex = _.isUndefined(maxIndex) ? 0 : maxIndex + 1
 
-  function tryCreateNewAddress(rootNode) {
-    _this.amStore.getMaxIndex(_this.account, _this.chain, function(error, index) {
-      if (error) {
-        cb(error)
-        return
-      }
+  var newNode = derive(HDNode.fromBase58(masterKey), this.account, this.chain, newIndex)
 
-      index = index === null ? 0 : index + 1
-      var pubKey = derive(rootNode, _this.account, _this.chain, index).pubKey
-
-      _this.amStore.addPubKey(_this.account, _this.chain, index, pubKey, function(error, added) {
-        if (error) {
-          cb(error)
-          return
-        }
-
-        if (added)
-          cb(null, new Address({ pubKey: pubKey, network: rootNode.network }))
-        else
-          tryCreateNewAddress(rootNode)
-      })
-    })
-  }
-
-  this.getMasterKey(function(error, masterKey) {
-    if (error === null && masterKey === null)
-      error = new Error('masterKey not found')
-
-    if (error)
-      cb(error)
-    else
-      tryCreateNewAddress(HDNode.fromBase58(masterKey))
+  this.amStore.addPubKey({
+    account: this.account,
+    chain: this.chain,
+    index: newIndex,
+    pubKey: newNode.pubKey.toHex()
   })
+
+  var newAddress = new Address({
+    pubKey: newNode.pubKey,
+    network: newNode.network
+  })
+
+  return newAddress
 }
 
 /**
  * Get all addresses
  *
- * @param {function} cb Called on finished with params (error, array)
+ * @return {Array}
  */
-AddressManager.prototype.getAllAddresses = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+AddressManager.prototype.getAllAddresses = function() {
+  var masterKey = this.getMasterKey()
+  if (_.isUndefined(masterKey))
+    throw new Error('set masterKey first')
 
-  var _this = this
+  var network = HDNode.fromBase58(masterKey).network
 
-  this.getMasterKey(function(error, masterKey) {
-    if (error === null && masterKey === null)
-      error = new Error('masterKey not found')
+  function record2address(record) {
+    return new Address({ pubKey: ECPubKey.fromHex(record.pubKey), network: network })
+  }
 
-    if (error) {
-      cb(error)
-      return
-    }
-
-    _this.amStore.getAllPubKeys(_this.account, _this.chain, function(error, records) {
-      if (error) {
-        cb(error)
-        return
-      }
-
-      var network = HDNode.fromBase58(masterKey).network
-
-      var addresses = records.map(function(record) {
-        return new Address({ pubKey: record.pubKey, network: network })
-      })
-
-      cb(null, addresses)
-    })
-  })
+  return this.amStore.getAllPubKeys({ account: this.account, chain: this.chain }).map(record2address)
 }
 
 

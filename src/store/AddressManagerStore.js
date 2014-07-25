@@ -3,32 +3,41 @@ var _ = require('underscore')
 var inherits = require('util').inherits
 
 var bitcoin = require('bitcoinjs-lib')
-var ECPubKey = bitcoin.ECPubKey
 var HDNode = bitcoin.HDNode
 
 var DataStore = require('./DataStore')
 
 
+function isHexString(s) {
+  var set = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
+
+  return (_.isString(s) &&
+          s.length % 2 === 0 &&
+          s.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
+}
+
 /**
  * @class AddressManagerStore
  *
  * Inherits DataStore
- *
- * @param {string} type DB type
- * @param {Object} opts DB options
  */
 function AddressManagerStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  if (this._dbType === 'memory') {
-    if (!_.isArray(this._db.pubKeys))
-      this._db.pubKeys = []
+  this.masterKeyDBKey = 'masterKey'
+  this.pubKeysDBKey = 'pubKeys'
+  /* test-code */
+  this.masterKeyDBKey = 'masterKey_tests'
+  this.pubKeysDBKey = 'pubKeys_tests'
+  /* end-test-code */
 
-    if (!_.isString(this._db.masterKey)) {
-      delete this._db.masterKey
-      this._db.pubKeys = []
-    }
+  if (!_.isString(this.store.get(this.masterKeyDBKey))) {
+    this.store.remove(this.masterKeyDBKey)
+    this.store.set(this.pubKeysDBKey, [])
   }
+
+  if (!_.isArray(this.store.get(this.pubKeysDBKey)))
+    this.store.set(this.pubKeysDBKey, [])
 }
 
 inherits(AddressManagerStore, DataStore)
@@ -37,121 +46,107 @@ inherits(AddressManagerStore, DataStore)
  * Save masterKey in base58 format
  *
  * @param {string} masterKey
- * @param {function} cb Called on finished with params (error, changed)
  */
-AddressManagerStore.prototype.setMasterKey = function(newMasterKey, cb) {
+AddressManagerStore.prototype.setMasterKey = function(newMasterKey) {
   HDNode.fromBase58(newMasterKey) // Check masterKey
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var _this = this
-
-  this.getMasterKey(function(error, masterKey) {
-    if (error) {
-      cb(error)
-      return
-    }
-
-    if (_this._dbType === 'memory') {
-      _this._db.masterKey = newMasterKey
-      _this._db.pubKeys = []
-      process.nextTick(function() { cb(null, masterKey !== newMasterKey) })
-    }
-  })
+  this.store.set(this.masterKeyDBKey, newMasterKey)
+  this.store.set(this.pubKeysDBKey, [])
 }
 
 /**
- * Get masterKey from storage in base58
+ * Get masterKey from store in base58
  *
- * @param {function} cb Called on finished with params (error, string|null)
+ * @return {srting|undefined}
  */
-AddressManagerStore.prototype.getMasterKey = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+AddressManagerStore.prototype.getMasterKey = function() {
+  var masterKey = this.store.get(this.masterKeyDBKey)
 
-  var _this = this
-
-  if (this._dbType === 'memory') {
-    process.nextTick(function() { cb(null, _this._db.masterKey || null) })
-  }
+  return masterKey
 }
 
 /*
- * Add pubKey for account, chain and index to storage
+ * Add pubKey for account, chain and index to store
  *
- * @param {number} account
- * @param {number} chain
- * @param {number} index
- * @param {bitcoinjs-lib.ECPubKey} pubKey
- * @param {function} cb Called on finished with params (error, added)
+ * @param {Object} data
+ * @param {number} data.account
+ * @param {number} data.chain
+ * @param {number} data.index
+ * @param {string} data.pubKey bitcoinjs-lib.ECPubKey in hex format
  */
-AddressManagerStore.prototype.addPubKey = function(account, chain, index, pubKey, cb) {
-  assert(_.isNumber(account), 'Expected number account, got ' + account)
-  assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
-  assert(_.isNumber(index), 'Expected number index, got ' + index)
-  assert(pubKey instanceof ECPubKey, 'Expected bitcoinjs-lib.ECPubKey pubKey, got ' + pubKey)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+AddressManagerStore.prototype.addPubKey = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
+  assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
+  assert(_.isNumber(data.index), 'Expected number data.index, got ' + data.index)
+  assert(isHexString(data.pubKey), 'Expected hex string data.pubKey, got ' + data.pubKey)
 
-  if (this._dbType === 'memory') {
-    var exists = this._db.pubKeys.some(function(record) {
-      return (record.account === account && 
-              record.chain === chain &&
-              record.index === index)
-    })
+  var pubKeys = this.store.get(this.pubKeysDBKey)
 
-    if (!exists)
-      this._db.pubKeys.push({
-        account: account,
-        chain: chain,
-        index: index,
-        pubKey: pubKey
-      })
+  pubKeys.forEach(function(record) {
+    if ((record.account === data.account && record.chain === data.chain && record.index === data.index) || record.pubKey === data.pubKey)
+      throw new Error('UniqueConstraint')
+  })
 
-    process.nextTick(function() { cb(null, !exists) })
-  }
+  pubKeys.push({
+    account: data.account,
+    chain: data.chain,
+    index: data.index,
+    pubKey: data.pubKey
+  })
+
+  this.store.set(this.pubKeysDBKey, pubKeys)
 }
 
 /**
  * Get all pubKeys for account and chain
  *
- * @param {number} account
- * @param {number} chain
- * @param {function} cb Called on finished with params (error, array)
+ * @param {Object} data
+ * @param {number} data.account
+ * @param {number} data.chain
+ * @return {Array}
  */
-AddressManagerStore.prototype.getAllPubKeys = function(account, chain, cb) {
-  assert(_.isNumber(account), 'Expected number account, got ' + account)
-  assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+AddressManagerStore.prototype.getAllPubKeys = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
+  assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
 
-  if (this._dbType === 'memory') {
-    var result = this._db.pubKeys.filter(function(record) {
-      return (record.account === account && record.chain === chain)
-    })
-
-    process.nextTick(function() { cb(null, result) })
+  function isGoodRecord(record) {
+    return (record.account === data.account && record.chain === data.chain)
   }
+
+  return this.store.get(this.pubKeysDBKey).filter(isGoodRecord)
 }
 
 /**
  * Get max index for account and chain
  *
- * @param {number} account
- * @param {number} chain
- * @param {function} cb Called on finished with params (error, index|null)
+ * @param {Object} data
+ * @param {number} data.account
+ * @param {number} data.chain
+ * @return {number|undefined}
  */
-AddressManagerStore.prototype.getMaxIndex = function(account, chain, cb) {
-  assert(_.isNumber(account), 'Expected number account, got ' + account)
-  assert(_.isNumber(chain), 'Expected number chain, got ' + chain)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+AddressManagerStore.prototype.getMaxIndex = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
+  assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
 
   var maxIndex
 
-  if (this._dbType === 'memory') {
-    this._db.pubKeys.forEach(function(record) {
-      if (record.account === account && record.chain === chain && (record.index > maxIndex || _.isUndefined(maxIndex)))
-        maxIndex = record.index
-    })
+  this.store.get(this.pubKeysDBKey).forEach(function(record) {
+    if (record.account === data.account && record.chain === data.chain && (record.index > maxIndex || _.isUndefined(maxIndex)))
+      maxIndex = record.index
+  })
 
-    process.nextTick(function() { cb(null, _.isUndefined(maxIndex) ? null : maxIndex) })
-  }
+  return maxIndex
+}
+
+/**
+ * Remove masterKey and all pubKeys
+ */
+AddressManagerStore.prototype.removeAll = function() {
+  this.store.remove(this.masterKeyDBKey)
+  this.store.remove(this.pubKeysDBKey)
 }
 
 
