@@ -4,5 +4,6 @@ module.exports = {
   /* end-test-code */
 
   AddressManagerStore: require('./AddressManagerStore'),
-  ColorDataStore: require('./ColorDataStore')
+  ColorDataStore: require('./ColorDataStore'),
+  ConfigDataStore: require('./ConfigDataStore')
 }

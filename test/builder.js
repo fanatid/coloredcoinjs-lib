@@ -28,7 +28,7 @@ describe('builder', function() {
     })
 
     afterEach(function() {
-      cdstore.removeAll()
+      cdstore.clear()
     })
 
     describe('scanTx', function() {

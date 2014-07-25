@@ -21,7 +21,7 @@ describe('AddressManager', function() {
   })
 
   afterEach(function() {
-    amStore.removeAll()
+    amStore.clear()
   })
 
   describe('setMasterKeyFromSeed', function() {

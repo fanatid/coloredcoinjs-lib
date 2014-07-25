@@ -15,9 +15,9 @@ var Transaction = require('../Transaction')
 function ColorDataStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  this.colorTxsDBKey = 'colorTxs'
+  this.colorTxsDBKey = DataStore.globalPrefix + 'colorTxs'
   /* test-code */
-  this.colorTxsDBKey = 'colorTxs_tests'
+  this.colorTxsDBKey = this.colorTxsDBKey + '_tests'
   /* end-test-code */
 
   if (!_.isArray(this.store.get(this.colorTxsDBKey)))
@@ -42,7 +42,7 @@ ColorDataStore.prototype.add = function(data) {
   assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
   assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
 
-  var colorTxs = this.store.get(this.colorTxsDBKey)
+  var colorTxs = this.store.get(this.colorTxsDBKey) || []
 
   colorTxs.forEach(function(record) {
     if (record.colorId === data.colorId && record.txId === data.txId && record.outIndex === data.outIndex)
@@ -75,8 +75,9 @@ ColorDataStore.prototype.get = function(data) {
   assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
 
   var result = null
+  var colorTxs = this.store.get(this.colorTxsDBKey) || []
 
-  this.store.get(this.colorTxsDBKey).some(function(record) {
+  colorTxs.some(function(record) {
     if (record.colorId === data.colorId && record.txId === data.txId && record.outIndex === data.outIndex) {
       result = record
       return true
@@ -101,17 +102,19 @@ ColorDataStore.prototype.getAny = function(data) {
   assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
   assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
 
+  var colorTxs = this.store.get(this.colorTxsDBKey) || []
+
   function isGoodRecord(record) {
     return (record.txId === data.txId && record.outIndex === data.outIndex)
   }
 
-  return this.store.get(this.colorTxsDBKey).filter(isGoodRecord)
+  return colorTxs.filter(isGoodRecord)
 }
 
 /**
  * Remove all colorTxs
  */
-ColorDataStore.prototype.removeAll = function() {
+ColorDataStore.prototype.clear = function() {
   this.store.remove(this.colorTxsDBKey)
 }
 

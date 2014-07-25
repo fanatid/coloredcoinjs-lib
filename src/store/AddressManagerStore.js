@@ -24,11 +24,11 @@ function isHexString(s) {
 function AddressManagerStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  this.masterKeyDBKey = 'masterKey'
-  this.pubKeysDBKey = 'pubKeys'
+  this.masterKeyDBKey = DataStore.globalPrefix + 'masterKey'
+  this.pubKeysDBKey = DataStore.globalPrefix + 'pubKeys'
   /* test-code */
-  this.masterKeyDBKey = 'masterKey_tests'
-  this.pubKeysDBKey = 'pubKeys_tests'
+  this.masterKeyDBKey = this.masterKeyDBKey + '_tests'
+  this.pubKeysDBKey = this.masterKeyDBKey + '_tests'
   /* end-test-code */
 
   if (!_.isString(this.store.get(this.masterKeyDBKey))) {
@@ -60,9 +60,7 @@ AddressManagerStore.prototype.setMasterKey = function(newMasterKey) {
  * @return {srting|undefined}
  */
 AddressManagerStore.prototype.getMasterKey = function() {
-  var masterKey = this.store.get(this.masterKeyDBKey)
-
-  return masterKey
+  return this.store.get(this.masterKeyDBKey)
 }
 
 /*
@@ -81,7 +79,7 @@ AddressManagerStore.prototype.addPubKey = function(data) {
   assert(_.isNumber(data.index), 'Expected number data.index, got ' + data.index)
   assert(isHexString(data.pubKey), 'Expected hex string data.pubKey, got ' + data.pubKey)
 
-  var pubKeys = this.store.get(this.pubKeysDBKey)
+  var pubKeys = this.store.get(this.pubKeysDBKey) || []
 
   pubKeys.forEach(function(record) {
     if ((record.account === data.account && record.chain === data.chain && record.index === data.index) || record.pubKey === data.pubKey)
@@ -111,11 +109,13 @@ AddressManagerStore.prototype.getAllPubKeys = function(data) {
   assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
   assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
 
+  var pubKeys = this.store.get(this.pubKeysDBKey) || []
+
   function isGoodRecord(record) {
     return (record.account === data.account && record.chain === data.chain)
   }
 
-  return this.store.get(this.pubKeysDBKey).filter(isGoodRecord)
+  return pubKeys.filter(isGoodRecord)
 }
 
 /**
@@ -133,7 +133,8 @@ AddressManagerStore.prototype.getMaxIndex = function(data) {
 
   var maxIndex
 
-  this.store.get(this.pubKeysDBKey).forEach(function(record) {
+  var pubKeys = this.store.get(this.pubKeysDBKey) || []
+  pubKeys.forEach(function(record) {
     if (record.account === data.account && record.chain === data.chain && (record.index > maxIndex || _.isUndefined(maxIndex)))
       maxIndex = record.index
   })
@@ -144,7 +145,7 @@ AddressManagerStore.prototype.getMaxIndex = function(data) {
 /**
  * Remove masterKey and all pubKeys
  */
-AddressManagerStore.prototype.removeAll = function() {
+AddressManagerStore.prototype.clear = function() {
   this.store.remove(this.masterKeyDBKey)
   this.store.remove(this.pubKeysDBKey)
 }

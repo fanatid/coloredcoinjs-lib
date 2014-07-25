@@ -35,7 +35,7 @@ describe('store', function() {
     })
 
     afterEach(function() {
-      ams.removeAll()
+      ams.clear()
     })
 
     it('inherits DataStore', function() {
@@ -100,7 +100,7 @@ describe('store', function() {
     })
 
     afterEach(function() {
-      cds.removeAll()
+      cds.clear()
     })
 
     it('inherits DataStore', function() {
@@ -197,4 +197,26 @@ describe('store', function() {
     describe('MemoryDB', tester)
   })
 */
+  describe('ConfigDataStore', function() {
+    var cds
+
+    beforeEach(function() {
+      cds = new store.ConfigDataStore()
+    })
+
+    afterEach(function() {
+      cds.clear()
+    })
+
+    it('inherits DataStore', function() {
+      expect(cds).to.be.instanceof(store.DataStore)
+      expect(cds).to.be.instanceof(store.ConfigDataStore)
+    })
+
+    it('set/get', function() {
+      expect(cds.get()).to.deep.equal({})
+      cds.set({msg: 'hello world'})
+      expect(cds.get()).to.deep.equal({msg: 'hello world'})
+    })
+  })
 })

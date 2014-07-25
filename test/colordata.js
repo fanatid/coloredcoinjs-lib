@@ -34,7 +34,7 @@ describe('colordata', function() {
     })
 
     afterEach(function() {
-      cdStore.removeAll()
+      cdStore.clear()
     })
 
     describe('fetchColorvalues', function() {
@@ -73,7 +73,7 @@ describe('colordata', function() {
     })
 
     afterEach(function() {
-      cdStore.removeAll()
+      cdStore.clear()
     })
 
     it('inherits StoredColorData', function() {

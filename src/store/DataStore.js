@@ -12,5 +12,7 @@ function DataStore() {
   this.store = store
 }
 
+DataStore.globalPrefix = 'cc_'
+
 
 module.exports = DataStore
