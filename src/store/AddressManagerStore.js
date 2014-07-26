@@ -82,7 +82,8 @@ AddressManagerStore.prototype.addPubKey = function(data) {
   var pubKeys = this.store.get(this.pubKeysDBKey) || []
 
   pubKeys.forEach(function(record) {
-    if ((record.account === data.account && record.chain === data.chain && record.index === data.index) || record.pubKey === data.pubKey)
+    if ((record.account === data.account && record.chain === data.chain && record.index === data.index) ||
+        record.pubKey === data.pubKey)
       throw new Error('UniqueConstraint')
   })
 
@@ -135,7 +136,8 @@ AddressManagerStore.prototype.getMaxIndex = function(data) {
 
   var pubKeys = this.store.get(this.pubKeysDBKey) || []
   pubKeys.forEach(function(record) {
-    if (record.account === data.account && record.chain === data.chain && (record.index > maxIndex || _.isUndefined(maxIndex)))
+    if (record.account === data.account && record.chain === data.chain &&
+       (record.index > maxIndex || _.isUndefined(maxIndex)))
       maxIndex = record.index
   })
 

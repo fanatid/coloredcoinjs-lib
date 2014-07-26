@@ -27,27 +27,6 @@ describe('colordef', function() {
     })
   })
 
-  describe('GenesisColorDefinition', function() {
-    it('inherits ColorDefinition', function() {
-      var colordef1 = new colordef.GenesisColorDefinition(1,
-        { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
-      expect(colordef1).to.be.instanceof(colordef.ColorDefinition)
-      expect(colordef1).to.be.instanceof(colordef.GenesisColorDefinition)
-    })
-
-    it('isSpecialTx true', function() {
-      var tx = new Transaction()
-      var colordef1 = new colordef.GenesisColorDefinition(1, { txId: tx.getId(), outIndex: 0, height: 0 })
-      expect(colordef1.isSpecialTx(tx)).to.be.true
-    })
-
-    it('isSpecialTx false', function() {
-      var colordef1 = new colordef.GenesisColorDefinition(1,
-        { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
-      expect(colordef1.isSpecialTx(new Transaction())).to.be.false
-    })
-  })
-
   describe('EPOBCColorDefinition', function() {
     var bs
     var epobc
@@ -61,8 +40,19 @@ describe('colordef', function() {
       tx2 = new Transaction()
     })
 
-    it('inherits GenesisColorDefinition', function() {
-      expect(epobc).to.be.instanceof(colordef.GenesisColorDefinition)
+    it('isSpecialTx true', function() {
+      var epobc1 = new colordef.EPOBCColorDefinition(1, { txId: tx.getId(), outIndex: 0, height: 0 })
+      expect(epobc1.isSpecialTx(tx)).to.be.true
+    })
+
+    it('isSpecialTx false', function() {
+      tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+      var epobc1 = new colordef.EPOBCColorDefinition(1, { txId: tx.getId(), outIndex: 0, height: 0 })
+      expect(epobc1.isSpecialTx(tx2)).to.be.false
+    })
+
+    it('inherits ColorDefinition', function() {
+      expect(epobc).to.be.instanceof(colordef.ColorDefinition)
       expect(epobc).to.be.instanceof(colordef.EPOBCColorDefinition)
     })
 

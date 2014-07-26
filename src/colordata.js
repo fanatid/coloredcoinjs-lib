@@ -17,7 +17,14 @@ var Transaction = require('./Transaction')
  * @param {Array} parents Array of constructors
  */
 function isDerived(cls, parents) {
-  return (parents.indexOf(cls) !== -1 || (!_.isUndefined(cls.super_) && isDerived(cls.super_, parents)))
+  while (!_.isUndefined(cls)) {
+    if (parents.indexOf(cls) !== -1)
+      return true
+
+    cls = cls.super_
+  }
+
+  return false
 }
 
 /**
