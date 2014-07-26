@@ -1,89 +1,12 @@
 var assert = require('assert')
-var _ = require('underscore')
 var inherits = require('util').inherits
 
-var blockchain = require('./blockchain')
-var builder = require('./builder')
-var colordef = require('./colordef')
-var colorvalue = require('./colorvalue')
-var store = require('./store')
-var Transaction = require('./Transaction')
+var _ = require('underscore')
 
-
-/**
- * Check that cls inherits one of the parents classes
- *
- * @param {function} cls Constructor
- * @param {Array} parents Array of constructors
- */
-function isDerived(cls, parents) {
-  while (!_.isUndefined(cls)) {
-    if (parents.indexOf(cls) !== -1)
-      return true
-
-    cls = cls.super_
-  }
-
-  return false
-}
-
-/**
- * @class StoredColorData
- *
- * Base color data class
- *
- * @param {store.ColorDataStore} colorDataStore
- * @param {blockchain.BlockchainStateBase} blockchainState
- * @param {builder.AidedColorDataBuilder} builderClass
- *  Now can be only AidedColorDataBuilder or derived classes
- */
-function StoredColorData(colorDataStore, blockchainState, builderClass) {
-  assert(colorDataStore instanceof store.ColorDataStore,
-    'Expected store.ColorDataStore colorDataStore, got ' + colorDataStore)
-  assert(blockchainState instanceof blockchain.BlockchainStateBase,
-    'Expected blockchain.BlockchainStateBase blockchainState, got ' + blockchainState)
-  assert(isDerived(builderClass, [builder.AidedColorDataBuilder]),
-    'Expected builderClass builder.AidedColorDataBuilder, got ' + builderClass)
-
-  this.colorDataStore = colorDataStore
-  this.blockchainState = blockchainState
-  this.builderClass = builderClass
-}
-
-/**
- * Returns colorValues currently present in colorDataStore
- *
- * @param {Array} colorDefinitionSet
- * @param {string} txId
- * @param {number} outIndex
- * @param {colorvalue.ColorValue} colorValueClass
- * @return {Array}
- */
-StoredColorData.prototype.fetchColorvalues = function(colorDefinitionSet, txId, outIndex, colorValueClass) {
-  assert(_.isArray(colorDefinitionSet), 'Expected Array colorDefinitionSet, got ' + colorDefinitionSet)
-  assert(colorDefinitionSet.every(function(cd) { return (cd instanceof colordef.ColorDefinition) }),
-    'Expected colorDefinitionSet Array colordef.ColorDefinition, got ' + colorDefinitionSet)
-  assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
-  assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(isDerived(colorValueClass, [colorvalue.ColorValue]),
-    'Expected colorValueClass colorvalue.ColorValue, got ' + colorValueClass)
-
-  var result = []
-  var colorDefinitionMap = {}
-
-  colorDefinitionSet.forEach(function(colorDefinition) {
-    colorDefinitionMap[colorDefinition.getColorId()] = colorDefinition
-  })
-
-  this.colorDataStore.getAny({txId: txId, outIndex: outIndex}).forEach(function(record) {
-    if (_.isUndefined(colorDefinitionMap[record.colorId]))
-      return
-
-    result.push(new colorValueClass({ colordef: colorDefinitionMap[record.colorId], value: record.value }))
-  })
-
-  return result
-}
+var colordef = require('../colordef')
+var ColorValue = require('../ColorValue')
+var StoredColorData = require('./StoredColorData')
+var Transaction = require('../Transaction')
 
 
 /**
@@ -95,7 +18,6 @@ StoredColorData.prototype.fetchColorvalues = function(colorDefinitionSet, txId, 
  *
  * @param {store.ColorDataStore} colorDataStore
  * @param {blockchain.BlockchainStateBase} blockchainState
- * @param {builder.BasicColorDataBuilder} builderClass
  */
 function ThinColorData() {
   StoredColorData.apply(this, Array.prototype.slice.call(arguments))
@@ -111,7 +33,6 @@ inherits(ThinColorData, StoredColorData)
  * @param {Array} colorDefinitionSet
  * @param {string} txId
  * @param {number} outIndex
- * @param {colorvalue.ColorValue} colorValueClass
  * @param {function} cb Called on finished with params (error, Array)
  */
 ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txId, outIndex, cb) {
@@ -188,9 +109,7 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txId, outI
         return
       }
 
-      var builder = new _this.builderClass(colorDefinitionSet[index], _this.colorDataStore, _this.blockchainState)
-
-      builder.scanTx(tx, [outIndex], function(error) {
+      _this.scanTx(tx, [outIndex], colorDefinitionSet[index], function(error) {
         if (error === null)
           scanTx(index + 1, tx)
         else
@@ -198,7 +117,7 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txId, outI
       })
     }
 
-    colorValues = _this.fetchColorvalues(colorDefinitionSet, txId, outIndex, colorvalue.SimpleColorValue)
+    colorValues = _this.fetchColorvalues(colorDefinitionSet, txId, outIndex)
     if (colorValues.length === 0)
       _this.blockchainState.getTx(txId, getTxCallback)
     else
@@ -210,7 +129,7 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txId, outI
       colorValues = undefined
 
       if (error === null)
-        colorValues = _this.fetchColorvalues(colorDefinitionSet, txId, outIndex, colorvalue.SimpleColorValue)
+        colorValues = _this.fetchColorvalues(colorDefinitionSet, txId, outIndex)
 
       cb(error, colorValues)
     })
@@ -218,10 +137,4 @@ ThinColorData.prototype.getColorValues = function(colorDefinitionSet, txId, outI
 }
 
 
-module.exports = {
-  /* test-code */
-  StoredColorData: StoredColorData,
-  /* end-test-code */
-
-  ThinColorData: ThinColorData
-}
+module.exports = ThinColorData

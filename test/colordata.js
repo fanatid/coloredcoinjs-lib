@@ -3,10 +3,8 @@ var inherits = require('util').inherits
 
 var coloredcoinlib = require('../src/index')
 var blockchain = coloredcoinlib.blockchain
-var builder = coloredcoinlib.builder
 var colordata = coloredcoinlib.colordata
 var colordef = coloredcoinlib.colordef
-var colorvalue = coloredcoinlib.colorvalue
 var store = coloredcoinlib.store
 var Transaction = coloredcoinlib.Transaction
 
@@ -28,13 +26,13 @@ describe('colordata', function() {
     tx2 = new Transaction()
   })
 
+  afterEach(function() {
+    cdStore.clear()
+  })
+
   describe('StoredColorData', function() {
     beforeEach(function() {
-      storedcd = new colordata.StoredColorData(cdStore, bs, builder.AidedColorDataBuilder)
-    })
-
-    afterEach(function() {
-      cdStore.clear()
+      storedcd = new colordata.StoredColorData(cdStore, bs)
     })
 
     describe('fetchColorvalues', function() {
@@ -55,7 +53,7 @@ describe('colordata', function() {
           })
 
           var colorValues = storedcd.fetchColorvalues(
-            colorDefinitionSet, f.txId, f.outIndex, colorvalue.SimpleColorValue)
+            colorDefinitionSet, f.txId, f.outIndex)
 
           expect(colorValues).to.be.instanceof(Array).and.to.have.length(f.expect.length)
           f.expect.forEach(function(cv, i) {
@@ -65,15 +63,87 @@ describe('colordata', function() {
         })
       })
     })
+
+    describe('scanTx', function() {
+      it('ColorDataStore not empty', function(done) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 37)
+        cdStore.add({
+          colorId: 1,
+          txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
+          outIndex: 1,
+          value: 1
+        })
+        storedcd.scanTx(tx, [], epobc, function(error) {
+          expect(error).to.be.null
+          done()
+        })
+      })
+
+      it('runKernel return error', function(done) {
+        epobc.runKernel = function(_, _, _, cb) { cb('error.runKernel') }
+        epobc.genesis.txId = tx.getId()
+        storedcd.scanTx(tx, [], epobc, function(error) {
+          expect(error).to.equal('error.runKernel')
+          done()
+        })
+      })
+
+      it('index not in outputIndices', function(done) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
+        cdStore.add({
+          colorId: 1,
+          txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
+          outIndex: 0,
+          value: 6
+        })
+        storedcd.scanTx(tx2, [], epobc, function(error) {
+          expect(error).to.be.null
+          done()
+        })
+      })
+
+      it('ColorDataStore.add throw error', function(done) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
+        cdStore.add({ colorId: 1, txId: tx.getId(), outIndex: 0, value: 6 })
+        cdStore.add = function() { throw new Error('error.scanTx') }
+        storedcd.scanTx(tx2, [0], epobc, function(error) {
+          expect(error).to.deep.equal(new Error('error.scanTx'))
+          done()
+        })
+      })
+
+      it('add record', function(done) {
+        tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2<<6))
+        tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
+        tx2.addInput(tx.getId(), 0, 51 | (2<<6))
+        tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
+        bs.getTx = stubs.getTxStub([tx])
+        cdStore.add({ colorId: 1, txId: tx.getId(), outIndex: 0, value: 6 })
+        storedcd.scanTx(tx2, [0], epobc, function(error) {
+          expect(error).to.be.null
+          var record = cdStore.get({
+            colorId: 1,
+            txId: tx2.getId(),
+            outIndex: 0
+          })
+          expect(record.value).to.equal(6)
+          done()
+        })
+      })
+    })
   })
 
   describe('ThinColorData', function() {
     beforeEach(function() {
-      storedcd = new colordata.ThinColorData(cdStore, bs, builder.AidedColorDataBuilder)
-    })
-
-    afterEach(function() {
-      cdStore.clear()
+      storedcd = new colordata.ThinColorData(cdStore, bs)
     })
 
     it('inherits StoredColorData', function() {
@@ -104,15 +174,11 @@ describe('colordata', function() {
       })
 
       it('scanTx return error', function(done) {
-        function ErrorColorDataBuilder() { builder.AidedColorDataBuilder.apply(this, Array.prototype.slice.call(arguments)) }
-        inherits(ErrorColorDataBuilder, builder.AidedColorDataBuilder)
-        ErrorColorDataBuilder.prototype.scanTx = function(_, _, cb) { cb('error.scanTx') }
-        storedcd = new colordata.ThinColorData(cdStore, bs, ErrorColorDataBuilder)
-
         tx.addInput(tx2.getId(), 0, 37)
         storedcd.fetchColorvalues = function() { return [] }
         bs.getTx = stubs.getTxStub([tx, tx2])
         epobc.getAffectingInputs = function(_, _, _, cb) { cb(null, [tx.ins[0]]) }
+        storedcd.scanTx = function(_, _, _, cb) { cb('error.scanTx') }
         storedcd.getColorValues([epobc], tx.getId(), 0, function(error, colorValues) {
           expect(error).to.equal('error.scanTx')
           expect(colorValues).to.be.undefined

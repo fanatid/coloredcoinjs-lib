@@ -2,7 +2,7 @@ var expect = require('chai').expect
 
 var coloredcoinlib = require('../src/index')
 var colordef = coloredcoinlib.colordef
-var colorvalue = coloredcoinlib.colorvalue
+var ColorValue = coloredcoinlib.ColorValue
 var Transaction = coloredcoinlib.Transaction
 
 var fixtures = require('./fixtures/colordef')
@@ -177,7 +177,7 @@ describe('colordef', function() {
 
           var colorValueSet = f.inColorValues.map(function(cv) {
             if (cv !== null)
-              cv = new colorvalue.SimpleColorValue({ colordef: epobc, value: cv })
+              cv = new ColorValue({ colordef: epobc, value: cv })
             return cv
           })
 

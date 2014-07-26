@@ -4,7 +4,7 @@ var inherits = require('util').inherits
 var _ = require('underscore')
 
 var ColorDefinition = require('./ColorDefinition')
-var colorvalue = require('../colorvalue')
+var ColorValue = require('../ColorValue')
 var blockchain = require('../blockchain')
 var Transaction = require('../Transaction')
 
@@ -206,7 +206,7 @@ EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
 EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
   assert(_.isArray(colorValueSet), 'Expected Array colorValueSet, got ' + colorValueSet)
-  assert(colorValueSet.every(function(cv) { return (cv === null || cv instanceof colorvalue.ColorValue) }),
+  assert(colorValueSet.every(function(cv) { return (cv === null || cv instanceof ColorValue) }),
     'Expected colorValueSet Array colorValues|null, got ' + colorValueSet)
   assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -223,7 +223,7 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
       var valueWop = tx.outs[0].value - tag.getPadding()
 
       if (valueWop > 0)
-        outColorValues[0] = new colorvalue.SimpleColorValue({ colordef: this, value: valueWop })
+        outColorValues[0] = new ColorValue({ colordef: this, value: valueWop })
     }
 
     cb(null, outColorValues)
@@ -247,7 +247,7 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
       }
 
       var allColored = true
-      var aiColorValue = new colorvalue.SimpleColorValue({ colordef: _this, value: 0 })
+      var aiColorValue = new ColorValue({ colordef: _this, value: 0 })
 
       /* jshint ignore:start */
       getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
@@ -259,7 +259,7 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
       /* jshint ignore:end */
 
       if (allColored && aiColorValue.getValue() >= outValueWop)
-        outColorValues.push(new colorvalue.SimpleColorValue({ colordef: _this, value: outValueWop }))
+        outColorValues.push(new ColorValue({ colordef: _this, value: outValueWop }))
       else
         outColorValues.push(null)
     }
