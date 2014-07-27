@@ -1,4 +1,8 @@
 module.exports = {
+  /* test-code */
+  Address: require('./Address'),
+  /* end-test-code */
+
   AddressManager: require('./AddressManager'),
   blockchain: require('./blockchain'),
   colordata: require('./colordata'),

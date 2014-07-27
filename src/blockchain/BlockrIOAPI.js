@@ -4,9 +4,18 @@ var inherits = require('util').inherits
 
 var _ = require('underscore')
 
+var Address = require('../Address')
 var BlockchainStateBase = require('./BlockchainStateBase')
 var Transaction = require('../Transaction')
 
+
+function isHexString(s) {
+  var set = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
+
+  return (_.isString(s) &&
+          s.length % 2 === 0 &&
+          s.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
+}
 
 /**
  * BlockchainState that uses [Blockr.io API]{@link http://btc.blockr.io/documentation/api}
@@ -88,12 +97,16 @@ BlockrIOAPI.prototype.getBlockCount = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   this.request('/api/v1/block/info/last', function(error, response) {
-    var blockCount = parseInt(response.nb)
+    if (error === null) {
+      try {
+        assert(_.isNumber(response.nb), 'Expected number nb, got ' + response.nb)
 
-    if (isNaN(blockCount))
-      cb(new Error('Bad block number'))
-    else
-      cb(error, blockCount)
+      } catch (newError) {
+        error = newError
+      }
+    }
+
+    cb(error, error === null ? response.nb : undefined)
   })
 }
 
@@ -111,16 +124,65 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
     if (error === null) {
       try {
         response = Transaction.fromHex(response.tx.hex)
+
       } catch (newError) {
         error = newError
       }
     }
 
-    if (error === null)
-      cb(null, response)
-    else
-      cb(error)
+    cb(error, error === null ? response : undefined)
   })
 }
+
+/**
+ *
+ * @param {Address} address
+ * @param {function} cb Called on finished with params (error, Array)
+ */
+BlockrIOAPI.prototype.getUTXO = function(address, cb) {
+  assert(address instanceof Address, 'Expected Address address, got ' + address)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  this.request('/api/v1/address/unspent/' + address.getAddress() + '?unconfirmed=1', function(error, response) {
+    var utxo
+
+    if (error === null && response.address !== address.getAddress())
+      error = new Error('response address not matched')
+
+    if (error === null) {
+      try {
+        function parseAmount(amount) {
+          var items = amount.split('.')
+          return parseInt(items[0])*100000000 + parseInt(items[1])
+        }
+
+        utxo = response.unspent.map(function(txOut) {
+          assert(isHexString(txOut.tx), 'Expected hex string tx, got ' + txOut.tx)
+          assert(_.isNumber(txOut.n), 'Expected number n, got ' + txOut.n)
+          assert(_.isString(txOut.amount), 'Expected string amount, got ' + txOut.amount)
+          assert(_.isNumber(txOut.confirmations), 'Expected number confirmations, got ' + txOut.confirmations)
+
+          var value = parseAmount(txOut.amount)
+          if (isNaN(value))
+            throw new TypeError('bad txOut value')
+
+          return {
+            tx: txOut.tx,
+            outIndex: txOut.n,
+            value: value,
+            confirmations: txOut.confirmations
+          }
+        })
+
+      } catch (newError) {
+        error = newError
+      }
+    }
+
+    cb(error, error === null ? utxo : undefined)
+  })
+
+}
+
 
 module.exports = BlockrIOAPI
