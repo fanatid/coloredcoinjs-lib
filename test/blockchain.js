@@ -7,7 +7,6 @@ var ECPubKey = bitcoin.ECPubKey
 var networks = bitcoin.networks
 
 var coloredcoinlib = require('../src/index')
-var Address = coloredcoinlib.Address
 var blockchain = coloredcoinlib.blockchain
 var Transaction = coloredcoinlib.Transaction
 
@@ -157,14 +156,7 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
     })
 
     describe('getUTXO', function() {
-      var pubKey0
-      var address0
-
-      beforeEach(function() {
-        pubKey0 = ECPubKey.fromHex('021c10af30f8380f1ff05a02e10a69bd323a7305c43dc461f79c2b27c13532a12c')
-        address0 = new Address({ pubKey: pubKey0, network: networks.bitcoin })
-        address0.getAddress = function() { return '198aMn6ZYAczwrE5NvNTUMyJ5qkfy4g3Hi' }
-      })
+      var address0 = '198aMn6ZYAczwrE5NvNTUMyJ5qkfy4g3Hi'
 
       it('request return error', function(done) {
         bs.request = function(_, cb) { cb('error.request') }
@@ -191,7 +183,7 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
           n: 0,
           confirmations: 1
         }]
-        bs.request = function(_, cb) { cb(null, { address: address0.getAddress(), unspent: unspent }) }
+        bs.request = function(_, cb) { cb(null, { address: address0, unspent: unspent }) }
         bs.getUTXO(address0, function(error, response) {
           expect(error).to.be.instanceof(TypeError)
           expect(response).to.be.undefined

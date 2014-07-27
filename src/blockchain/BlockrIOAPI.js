@@ -4,7 +4,6 @@ var inherits = require('util').inherits
 
 var _ = require('underscore')
 
-var Address = require('../Address')
 var BlockchainStateBase = require('./BlockchainStateBase')
 var Transaction = require('../Transaction')
 
@@ -136,17 +135,17 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
 
 /**
  *
- * @param {Address} address
+ * @param {string} address
  * @param {function} cb Called on finished with params (error, Array)
  */
 BlockrIOAPI.prototype.getUTXO = function(address, cb) {
-  assert(address instanceof Address, 'Expected Address address, got ' + address)
+  assert(_.isString(address), 'Expected Address address, got ' + address)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  this.request('/api/v1/address/unspent/' + address.getAddress() + '?unconfirmed=1', function(error, response) {
+  this.request('/api/v1/address/unspent/' + address + '?unconfirmed=1', function(error, response) {
     var utxo
 
-    if (error === null && response.address !== address.getAddress())
+    if (error === null && response.address !== address)
       error = new Error('response address not matched')
 
     if (error === null) {
