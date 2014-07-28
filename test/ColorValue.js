@@ -26,7 +26,7 @@ describe('ColorValue', function() {
   })
 
   it('checkCompatibility return false', function() {
-    cv2 = new ColorValue({ colordef: new colordef.ColorDefinition(1), value: 0 })
+    cv2 = new ColorValue({ colordef: new colordef.ColorDefinition({ colorId: 1 }), value: 0 })
     expect(cv1.checkCompatibility(cv2)).to.equal(false)
   })
 
@@ -41,7 +41,7 @@ describe('ColorValue', function() {
   })
 
   it('add with not compatibility', function() {
-    cv2 = new ColorValue({ colordef: new colordef.ColorDefinition(1), value: 1 })
+    cv2 = new ColorValue({ colordef: new colordef.ColorDefinition({ colorId: 1 }), value: 1 })
     cv1.add(cv2)
     expect(cv1.getValue()).to.equal(0)
   })

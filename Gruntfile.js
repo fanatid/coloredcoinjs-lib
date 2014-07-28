@@ -52,7 +52,7 @@ module.exports = function(grunt) {
         strict: false,
         trailing: true
       },
-      files: ['src/*.js', 'src/colordef/*.js', 'src/store/*.js']
+      files: ['src/*.js', 'src/blockchain/*.js', 'src/colordata/*.js', 'src/colordef/*.js', 'src/store/*.js']
     },
     mocha_istanbul: {
       coverage: {

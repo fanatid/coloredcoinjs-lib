@@ -1,5 +1,4 @@
 var assert = require('assert')
-var inherits = require('util').inherits
 
 var _ = require('underscore')
 

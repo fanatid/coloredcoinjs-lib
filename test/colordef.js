@@ -14,8 +14,14 @@ var stubs = require('./stubs')
 describe('colordef', function() {
   describe('ColorDefinition', function() {
     it('getColorId', function() {
-      var colordef1 = new colordef.ColorDefinition(1)
+      var colordef1 = new colordef.ColorDefinition({ colorId: 1 })
       expect(colordef1.getColorId()).to.equal(1)
+    })
+
+    it('getMeta', function() {
+      var meta = { label: 'GOLD' }
+      var colordef1 = new colordef.ColorDefinition({ colorId: 1, meta: meta })
+      expect(colordef1.getMeta()).to.deep.equal(meta)
     })
 
     it('genesisOutputMarker', function() {
@@ -34,20 +40,20 @@ describe('colordef', function() {
 
     beforeEach(function() {
       bs = new coloredcoinlib.blockchain.BlockchainStateBase()
-      epobc = new colordef.EPOBCColorDefinition(1,
+      epobc = new colordef.EPOBCColorDefinition({ colorId: 1 },
         { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
       tx = new Transaction()
       tx2 = new Transaction()
     })
 
     it('isSpecialTx true', function() {
-      var epobc1 = new colordef.EPOBCColorDefinition(1, { txId: tx.getId(), outIndex: 0, height: 0 })
+      var epobc1 = new colordef.EPOBCColorDefinition({ colorId: 1 }, { txId: tx.getId(), outIndex: 0, height: 0 })
       expect(epobc1.isSpecialTx(tx)).to.be.true
     })
 
     it('isSpecialTx false', function() {
       tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      var epobc1 = new colordef.EPOBCColorDefinition(1, { txId: tx.getId(), outIndex: 0, height: 0 })
+      var epobc1 = new colordef.EPOBCColorDefinition({ colorId: 1 }, { txId: tx.getId(), outIndex: 0, height: 0 })
       expect(epobc1.isSpecialTx(tx2)).to.be.false
     })
 
@@ -218,7 +224,7 @@ describe('colordef', function() {
         bs.getTx = stubs.getTxStub([])
         epobc.getAffectingInputs(tx, [], bs, function(error, inputs) {
           expect(error).to.equal('notFoundTx')
-          expect(inputs).to.be.null
+          expect(inputs).to.be.undefined
           done()
         })
       })

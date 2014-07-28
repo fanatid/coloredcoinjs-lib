@@ -29,35 +29,30 @@ function StoredColorData(colorDataStore, blockchainState) {
 }
 
 /**
- * Returns colorValues currently present in colorDataStore
+ * Return ColorValue currently present in colorDataStore
  *
- * @param {Array} colorDefinitionSet
  * @param {string} txId
  * @param {number} outIndex
- * @return {Array}
+ * @param {colordef.ColorDefinition} colorDefinition
+ * @return {ColorValue|null}
  */
-StoredColorData.prototype.fetchColorvalues = function(colorDefinitionSet, txId, outIndex) {
-  assert(_.isArray(colorDefinitionSet), 'Expected Array colorDefinitionSet, got ' + colorDefinitionSet)
-  assert(colorDefinitionSet.every(function(cd) { return (cd instanceof colordef.ColorDefinition) }),
-    'Expected colorDefinitionSet Array colordef.ColorDefinition, got ' + colorDefinitionSet)
+StoredColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
+  assert(colorDefinition instanceof colordef.ColorDefinition,
+    'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
 
-  var result = []
-  var colorDefinitionMap = {}
+  var colorValue = null
 
-  colorDefinitionSet.forEach(function(colorDefinition) {
-    colorDefinitionMap[colorDefinition.getColorId()] = colorDefinition
+  var colorData = this.colorDataStore.get({
+    colorId: colorDefinition.getColorId(),
+    txId: txId,
+    outIndex: outIndex
   })
+  if (colorData !== null)
+    colorValue = new ColorValue({ colordef: colorDefinition, value: colorData.value })
 
-  this.colorDataStore.getAny({txId: txId, outIndex: outIndex}).forEach(function(record) {
-    if (_.isUndefined(colorDefinitionMap[record.colorId]))
-      return
-
-    result.push(new ColorValue({ colordef: colorDefinitionMap[record.colorId], value: record.value }))
-  })
-
-  return result
+  return colorValue
 }
 
 /**
@@ -82,11 +77,11 @@ StoredColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, 
   var inColorValues = []
   var empty = true
 
-  tx.ins.forEach(function(currentTx) {
+  tx.ins.forEach(function(input) {
     var colorData = _this.colorDataStore.get({
       colorId: colorDefinition.getColorId(),
-      txId: Array.prototype.reverse.call(new Buffer(currentTx.hash)).toString('hex'),
-      outIndex: currentTx.index
+      txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
+      outIndex: input.index
     })
 
     var colorValue = null
@@ -97,31 +92,34 @@ StoredColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, 
     inColorValues.push(colorValue)
   })
 
+  if (empty && !colorDefinition.isSpecialTx(tx)) {
+    cb(null)
+    return
+  }
+
   colorDefinition.runKernel(tx, inColorValues, _this.blockchainState, function(error, outColorValues) {
-    if (error) {
-      cb(error)
-      return
-    }
+    if (error === null) {
+      outColorValues.every(function(colorValue, index) {
+        var skipAdd = colorValue === null || outputIndices.indexOf(index) === -1
 
-    outColorValues.every(function(colorValue, index) {
-      var skipAdd = colorValue === null || outputIndices.indexOf(index) === -1
-      if (!skipAdd) {
-        try {
-          _this.colorDataStore.add({
-            colorId: colorDefinition.getColorId(),
-            txId: tx.getId(),
-            outIndex: index,
-            value: colorValue.getValue()
-          })
+        if (!skipAdd) {
+          try {
+            _this.colorDataStore.add({
+              colorId: colorDefinition.getColorId(),
+              txId: tx.getId(),
+              outIndex: index,
+              value: colorValue.getValue()
+            })
 
-        } catch (e) {
-          error = e
-          return false
+          } catch (e) {
+            error = e
+            return false
+          }
         }
-      }
 
-      return true
-    })
+        return true
+      })
+    }
 
     cb(error)
   })

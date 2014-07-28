@@ -6,8 +6,8 @@ module.exports = {
   ColorDefinition: ColorDefinition,
   /* end-test-code */
 
-  genesisOutputMarker: new ColorDefinition(-1),
-  uncoloredMarker: new ColorDefinition(0),
+  genesisOutputMarker: new ColorDefinition({ colorId: -1 }),
+  uncoloredMarker: new ColorDefinition({ colorId: 0 }),
 
   EPOBCColorDefinition: require('./EPOBCColorDefinition')
 }

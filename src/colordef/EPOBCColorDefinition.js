@@ -162,14 +162,14 @@ function getXferAffectingInputs(tx, padding, outIndex) {
  *
  * Inherits ColorDefinition
  *
- * @param {number} colorId
- * @param genesis
- * @param genesis.txId transaction id
- * @param genesis.outIndex number
- * @param genesis.height number
+ * @param {Object} data
+ * @param {Object} genesis
+ * @param {string} genesis.txId
+ * @param {number} genesis.outIndex
+ * @param {number} genesis.height
  */
-function EPOBCColorDefinition(colorId, genesis) {
-  ColorDefinition.call(this, colorId)
+function EPOBCColorDefinition(data, genesis) {
+  ColorDefinition.call(this, data)
 
   assert(_.isObject(genesis), 'Expected object genesis, got ' + genesis)
   assert(Transaction.isTxId(genesis.txId), 'Expected transaction id txId, got ' + genesis.txId)
@@ -291,24 +291,25 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
     cb(null, [])
 
   } else {
+    var padding = tag.getPadding()
+
     bs.ensureInputValues(tx, function(error, tx) {
+      var inputs
+
       if (error === null) {
         var aii = []
+
         outputSet.forEach(function(outIndex) {
-          getXferAffectingInputs(tx, tag.getPadding(), outIndex).forEach(function(ai) {
+          getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
             if (aii.indexOf(ai) === -1)
               aii.push(ai)
           })
         })
 
-        var inputs = []
-        aii.forEach(function(ii) { inputs.push(tx.ins[ii]) })
-
-        cb(null, inputs)
-
-      } else {
-        cb(error, null)
+        inputs = aii.map(function(ii) { return tx.ins[ii] })
       }
+
+      cb(error, inputs)
     })
   }
 }

@@ -133,6 +133,11 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
   })
 }
 
+function parseAmount(amount) {
+  var items = amount.split('.')
+  return parseInt(items[0])*100000000 + parseInt(items[1])
+}
+
 /**
  *
  * @param {string} address
@@ -150,11 +155,6 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
 
     if (error === null) {
       try {
-        function parseAmount(amount) {
-          var items = amount.split('.')
-          return parseInt(items[0])*100000000 + parseInt(items[1])
-        }
-
         utxo = response.unspent.map(function(txOut) {
           assert(isHexString(txOut.tx), 'Expected hex string tx, got ' + txOut.tx)
           assert(_.isNumber(txOut.n), 'Expected number n, got ' + txOut.n)
