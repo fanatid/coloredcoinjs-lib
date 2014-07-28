@@ -29,9 +29,9 @@ describe('colordata', function() {
     cdStore.clear()
   })
 
-  describe('StoredColorData', function() {
+  describe('ThinColorData', function() {
     beforeEach(function() {
-      storedcd = new colordata.StoredColorData(cdStore, bs)
+      storedcd = new colordata.ThinColorData(cdStore, bs)
     })
 
     describe('fetchColorValue', function() {
@@ -125,17 +125,6 @@ describe('colordata', function() {
           done()
         })
       })
-    })
-  })
-
-  describe('ThinColorData', function() {
-    beforeEach(function() {
-      storedcd = new colordata.ThinColorData(cdStore, bs)
-    })
-
-    it('inherits StoredColorData', function() {
-      expect(storedcd).to.be.instanceof(colordata.StoredColorData)
-      expect(storedcd).to.be.instanceof(colordata.ThinColorData)
     })
 
     describe('getColorValue', function() {
