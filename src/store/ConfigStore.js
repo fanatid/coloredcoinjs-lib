@@ -6,11 +6,11 @@ var _ = require('underscore')
 var DataStore = require('./DataStore')
 
 /**
- * @class ConfigDataStore
+ * @class ConfigStore
  *
  * Inherits DataStore
  */
-function ConfigDataStore() {
+function ConfigStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
   this.configDBKey = DataStore.globalPrefix + 'config'
@@ -22,14 +22,14 @@ function ConfigDataStore() {
     this.store.set(this.configDBKey, {})
 }
 
-inherits(ConfigDataStore, DataStore)
+inherits(ConfigStore, DataStore)
 
 /**
  * Set config object
  *
  * @param {object} config
  */
-ConfigDataStore.prototype.set = function(config) {
+ConfigStore.prototype.set = function(config) {
   assert(_.isObject(config), 'Expected Object config, got ' + config)
 
   this.store.set(this.configDBKey, config)
@@ -40,16 +40,16 @@ ConfigDataStore.prototype.set = function(config) {
  *
  * @return {Object}
  */
-ConfigDataStore.prototype.get = function() {
+ConfigStore.prototype.get = function() {
   return (this.store.get(this.configDBKey) || {})
 }
 
 /**
  * Drop current config
  */
-ConfigDataStore.prototype.clear = function() {
+ConfigStore.prototype.clear = function() {
   this.store.remove(this.configDBKey)
 }
 
 
-module.exports = ConfigDataStore
+module.exports = ConfigStore

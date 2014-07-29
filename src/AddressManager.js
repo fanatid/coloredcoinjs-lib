@@ -51,10 +51,10 @@ function derive(rootNode, account, chain, index) {
 /**
  * @class AddressManager
  *
- * @param {store.AddressManagerStore} amStore
+ * @param {store.AddressStore} amStore
  */
 function AddressManager(amStore) {
-  assert(amStore instanceof store.AddressManagerStore, 'Expected AddressManagerStore amStore, got ' + amStore)
+  assert(amStore instanceof store.AddressStore, 'Expected AddressStore amStore, got ' + amStore)
 
   this.amStore = amStore
   this.account = 0

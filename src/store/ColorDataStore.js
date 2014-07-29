@@ -90,28 +90,6 @@ ColorDataStore.prototype.get = function(data) {
 }
 
 /**
- * Get all color txOutput for a given txId and outIndex
- *
- * @param {Object} data
- * @param {string} data.txId
- * @param {number} data.outIndex
- * @return {Array}
- */
-ColorDataStore.prototype.getAny = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
-  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
-
-  var colorTxs = this.store.get(this.colorTxsDBKey) || []
-
-  function isGoodRecord(record) {
-    return (record.txId === data.txId && record.outIndex === data.outIndex)
-  }
-
-  return colorTxs.filter(isGoodRecord)
-}
-
-/**
  * Remove all colorTxs
  */
 ColorDataStore.prototype.clear = function() {

@@ -182,6 +182,46 @@ function EPOBCColorDefinition(data, genesis) {
 inherits(EPOBCColorDefinition, ColorDefinition)
 
 /**
+ * Create EPOBCColorDefinition from data and scheme.
+ *  Return null if scheme not describe EPOBCColorDefinition
+ *
+ * @param {Object} data
+ * @param {string} scheme
+ * @return {EPOBCColorDefinition|null}
+ */
+EPOBCColorDefinition.fromScheme = function(data, scheme) {
+  assert(_.isString(scheme), 'Expected string scheme, got ' + scheme)
+
+  var colorDefinition = null
+
+  var items = scheme.split(':')
+  if (items[0] === 'epobc') {
+    try {
+      colorDefinition = new EPOBCColorDefinition(data, {
+        txId: items[1],
+        outIndex: parseInt(items[2]),
+        height: parseInt(items[3])
+      })
+
+    } catch(e) {
+      colorDefinition = null
+    }
+  }
+
+  return colorDefinition
+}
+
+/**
+ * Return scheme as string described this colorDefinition
+ *
+ * @return {string}
+ */
+EPOBCColorDefinition.prototype.getScheme = function() {
+  var data = ['epobc', this.genesis.txId, this.genesis.outIndex, this.genesis.height]
+  return data.join(':')
+}
+
+/**
  * @param {Transaction} tx
  * @return {boolean}
  */

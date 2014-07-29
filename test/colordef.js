@@ -35,7 +35,7 @@ describe('colordef', function() {
 
   describe('EPOBCColorDefinition', function() {
     var bs
-    var epobc
+    var epobc, epobc1
     var tx, tx2
 
     beforeEach(function() {
@@ -46,20 +46,51 @@ describe('colordef', function() {
       tx2 = new Transaction()
     })
 
-    it('isSpecialTx true', function() {
-      var epobc1 = new colordef.EPOBCColorDefinition({ colorId: 1 }, { txId: tx.getId(), outIndex: 0, height: 0 })
-      expect(epobc1.isSpecialTx(tx)).to.be.true
-    })
-
-    it('isSpecialTx false', function() {
-      tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      var epobc1 = new colordef.EPOBCColorDefinition({ colorId: 1 }, { txId: tx.getId(), outIndex: 0, height: 0 })
-      expect(epobc1.isSpecialTx(tx2)).to.be.false
-    })
-
     it('inherits ColorDefinition', function() {
       expect(epobc).to.be.instanceof(colordef.ColorDefinition)
       expect(epobc).to.be.instanceof(colordef.EPOBCColorDefinition)
+    })
+
+    describe('fromScheme', function() {
+      it('not epobc', function(){
+        epobc1 = colordef.EPOBCColorDefinition.fromScheme({}, 'obc:11:2:3')
+        expect(epobc1).to.be.null
+      })
+
+      it('data not Object', function(){
+        epobc1 = colordef.EPOBCColorDefinition.fromScheme('', 'epobc:11:2:3')
+        expect(epobc1).to.be.null
+      })
+
+      it('create new EPOBCColorDefinition', function() {
+        epobc1 = colordef.EPOBCColorDefinition.fromScheme({ colorId: epobc.getColorId() }, epobc.getScheme())
+        expect(epobc1).to.deep.equal(epobc)
+      })
+    })
+
+    describe('getScheme', function() {
+      it('#1', function() {
+        expect(epobc.getScheme()).to.equal('epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0')
+      })
+
+      it('#2', function() {
+        epobc = new colordef.EPOBCColorDefinition({ colorId: 1 },
+          { txId: '000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1', outIndex: 2, height: 312975 })
+        expect(epobc.getScheme()).to.equal('epobc:000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1:2:312975')
+      })
+    })
+
+    describe('isSpecialTx', function() {
+      it('return true', function() {
+        epobc1 = new colordef.EPOBCColorDefinition({ colorId: 1 }, { txId: tx.getId(), outIndex: 0, height: 0 })
+        expect(epobc1.isSpecialTx(tx)).to.be.true
+      })
+
+      it('return false', function() {
+        tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+        epobc1 = new colordef.EPOBCColorDefinition({ colorId: 1 }, { txId: tx.getId(), outIndex: 0, height: 0 })
+        expect(epobc1.isSpecialTx(tx2)).to.be.false
+      })
     })
 
     describe('Tag', function() {

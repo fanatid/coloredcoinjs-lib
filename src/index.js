@@ -7,6 +7,7 @@ module.exports = {
   blockchain: require('./blockchain'),
   colordata: require('./colordata'),
   colordef: require('./colordef'),
+  ColorDefinitionManager: require('./ColorDefinitionManager'),
   ColorValue: require('./ColorValue'),
   store: require('./store'),
   Transaction: require('./Transaction')

@@ -17,11 +17,11 @@ function isHexString(s) {
 }
 
 /**
- * @class AddressManagerStore
+ * @class AddressStore
  *
  * Inherits DataStore
  */
-function AddressManagerStore() {
+function AddressStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
   this.masterKeyDBKey = DataStore.globalPrefix + 'masterKey'
@@ -40,14 +40,14 @@ function AddressManagerStore() {
     this.store.set(this.pubKeysDBKey, [])
 }
 
-inherits(AddressManagerStore, DataStore)
+inherits(AddressStore, DataStore)
 
 /**
  * Save masterKey in base58 format
  *
  * @param {string} masterKey
  */
-AddressManagerStore.prototype.setMasterKey = function(newMasterKey) {
+AddressStore.prototype.setMasterKey = function(newMasterKey) {
   HDNode.fromBase58(newMasterKey) // Check masterKey
 
   this.store.set(this.masterKeyDBKey, newMasterKey)
@@ -59,7 +59,7 @@ AddressManagerStore.prototype.setMasterKey = function(newMasterKey) {
  *
  * @return {srting|undefined}
  */
-AddressManagerStore.prototype.getMasterKey = function() {
+AddressStore.prototype.getMasterKey = function() {
   return this.store.get(this.masterKeyDBKey)
 }
 
@@ -72,7 +72,7 @@ AddressManagerStore.prototype.getMasterKey = function() {
  * @param {number} data.index
  * @param {string} data.pubKey bitcoinjs-lib.ECPubKey in hex format
  */
-AddressManagerStore.prototype.addPubKey = function(data) {
+AddressStore.prototype.addPubKey = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
   assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
@@ -105,7 +105,7 @@ AddressManagerStore.prototype.addPubKey = function(data) {
  * @param {number} data.chain
  * @return {Array}
  */
-AddressManagerStore.prototype.getAllPubKeys = function(data) {
+AddressStore.prototype.getAllPubKeys = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
   assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
@@ -127,7 +127,7 @@ AddressManagerStore.prototype.getAllPubKeys = function(data) {
  * @param {number} data.chain
  * @return {number|undefined}
  */
-AddressManagerStore.prototype.getMaxIndex = function(data) {
+AddressStore.prototype.getMaxIndex = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isNumber(data.account), 'Expected number data.account, got ' + data.account)
   assert(_.isNumber(data.chain), 'Expected number data.chain, got ' + data.chain)
@@ -147,10 +147,10 @@ AddressManagerStore.prototype.getMaxIndex = function(data) {
 /**
  * Remove masterKey and all pubKeys
  */
-AddressManagerStore.prototype.clear = function() {
+AddressStore.prototype.clear = function() {
   this.store.remove(this.masterKeyDBKey)
   this.store.remove(this.pubKeysDBKey)
 }
 
 
-module.exports = AddressManagerStore
+module.exports = AddressStore

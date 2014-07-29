@@ -1,7 +1,9 @@
 var assert = require('assert')
-var _ = require('underscore')
 var inherits = require('util').inherits
 
+var _ = require('underscore')
+
+var colordef = require('../colordef')
 var DataStore = require('./DataStore')
 
 
@@ -9,81 +11,114 @@ var DataStore = require('./DataStore')
  * @class ColorDefinitionStore
  *
  * Inherits DataStore
- *
- * @param {string} type DB type, now available only memory
- * @param {object} opts DB options
  */
 function ColorDefinitionStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
+
+  this.colorDefinitionsDBKey = DataStore.globalPrefix + 'ColorDefinitions'
+  /* test-code */
+  this.colorDefinitionsDBKey = this.colorDefinitionsDBKey + '_tests'
+  /* end-test-code */
+
+  if (!_.isArray(this.store.get(this.colorDefinitionsDBKey)))
+    this.store.set(this.colorDefinitionsDBKey, [])
 }
 
 inherits(ColorDefinitionStore, DataStore)
 
 /**
- * Get ColorDefinition by colorDesc or
- *  add in storage if not exists and autoAdd is true
- *
- * @param {string} colorDesc
- * @param {boolean} autoAdd
- * @param {function} cb Called on finished with params (error, number)
+ * @param {Object} data
+ * @param {Object} data.meta
+ * @param {string} data.scheme
+ * @return {Object}
  */
-ColorDefinitionStore.prototype.resolveColorDesc = function(colorDesc, autoAdd, cb) {
-  assert(_.isString(colorDesc), 'Expected string colorDesc, got ' + colorDesc)
-  assert(_.isBoolean(autoAdd), 'Expected boolean autoAdd, got ' + autoAdd)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ColorDefinitionStore.prototype.add = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isObject(data.meta), 'Expected Object data.meta, got ' + data.meta)
+  assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
 
-  // Todo: add colorDesc validator
+  var maxColorId = 0
+  var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
 
-  if (this.dbType === 'memory') {
-    var exists = this.db.data.some(function(record) {
-      if (record[1] === colorDesc) {
-        process.nextTick(function() { cb(null, record[0]) })
-        return true
-      }
+  colorDefinitions.forEach(function(record) {
+    if (record.scheme === data.scheme)
+      throw new Error('UniqueConstraint')
 
-      return false
-    })
+    if (record.colorId > maxColorId)
+      maxColorId = record.colorId
+  })
 
-    if (!exists && autoAdd) {
-      var maxColorId = 0
-
-      this.db.data.forEach(function(record) {
-        if (record[0] > maxColorId)
-          maxColorId = record[0]
-      })
-
-      var newColorId = maxColorId + 1
-      this.db.data.push([newColorId, colorDesc])
-      process.nextTick(function() { cb(null, newColorId) })
-
-    } else if (!exists) {
-      process.nextTick(function() { cb(null, null) })
-    }
+  var result = {
+    colorId: maxColorId + 1,
+    meta: data.meta,
+    scheme: data.scheme
   }
+  colorDefinitions.push(result)
+
+  this.store.set(this.colorDefinitionsDBKey, colorDefinitions)
+
+  return result
 }
 
 /**
- * Return colorDesc by colorId
- *
- * @param {number} colorId
- * @param {function} cb Called on finished with params (error, string)
+ * @param {Object} data
+ * @param {number} [data.colorId]
+ * @param {string} [data.scheme]
+ * @return {Object|null}
  */
-ColorDefinitionStore.prototype.findColorDesc = function(colorId, cb) {
-  assert(_.isNumber(colorId), 'Expected number colorId, got ' + colorId)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ColorDefinitionStore.prototype.get = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
 
-  if (this.dbType === 'memory') {
-    var result = null
+  var result = null
+  var records = this.store.get(this.colorDefinitionsDBKey) || []
 
-    this.db.data.some(function(record) {
-      if (record[0] === colorId) {
-        result = record[1]
-        return true
-      }
+  records.some(function(record) {
+    if (record.scheme === data.scheme) {
+      result = record
+      return true
+    }
 
-      return false
-    })
+    return false
+  })
 
-    process.nextTick(function() { cb(null, result) })
-  }
+  return result
 }
+
+/**
+ * @param {Object} data
+ * @param {number} data.colorId
+ * @param {Object} data.meta
+ */
+ColorDefinitionStore.prototype.updateMeta = function(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
+  assert(_.isObject(data.meta), 'Expected Object data.meta, got ' + data.meta)
+
+  var records = this.store.get(this.colorDefinitionsDBKey) || []
+
+  records.forEach(function(record) {
+    if (record.colorId === data.colorId)
+      record.meta = data.meta
+  })
+
+  this.store.set(this.colorDefinitionsDBKey, records)
+}
+
+/**
+ * @return {Array}
+ */
+ColorDefinitionStore.prototype.getAll = function() {
+  var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
+
+  return colorDefinitions
+}
+
+/**
+ * Remove all ColorDefinitions
+ */
+ColorDefinitionStore.prototype.clear = function() {
+  this.store.remove(this.colorDefinitionsDBKey)
+}
+
+module.exports = ColorDefinitionStore

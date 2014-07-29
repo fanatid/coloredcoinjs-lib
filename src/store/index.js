@@ -3,7 +3,8 @@ module.exports = {
   DataStore: require('./DataStore'),
   /* end-test-code */
 
-  AddressManagerStore: require('./AddressManagerStore'),
+  AddressStore: require('./AddressStore'),
   ColorDataStore: require('./ColorDataStore'),
-  ConfigDataStore: require('./ConfigDataStore')
+  ColorDefinitionStore: require('./ColorDefinitionStore'),
+  ConfigStore: require('./ConfigStore')
 }

@@ -5,7 +5,7 @@ var networks = bitcoin.networks
 
 var coloredcoinlib = require('../src/index')
 var AddressManager = coloredcoinlib.AddressManager
-var AddressManagerStore = coloredcoinlib.store.AddressManagerStore
+var AddressStore = coloredcoinlib.store.AddressStore
 
 
 describe('AddressManager', function() {
@@ -16,7 +16,7 @@ describe('AddressManager', function() {
   var address0 = '18KMigSHDPVFzsgWe1mcaPPA5wSY3Ur5wS'
 
   beforeEach(function() {
-    amStore = new AddressManagerStore()
+    amStore = new AddressStore()
     am = new AddressManager(amStore)
   })
 
