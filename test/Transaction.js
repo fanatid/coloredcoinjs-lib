@@ -10,6 +10,9 @@ describe('Transaction', function() {
 
   beforeEach(function() {
     tx = new Transaction()
+    tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+    tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
+    tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
   })
 
   it('inherits bitcoinjs-lib.Transaction', function() {
@@ -18,6 +21,10 @@ describe('Transaction', function() {
   })
 
   describe('isTxId', function() {
+    beforeEach(function() {
+      tx = new Transaction()
+    })
+
     it('not string', function() {
       expect(Transaction.isTxId(1)).to.be.false
     })
@@ -35,18 +42,35 @@ describe('Transaction', function() {
     })
   })
 
+  describe('fromBuffer', function() {
+    it('return Transaction', function() {
+      var newTx = Transaction.fromBuffer(tx.toBuffer())
+      expect(newTx).to.be.instanceof(Transaction)
+      expect(newTx).to.deep.equal(tx)
+    })
+  })
+
+  describe('fromHex', function() {
+    it('return Transaction', function() {
+      var newTx = Transaction.fromHex(tx.toHex())
+      expect(newTx).to.be.instanceof(Transaction)
+      expect(newTx).to.deep.equal(tx)
+    })
+  })
+
   describe('clone', function() {
+    it('return Transaction', function() {
+      expect(tx.clone()).to.be.instanceof(Transaction)
+    })
+
     it('not ensured', function() {
       expect(tx.clone()).to.deep.equal(tx)
     })
 
     it('ensured', function() {
       tx.ensured = true
-      tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
       tx.ins[0].value = 0
       tx.ins[0].prevTx = new Transaction()
-      tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
       expect(tx.clone()).to.deep.equal(tx)
     })
   })

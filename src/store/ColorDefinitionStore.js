@@ -3,7 +3,6 @@ var inherits = require('util').inherits
 
 var _ = require('underscore')
 
-var colordef = require('../colordef')
 var DataStore = require('./DataStore')
 
 

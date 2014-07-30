@@ -36,8 +36,21 @@ Transaction.SIGHASH_NONE = bitcoin.Transaction.SIGHASH_NONE
 Transaction.SIGHASH_SINGLE = bitcoin.Transaction.SIGHASH_SINGLE
 Transaction.SIGHASH_ANYONECANPAY = bitcoin.Transaction.SIGHASH_ANYONECANPAY
 
-Transaction.fromBuffer = bitcoin.Transaction.fromBuffer
-Transaction.fromHex = bitcoin.Transaction.fromHex
+Transaction.fromBuffer = function(buffer) {
+  var tx = bitcoin.Transaction.fromBuffer(buffer)
+
+  var newTx = new Transaction()
+  newTx.version = tx.version
+  newTx.locktime = tx.locktime
+  newTx.ins = tx.ins
+  newTx.outs = tx.outs
+
+  return newTx
+}
+
+Transaction.fromHex = function(hex) {
+  return Transaction.fromBuffer(new Buffer(hex, 'hex'))
+}
 
 Transaction.prototype.clone = function() {
   var newTx = new Transaction()

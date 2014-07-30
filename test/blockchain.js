@@ -124,7 +124,7 @@ describe('blockchain', function() {
       it('Transaction.fromHex throw error', function(done) {
         bs.request = function(_, cb) { cb(null, {tx: {hex: null}}) }
         bs.getTx('0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098', function(error, tx) {
-          expect(error).to.be.instanceof(TypeError)
+          expect(error).to.be.instanceof(Error)
           expect(tx).to.be.undefined
           done()
         })
@@ -143,7 +143,7 @@ fff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec1\
       })
 
       it('from testnet', function(done) {
-        bs = new blockchain.BlockrIOAPI({ isTestnet: true })
+        bs = new blockchain.BlockrIOAPI({ testnet: true })
         bs.getTx('f0315ffc38709d70ad5647e22048358dd3745f3ce3874223c80a7c92fab0c8ba', function(error, tx) {
           expect(error).to.be.null
           expect(tx.toHex()).to.equal('\
@@ -196,7 +196,7 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
           expect(error).to.be.null
           var values = response.map(function(utxo) { return utxo.value })
           var totalValue = values.reduce(function(acc, current) { return acc + current }, 0)
-          expect(totalValue).to.equal(800000022346)
+          expect(totalValue).to.equal(800000032346)
           done()
         })
       })

@@ -23,18 +23,18 @@ function isHexString(s) {
  *
  * Inherits BlockchainStateBase
  *
- * @param opts
- * @param opts.isTestnet boolean
+ * @param {Object} opts
+ * @param {boolean} opts.testnet
  */
 function BlockrIOAPI(opts) {
-  opts = opts || {}
-  opts.isTestnet = opts.isTestnet || false
-
-  assert(_.isBoolean(opts.isTestnet), 'Expected boolean opts.isTestnet, got ' + opts.isTestnet)
+  opts = _.isUndefined(opts) ? {} : opts
+  assert(_.isObject(opts), 'Expected Object opts, got ' + opts)
+  opts.testnet = _.isUndefined(opts.testnet) ? false : opts.testnet
+  assert(_.isBoolean(opts.testnet), 'Expected boolean opts.testnet, got ' + opts.testnet)
 
   BlockchainStateBase.call(this)
 
-  this.isTestnet = opts.isTestnet
+  this.isTestnet = opts.testnet
 }
 
 inherits(BlockrIOAPI, BlockchainStateBase)
@@ -166,7 +166,7 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
             throw new TypeError('bad txOut value')
 
           return {
-            tx: txOut.tx,
+            txId: txOut.tx,
             outIndex: txOut.n,
             value: value,
             confirmations: txOut.confirmations

@@ -2,40 +2,42 @@ var assert = require('assert')
 
 var _ = require('underscore')
 
-var blockchain = require('../blockchain')
-var colordef = require('../colordef')
-var ColorValue = require('../ColorValue')
-var store = require('../store')
-var Transaction = require('../Transaction')
+var blockchain = require('./blockchain')
+var colordef = require('./colordef')
+var ColorValue = require('./ColorValue')
+var store = require('./store')
+var Transaction = require('./Transaction')
 
 
 /**
- * @class ThinColorData
+ * @class ColorData
  *
  * Color data which needs access to the blockchain state up to the genesis of color
  *
- * @param {store.ColorDataStore} colorDataStore
- * @param {blockchain.BlockchainStateBase} blockchainState
+ * @param {Object} data
+ * @param {store.ColorDataStore} data.cdStore
+ * @param {blockchain.BlockchainStateBase} data.blockchain
  */
-function ThinColorData(colorDataStore, blockchainState) {
-  assert(colorDataStore instanceof store.ColorDataStore,
-    'Expected store.ColorDataStore colorDataStore, got ' + colorDataStore)
-  assert(blockchainState instanceof blockchain.BlockchainStateBase,
-    'Expected blockchain.BlockchainStateBase blockchainState, got ' + blockchainState)
+function ColorData(data) {
+  assert(_.isObject(data), 'Expected Object data, got ' + data)
+  assert(data.cdStore instanceof store.ColorDataStore,
+    'Expected store.ColorDataStore data.cdStore, got ' + data.cdStore)
+  assert(data.blockchain instanceof blockchain.BlockchainStateBase,
+    'Expected blockchain.BlockchainStateBase data.blockchain, got ' + data.blockchain)
 
-  this.colorDataStore = colorDataStore
-  this.blockchainState = blockchainState
+  this.cdStore = data.cdStore
+  this.blockchain = data.blockchain
 }
 
 /**
- * Return ColorValue currently present in colorDataStore
+ * Return ColorValue currently present in ColorDataStore
  *
  * @param {string} txId
  * @param {number} outIndex
  * @param {colordef.ColorDefinition} colorDefinition
  * @return {ColorValue|null}
  */
-ThinColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
+ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(colorDefinition instanceof colordef.ColorDefinition,
@@ -43,7 +45,7 @@ ThinColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefiniti
 
   var colorValue = null
 
-  var colorData = this.colorDataStore.get({
+  var colorData = this.cdStore.get({
     colorId: colorDefinition.getColorId(),
     txId: txId,
     outIndex: outIndex
@@ -62,7 +64,7 @@ ThinColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefiniti
  * @param {colordef.ColorDefinition} colorDefinition
  * @param {function} cb Called on finished with params (error)
  */
-ThinColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
+ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
   assert(_.isArray(outputIndices) || _.isNull(outputIndices), 'Expected Array|null outputIndices, got ' + outputIndices)
   if (_.isArray(outputIndices))
@@ -78,7 +80,7 @@ ThinColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb
   var empty = true
 
   tx.ins.forEach(function(input) {
-    var colorData = _this.colorDataStore.get({
+    var colorData = _this.cdStore.get({
       colorId: colorDefinition.getColorId(),
       txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
       outIndex: input.index
@@ -97,14 +99,14 @@ ThinColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb
     return
   }
 
-  colorDefinition.runKernel(tx, inColorValues, _this.blockchainState, function(error, outColorValues) {
+  colorDefinition.runKernel(tx, inColorValues, _this.blockchain, function(error, outColorValues) {
     if (error === null) {
       outColorValues.every(function(colorValue, index) {
         var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
 
         if (!skipAdd) {
           try {
-            _this.colorDataStore.add({
+            _this.cdStore.add({
               colorId: colorDefinition.getColorId(),
               txId: tx.getId(),
               outIndex: index,
@@ -134,7 +136,7 @@ ThinColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb
  * @param {colordef.ColorDefinition} colorDefinition
  * @param {function} cb Called on finished with params (error, ColorValue|null)
  */
-ThinColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb) {
+ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(colorDefinition instanceof colordef.ColorDefinition,
@@ -157,13 +159,13 @@ ThinColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition
       return
     }
 
-    _this.blockchainState.getTx(txId, function(error, tx) {
+    _this.blockchain.getTx(txId, function(error, tx) {
       if (error !== null) {
         cb(error)
         return
       }
 
-      colorDefinition.getAffectingInputs(tx, [outIndex], _this.blockchainState, function(error, inputs) {
+      colorDefinition.getAffectingInputs(tx, [outIndex], _this.blockchain, function(error, inputs) {
         if (error === null)
           runProcesses(tx, inputs, 0)
         else
@@ -197,4 +199,4 @@ ThinColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition
 }
 
 
-module.exports = ThinColorData
+module.exports = ColorData

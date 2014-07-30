@@ -58,7 +58,7 @@ module.exports = function(grunt) {
       coverage: {
         src: 'test',
         options: {
-          excludes: ['test/mocks.js', 'test/stubs.js'],
+          excludes: ['mocks.js', 'stubs.js'],
           mask: '*.js',
           reporter: 'spec'
         }
@@ -67,7 +67,7 @@ module.exports = function(grunt) {
         src: 'test',
         options: {
           coverage: true,
-          excludes: ['test/mocks.js', 'test/stubs.js'],
+          excludes: ['mocks.js', 'stubs.js'],
           mask: '*.js',
           reporter: 'spec'
         }
