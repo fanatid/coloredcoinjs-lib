@@ -25,23 +25,32 @@ function ConfigStore() {
 inherits(ConfigStore, DataStore)
 
 /**
- * Set config object
+ * Set key
  *
- * @param {object} config
+ * @param {string} key
+ * @param {} value
  */
-ConfigStore.prototype.set = function(config) {
-  assert(_.isObject(config), 'Expected Object config, got ' + config)
+ConfigStore.prototype.set = function(key, value) {
+  assert(_.isString(key), 'Expected String key, got ' + key)
+
+  var config = this.store.get(this.configDBKey) || {}
+
+  config[key] = value
 
   this.store.set(this.configDBKey, config)
 }
 
 /**
- * Get config object from storage
+ * Get key from store or defaultValue if value undefined
  *
- * @return {Object}
+ * @param {string} key
+ * @param {} [defaultValue=undefined]
+ * @return {}
  */
-ConfigStore.prototype.get = function() {
-  return (this.store.get(this.configDBKey) || {})
+ConfigStore.prototype.get = function(key, defaultValue) {
+  var config = this.store.get(this.configDBKey) || {}
+  var value = _.isUndefined(config[key]) ? defaultValue : config[key]
+  return value
 }
 
 /**

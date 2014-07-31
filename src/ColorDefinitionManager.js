@@ -45,6 +45,15 @@ function ColorDefinitionManager(cdStore) {
 }
 
 /**
+ * Get uncolored ColorDefinition
+ *
+ * @return {ColorDefinition}
+ */
+ColorDefinitionManager.prototype.getUncolored = function() {
+  return new colordef.ColorDefinition({ colorId: 0 })
+}
+
+/**
  * Return ColorDefinition instance if scheme in store.
  *  Otherwise if data.autoAdd is true creates new ColorDefinition, add to store and return it
  *
