@@ -20,6 +20,16 @@ describe('ColorDefinitionManager', function() {
     cdStore.clear()
   })
 
+  describe('getUncolored', function() {
+    it('is ColorDefinition', function() {
+      expect(cdManager.getUncolored()).to.be.instanceof(colordef.ColorDefinition)
+    })
+
+    it('colorId is 0', function() {
+      expect(cdManager.getUncolored().getColorId()).to.equal(0)
+    })
+  })
+
   describe('resolveByScheme', function() {
     it('record is not null', function() {
       cdStore.add({ meta: {}, scheme: epobcScheme1 })

@@ -1,7 +1,7 @@
 var assert = require('assert')
-var _ = require('underscore')
 var inherits = require('util').inherits
 
+var _ = require('lodash')
 var bitcoin = require('bitcoinjs-lib')
 var HDNode = bitcoin.HDNode
 

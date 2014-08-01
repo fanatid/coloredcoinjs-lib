@@ -1,7 +1,7 @@
 var assert = require('assert')
 var inherits = require('util').inherits
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 var DataStore = require('./DataStore')
 

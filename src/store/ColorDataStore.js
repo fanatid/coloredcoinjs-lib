@@ -1,9 +1,9 @@
 var assert = require('assert')
-var _ = require('underscore')
 var inherits = require('util').inherits
 
-var DataStore = require('./DataStore')
+var _ = require('lodash')
 
+var DataStore = require('./DataStore')
 var Transaction = require('../Transaction')
 
 

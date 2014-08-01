@@ -1,6 +1,6 @@
 var assert = require('assert')
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 /**
  * Represents a color definition scheme. This means how color exists and

@@ -2,26 +2,31 @@ var expect = require('chai').expect
 
 var coloredcoinlib = require('../src/index')
 var colordef = coloredcoinlib.colordef
+var ColorDefinitionManager = coloredcoinlib.ColorDefinitionManager
 var ColorValue = coloredcoinlib.ColorValue
+var store = coloredcoinlib.store
 
 
 describe('ColorValue', function() {
+  var cdStore = new store.ColorDefinitionStore()
+  var cdManager = new ColorDefinitionManager(cdStore)
+  var uncoloredColorDefinition = cdManager.getUncolored()
   var cv1, cv2
 
   beforeEach(function() {
-    cv1 = new ColorValue({ colordef: colordef.uncoloredMarker, value: 0 })
+    cv1 = new ColorValue({ colordef: uncoloredColorDefinition, value: 0 })
   })
 
   it('getColorDefinition', function() {
-    expect(cv1.getColorDefinition()).to.deep.equal(colordef.uncoloredMarker)
+    expect(cv1.getColorDefinition()).to.deep.equal(uncoloredColorDefinition)
   })
 
   it('getColorId', function() {
-    expect(cv1.getColorId()).to.equal(colordef.uncoloredMarker.getColorId())
+    expect(cv1.getColorId()).to.equal(uncoloredColorDefinition.getColorId())
   })
 
   it('checkCompatibility return true', function() {
-    cv2 = new ColorValue({ colordef: colordef.uncoloredMarker, value: 0 })
+    cv2 = new ColorValue({ colordef: uncoloredColorDefinition, value: 0 })
     expect(cv1.checkCompatibility(cv2)).to.equal(true)
   })
 
@@ -35,7 +40,7 @@ describe('ColorValue', function() {
   })
 
   it('add with compatibility', function() {
-    cv2 = new ColorValue({ colordef: colordef.uncoloredMarker, value: 1 })
+    cv2 = new ColorValue({ colordef: uncoloredColorDefinition, value: 1 })
     cv1.add(cv2)
     expect(cv1.getValue()).to.equal(1)
   })

@@ -23,14 +23,6 @@ describe('colordef', function() {
       var colordef1 = new colordef.ColorDefinition({ colorId: 1, meta: meta })
       expect(colordef1.getMeta()).to.deep.equal(meta)
     })
-
-    it('genesisOutputMarker', function() {
-      expect(colordef.genesisOutputMarker.getColorId()).to.equal(-1)
-    })
-
-    it('uncoloredMarker', function() {
-      expect(colordef.uncoloredMarker.getColorId()).to.equal(0)
-    })
   })
 
   describe('EPOBCColorDefinition', function() {

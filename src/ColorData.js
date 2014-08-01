@@ -1,6 +1,6 @@
 var assert = require('assert')
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 var blockchain = require('./blockchain')
 var colordef = require('./colordef')

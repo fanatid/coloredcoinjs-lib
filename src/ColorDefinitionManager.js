@@ -1,6 +1,6 @@
 var assert = require('assert')
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 var colordef = require('./colordef')
 var store = require('./store')

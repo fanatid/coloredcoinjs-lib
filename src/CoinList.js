@@ -1,6 +1,6 @@
 var assert = require('assert')
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 var Coin = require('./Coin')
 
@@ -20,65 +20,42 @@ function CoinList(coins) {
 }
 
 /**
- * Select only unconfirmed coins and return new CoinList
- *
- * @return {CoinList}
- */
-CoinList.prototype.onlyUnconfirmed = function() {
-  var coins = this.getCoins().filter(function(coin) { return !coin.isConfirmed() })
-  return new CoinList(coins)
-}
-
-/**
- * Select only confirmed coins and return new CoinList
- *
- * @return {CoinList}
- */
-CoinList.prototype.onlyConfirmed = function() {
-  var coins = this.getCoins().filter(function(coin) { return coin.isConfirmed() })
-  return new CoinList(coins)
-}
-
-/**
- * Get coins
- *
- * @return {Array}
- */
-CoinList.prototype.getCoins = function() {
-  return this.coins
-}
-
-/**
  * @param {function} cb
  */
-CoinList.prototype.getBalance = function(cb) {
+CoinList.prototype.getTotalValue = function(cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   var _this = this
+  var dColorValues = {}
+  function getMainColorValue(index) {
+    if (_this.coins.length === index) {
+      var colorValues = []
+      Object.keys(dColorValues).forEach(function(colorId) {
+        colorValues.push(dColorValues[colorId])
+      })
 
-  var gColorValues = {}
-  var coins = this.coins
-
-  function getColorValues(index) {
-    if (coins.length === index) {
-      cb(null, gColorValues)
+      cb(null, colorValues) // Todo: return ColorValue if colorValues.length === 1 ?
       return
     }
 
-    coins[index].getColorValues(function(error, colorValues) {
+    _this.coins[index].getMainColorValue(function(error, colorValue) {
       if (error !== null) {
         cb(error)
         return
       }
 
-      Object.keys(colorValues).forEach(function(colorId) {
-        if (_.isUndefined(gColorValues[colorId]))
-          gColorValues[colorId] = colorValues[colorId]
-        else
-          gColorValues[colorId].add(colorValues[colorId])
-      })
+      var colorId = colorValue.getColorId()
+
+      if (_.isUndefined(dColorValues[colorId]))
+        dColorValues[colorId] = colorValue
+      else
+        dColorValues[colorId].add(colorValue)
+
+      getMainColorValue(index+1)
     })
   }
 
-  getColorValues(0)
+  getMainColorValue(0)
 }
 
 

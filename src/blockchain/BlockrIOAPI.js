@@ -2,7 +2,7 @@ var assert = require('assert')
 var http = require('http')
 var inherits = require('util').inherits
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 var BlockchainStateBase = require('./BlockchainStateBase')
 var Transaction = require('../Transaction')

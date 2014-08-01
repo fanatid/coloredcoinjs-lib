@@ -1,9 +1,10 @@
 var assert = require('assert')
 
-var _ = require('underscore')
+var _ = require('lodash')
 
 var ColorDefinitionManager = require('./ColorDefinitionManager')
 var ColorData = require('./ColorData')
+var ColorDefinition = require('./colordef').ColorDefinition
 var ColorValue = require('./ColorValue')
 var Transaction = require('./Transaction')
 
@@ -11,29 +12,31 @@ var Transaction = require('./Transaction')
 /**
  * @class Coin
  *
- * @param {Object} data
- * @param {ColorDefinitionManager} colorDefinitionManager
- * @param {string} data.txId
- * @param {number} data.outIndex
- * @param {number} data.value
- * @param {number} data.confirmations
+ * @param {Object} params
+ * @param {ColorData} params.colorData
+ * @param {ColorDefinitionManager} params.colorDefinitionManager
+ * @param {string} params.txId
+ * @param {number} params.outIndex
+ * @param {number} params.value
+ * @param {number} params.confirmations
  */
-function Coin(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(data.colorDefinitionManager instanceof ColorDefinitionManager,
-    'Expected ColorDefinitionManager data.colorDefinitionManager, got ' + data.colorDefinitionManager)
-  assert(data.colorData instanceof ColorData, 'Expected ColorData data.colorData, got ' + data.colorData)
-  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
-  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
-  assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
-  assert(_.isNumber(data.confirmations), 'Expected number data.confirmations, got ' + data.confirmations)
+function Coin(params) {
+  assert(_.isObject(params), 'Expected Object params, got ' + params)
+  assert(params.colorData instanceof ColorData,
+    'Expected params.colorData instanceof ColorData, got ' + params.colorData)
+  assert(params.colorDefinitionManager instanceof ColorDefinitionManager,
+    'Expected params.colorDefinitionManager instanceof ColorDefinitionManager, got ' + params.colorDefinitionManager)
+  assert(Transaction.isTxId(params.txId), 'Expected transaction id params.txId, got ' + params.txId)
+  assert(_.isNumber(params.outIndex), 'Expected number params.outIndex, got ' + params.outIndex)
+  assert(_.isNumber(params.value), 'Expected number params.value, got ' + params.value)
+  assert(_.isNumber(params.confirmations), 'Expected number params.confirmations, got ' + params.confirmations)
 
-  this.cDefinitionManager = data.colorDefinitionManager
-  this.cData = data.colorData
-  this.txId = data.txId
-  this.outIndex = data.outIndex
-  this.value = data.value
-  this.confirmations = data.confirmations
+  this.cDefinitionManager = params.colorDefinitionManager
+  this.cData = params.colorData
+  this.txId = params.txId
+  this.outIndex = params.outIndex
+  this.value = params.value
+  this.confirmations = params.confirmations
 }
 
 /**
@@ -52,50 +55,62 @@ Coin.prototype.isConfirmed = function() {
  * @param {function} cb
  */
 Coin.prototype.getColorValue = function(colorDefinition, cb) {
+  assert(colorDefinition instanceof ColorDefinition,
+    'Expected colorDefinition instanceof ColorDefinition, got ' + colorDefinition)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   this.cData.getColorValue(this.txId, this.outIndex, colorDefinition, cb)
 }
 
 /**
- * Get all ColorValues for current Coin
+ * Get one ColorValue or error if more than one
  *
  * @param {function} cb
  */
-Coin.prototype.getColorValues = function(cb) {
+Coin.prototype.getMainColorValue = function (cb) {
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
   var _this = this
 
-  var colorValues = {}
+  var coinColorValue = null
   var colorDefinitions = this.cDefinitionManager.getAllColorDefinitions()
 
   function getColorValue(index) {
     if (colorDefinitions.length === index) {
-      var totalValue = 0
-      Object.keys(colorValues).forEach(function(colorId) {
-        totalValue += colorValues[colorId].getValue()
-      })
-
-      if (totalValue < _this.value) {
+      if (coinColorValue === null) {
         var uncolored = _this.cDefinitionManager.getUncolored()
-        var uncoloredValue = new ColorValue({ colordef: uncolored, value: _this.value - totalValue })
-
-        colorValues[uncolored.getColorId()] = uncoloredValue
+        coinColorValue = new ColorValue({ colordef: uncolored, value: _this.value })
       }
 
-      cb(null, colorValues)
+      cb(null, coinColorValue)
       return
     }
 
     _this.getColorValue(colorDefinitions[index], function(error, colorValue) {
+      if (error === null && colorValue !== null) {
+        if (coinColorValue === null)
+          coinColorValue = colorValue
+        else
+          error = new Error('Coin ' + _this + ' have more that one ColorValue')
+      }
+
       if (error !== null) {
         cb(error)
         return
       }
 
-      colorValues[colorValue.getColorId()] = colorValue
       getColorValue(index+1)
     })
   }
 
   getColorValue(0)
+}
+
+/**
+ * @return {string}
+ */
+Coin.prototype.toString = function() {
+  return this.txId + ':' + this.outIndex
 }
 
 

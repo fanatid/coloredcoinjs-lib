@@ -1,5 +1,5 @@
 var assert = require('assert')
-var _ = require('underscore')
+var _ = require('lodash')
 
 var coloredcoinlib = require('../src/index')
 var Transaction = coloredcoinlib.Transaction

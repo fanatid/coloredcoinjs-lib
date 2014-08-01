@@ -203,9 +203,12 @@ describe('store', function() {
     })
 
     it('set/get', function() {
-      expect(cStore.get()).to.deep.equal({})
-      cStore.set({msg: 'hello world'})
-      expect(cStore.get()).to.deep.equal({msg: 'hello world'})
+      cStore.set('key', 'myValue!!1')
+      expect(cStore.get('key')).to.equal('myValue!!1')
+    })
+
+    it('get defaultValue', function() {
+      expect(cStore.get('key', 'myDefaultValye')).to.equal('myDefaultValye')
     })
   })
 })
