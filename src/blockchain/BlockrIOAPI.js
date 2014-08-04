@@ -3,6 +3,7 @@ var http = require('http')
 var inherits = require('util').inherits
 
 var _ = require('lodash')
+var LRU = require('lru-cache')
 
 var BlockchainStateBase = require('./BlockchainStateBase')
 var Transaction = require('../Transaction')
@@ -25,16 +26,30 @@ function isHexString(s) {
  *
  * @param {Object} opts
  * @param {boolean} opts.testnet
+ * @param {number} [opts.maxCacheSize=500]
+ * @param {number} [opts.maxCacheAge=10*1000] Cache live in ms
  */
 function BlockrIOAPI(opts) {
   opts = _.isUndefined(opts) ? {} : opts
   assert(_.isObject(opts), 'Expected Object opts, got ' + opts)
+
   opts.testnet = _.isUndefined(opts.testnet) ? false : opts.testnet
   assert(_.isBoolean(opts.testnet), 'Expected boolean opts.testnet, got ' + opts.testnet)
+
+  opts.maxCacheSize = _.isUndefined(opts.maxCacheSize) ? 500 : opts.maxCacheSize
+  assert(_.isNumber(opts.maxCacheSize), 'Expected number opts.maxCacheSize, got ' + opts.maxCacheSize)
+
+  opts.maxCacheAge = _.isUndefined(opts.maxCacheAge) ? 10*1000 : opts.maxCacheAge
+  assert(_.isNumber(opts.maxCacheAge), 'Expected number opts.maxCacheAge, got ' + opts.maxCacheAge)
+
 
   BlockchainStateBase.call(this)
 
   this.isTestnet = opts.testnet
+  this.cache = LRU({
+    max: opts.maxCacheAge,
+    maxAge: opts.maxCacheAge
+  })
 }
 
 inherits(BlockrIOAPI, BlockchainStateBase)
@@ -48,6 +63,14 @@ inherits(BlockrIOAPI, BlockchainStateBase)
 BlockrIOAPI.prototype.request = function(path, cb) {
   assert(_.isString(path), 'Expected string path, got ' + path)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  var cachedValue = this.cache.get(path)
+  if (!_.isUndefined(cachedValue)) {
+    process.nextTick(function() { cb(null, cachedValue) })
+    return
+  }
+
+  var _this = this
 
   var opts = {
     scheme: 'http',
@@ -66,19 +89,23 @@ BlockrIOAPI.prototype.request = function(path, cb) {
     })
 
     res.on('end', function() {
+      var result
+      var error = null
 
       try {
-        var result = JSON.parse(buf)
+        result = JSON.parse(buf)
+        if (result.status !== 'success')
+          error = result.message || new Error('Bad data')
 
-        if (result.status === 'success')
-          cb(null, result.data)
-        else
-          cb(result.message || new Error('Bad data'))
-
-      } catch (error) {
-        cb(error)
+      } catch (newError) {
+        error = newError
 
       }
+
+      if (error === null)
+        _this.cache.set(path, result.data)
+
+      cb(error, error === null ? result.data : undefined)
     })
 
     res.on('error', function(error) {

@@ -34,8 +34,6 @@ describe('CoinQuery', function() {
   })
 
   describe('getTotalValue', function() {
-    this.timeout(5000)
-
     it('split from genesis', function(done) {
       am.getAllAddresses = function() {
         return [{ getAddress: function() { return 'mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1' } }]

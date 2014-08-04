@@ -55,8 +55,6 @@ describe('CoinQuery', function() {
   })
 
   describe('getCoins', function(done) {
-    this.timeout(5000)
-
     it('getUTXO return error', function(done) {
       am.getAllAddresses = function() {
         return [{ getAddress: function() { return 'mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1' } }]
