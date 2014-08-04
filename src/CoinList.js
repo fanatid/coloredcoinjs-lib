@@ -17,6 +17,13 @@ function CoinList(coins) {
   })
 
   this.coins = coins
+
+  this.length = coins.length
+
+  var _this = this
+  coins.forEach(function(coin, index) {
+    _this[index] = coin
+  })
 }
 
 /**

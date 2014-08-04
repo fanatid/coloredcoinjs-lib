@@ -141,8 +141,8 @@ CoinQuery.prototype.getCoins = function(cb) {
     }
 
     var coin = new Coin({
-      colorData: _this.cData,
-      colorDefinitionManager: _this.cDefinitionManager,
+      colorData: _this.colorData,
+      colorDefinitionManager: _this.colorDefinitionManager,
       txId: utxo[index].txId,
       outIndex: utxo[index].outIndex,
       value: utxo[index].value,

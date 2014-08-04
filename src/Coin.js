@@ -31,7 +31,7 @@ function Coin(params) {
   assert(_.isNumber(params.value), 'Expected number params.value, got ' + params.value)
   assert(_.isNumber(params.confirmations), 'Expected number params.confirmations, got ' + params.confirmations)
 
-  this.cDefinitionManager = params.colorDefinitionManager
+  this.cdManager = params.colorDefinitionManager
   this.cData = params.colorData
   this.txId = params.txId
   this.outIndex = params.outIndex
@@ -65,7 +65,7 @@ Coin.prototype.getColorValue = function(colorDefinition, cb) {
 /**
  * Get one ColorValue or error if more than one
  *
- * @param {function} cb
+ * @param {function} cb Called on finished with params (error, ColorValue)
  */
 Coin.prototype.getMainColorValue = function (cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -73,12 +73,12 @@ Coin.prototype.getMainColorValue = function (cb) {
   var _this = this
 
   var coinColorValue = null
-  var colorDefinitions = this.cDefinitionManager.getAllColorDefinitions()
+  var colorDefinitions = this.cdManager.getAllColorDefinitions()
 
   function getColorValue(index) {
     if (colorDefinitions.length === index) {
       if (coinColorValue === null) {
-        var uncolored = _this.cDefinitionManager.getUncolored()
+        var uncolored = _this.cdManager.getUncolored()
         coinColorValue = new ColorValue({ colordef: uncolored, value: _this.value })
       }
 
