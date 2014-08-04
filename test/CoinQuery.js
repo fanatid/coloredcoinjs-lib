@@ -5,12 +5,10 @@ var CoinQuery = coloredcoinlib.CoinQuery
 
 
 describe('CoinQuery', function() {
-  var amStore, am, bs, cDataStore, cData, cdStore, cdManager, colordef
+  var bs, cDataStore, cData, cdStore, cdManager, colordef
   var coinQuery
 
   beforeEach(function() {
-    amStore = new coloredcoinlib.store.AddressStore()
-    am = new coloredcoinlib.AddressManager(amStore)
     bs = new coloredcoinlib.blockchain.BlockrIOAPI({ testnet: true })
     cDataStore = new coloredcoinlib.store.ColorDataStore()
     cData = new coloredcoinlib.ColorData({ cdStore: cDataStore, blockchain: bs })
@@ -20,7 +18,7 @@ describe('CoinQuery', function() {
     colordef = cdManager.resolveByScheme({ scheme: 'epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191' })
 
     coinQuery = new CoinQuery({
-      addressManager: am,
+      addresses: ['mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1'],
       blockchain: bs,
       colorData: cData,
       colorDefinitionManager: cdManager
@@ -28,7 +26,6 @@ describe('CoinQuery', function() {
   })
 
   afterEach(function() {
-    amStore.clear()
     cDataStore.clear()
     cdStore.clear()
   })
@@ -56,9 +53,6 @@ describe('CoinQuery', function() {
 
   describe('getCoins', function(done) {
     it('getUTXO return error', function(done) {
-      am.getAllAddresses = function() {
-        return [{ getAddress: function() { return 'mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1' } }]
-      }
       bs.getUTXO = function(_, cb) { cb('error.getUTXO') }
       coinQuery.getCoins(function(error, coinList) {
         expect(error).to.equal('error.getUTXO')
@@ -72,9 +66,6 @@ describe('CoinQuery', function() {
     })
 
     it('onlyUnconfirmed', function(done) {
-      am.getAllAddresses = function() {
-        return [{ getAddress: function() { return 'mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1' } }]
-      }
       coinQuery.getUnconfirmed().getCoins(function(error, coinList) {
         expect(error).to.be.null
         expect(coinList).to.be.instanceof(coloredcoinlib.CoinList).with.to.have.length(0)
@@ -83,9 +74,6 @@ describe('CoinQuery', function() {
     })
 
     it('split from genesis', function(done) {
-      am.getAllAddresses = function() {
-        return [{ getAddress: function() { return 'mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1' } }]
-      }
       coinQuery.getCoins(function(error, coinList) {
         expect(error).to.be.null
         expect(coinList).to.be.instanceof(coloredcoinlib.CoinList).with.to.have.length(1)
@@ -95,9 +83,6 @@ describe('CoinQuery', function() {
     })
 
     it('split from genesis + onlyColoredAs', function(done) {
-      am.getAllAddresses = function() {
-        return [{ getAddress: function() { return 'mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1' } }]
-      }
       coinQuery.onlyColoredAs(colordef).getCoins(function(error, coinList) {
         expect(error).to.be.null
         expect(coinList).to.be.instanceof(coloredcoinlib.CoinList).with.to.have.length(1)

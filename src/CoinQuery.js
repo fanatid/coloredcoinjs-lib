@@ -2,7 +2,6 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var AddressManager = require('./AddressManager')
 var blockchain = require('./blockchain')
 var Coin = require('./Coin')
 var CoinList = require('./CoinList')
@@ -15,16 +14,18 @@ var ColorDefinitionManager = require('./ColorDefinitionManager')
  * @class CoinQuery
  *
  * @param {Object} params
- * @param {AddressManager} params.addressManager
+ * @param {Array} params.addresses
  * @param {BlockchainStateBase} params.blockchain
  * @param {ColorData} params.colorData
  * @param {ColorDefinitionManager} params.colorDefinitionManager
  */
 function CoinQuery(params) {
   assert(_.isObject(params), 'Expected Object params, got ' + params)
-  // Todo: add opportunity use Array string contains addresses instead AddressManager
-  assert(params.addressManager instanceof AddressManager,
-    'Expected params.addressManager instanceof AddressManager, got ' + params.addressManager)
+  assert(_.isArray(params.addresses), 'Expected Array params.addresses, got ' + params.addresses)
+  params.addresses.forEach(function(address) {
+    // Check address instead string
+    assert(_.isString(address), 'Expected Array of string params.addresses, got ' + params.addresses)
+  })
   assert(params.blockchain instanceof blockchain.BlockchainStateBase,
     'Expected params.blockchain instanceof BlockchainStateBase, got ' + params.blockchain)
   assert(params.colorData instanceof ColorData,
@@ -32,7 +33,7 @@ function CoinQuery(params) {
   assert(params.colorDefinitionManager instanceof ColorDefinitionManager,
     'Expected params.colorDefinitionManager instanceof ColorDefinitionManager, got ' + params.colorDefinitionManager)
 
-  this.addressManager = params.addressManager
+  this.addresses = params.addresses
   this.blockchain = params.blockchain
   this.colorData = params.colorData
   this.colorDefinitionManager = params.colorDefinitionManager
@@ -51,7 +52,7 @@ function CoinQuery(params) {
  */
 CoinQuery.prototype.clone = function() {
   var newCoinQuery = new CoinQuery({
-    addressManager: this.addressManager,
+    addresses: this.addresses,
     blockchain: this.blockchain,
     colorData: this.colorData,
     colorDefinitionManager: this.colorDefinitionManager
@@ -114,15 +115,14 @@ CoinQuery.prototype.getCoins = function(cb) {
 
   var _this = this
 
-  var addresses = this.addressManager.getAllAddresses().map(function(address) { return address.getAddress() })
   var utxo = []
   function getUTXO(index) {
-    if (addresses.length === index) {
+    if (_this.addresses.length === index) {
       filterUTXO(0)
       return
     }
 
-    _this.blockchain.getUTXO(addresses[index], function(error, result) {
+    _this.blockchain.getUTXO(_this.addresses[index], function(error, result) {
       if (error !== null) {
         cb(error)
         return
