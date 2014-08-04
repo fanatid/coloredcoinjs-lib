@@ -18,7 +18,7 @@ module.exports = function(grunt) {
     },
     clean: {
       builds: {
-        src: ['coloredcoinlib.js', 'coloredcoinlib.test.js', 'coloredcoinlib.min.js']
+        src: ['coloredcoinlib.js', 'coloredcoinlib.min.js', 'coloredcoinlib.test.js']
       },
       production: {
         src: ['.src_production']
@@ -52,7 +52,7 @@ module.exports = function(grunt) {
         strict: false,
         trailing: true
       },
-      files: ['src/*.js', 'src/blockchain/*.js', 'src/colordata/*.js', 'src/colordef/*.js', 'src/store/*.js']
+      files: ['src/*.js', 'src/blockchain/*.js', 'src/colordef/*.js', 'src/store/*.js']
     },
     mocha_istanbul: {
       coverage: {
