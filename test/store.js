@@ -79,7 +79,7 @@ describe('store', function() {
       expect(cdStore).to.be.instanceof(store.ColorDefinitionStore)
     })
 
-    it('add/add/get', function() {
+    it('add/add/get/get', function() {
       var record = cdStore.add({ meta: {}, scheme: epobcScheme1 })
       expect(record).to.deep.equal({ colorId: 1, meta: {}, scheme: epobcScheme1 })
 
@@ -87,6 +87,9 @@ describe('store', function() {
       expect(record).to.deep.equal({ colorId: 2, meta: {}, scheme: epobcScheme2 })
 
       record = cdStore.get({ scheme: epobcScheme2 })
+      expect(record).to.deep.equal({ colorId: 2, meta: {}, scheme: epobcScheme2 })
+
+      record = cdStore.get({ colorId: 2 })
       expect(record).to.deep.equal({ colorId: 2, meta: {}, scheme: epobcScheme2 })
     })
 

@@ -67,13 +67,16 @@ ColorDefinitionStore.prototype.add = function(data) {
  */
 ColorDefinitionStore.prototype.get = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
+  if (_.isUndefined(data.colorId))
+    assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
+  else
+    assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
 
   var result = null
   var records = this.store.get(this.colorDefinitionsDBKey) || []
 
   records.some(function(record) {
-    if (record.scheme === data.scheme) {
+    if ( record.colorId === data.colorId || record.scheme === data.scheme) {
       result = record
       return true
     }

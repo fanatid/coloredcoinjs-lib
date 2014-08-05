@@ -54,6 +54,29 @@ ColorDefinitionManager.prototype.getUncolored = function() {
 }
 
 /**
+ * Get ColorDefinition from store by colorId or return null if not exists.
+ *
+ * @param {Object} params
+ * @param {number} params.colorId
+ * @return {ColorDefinition|null}
+ */
+ColorDefinitionManager.prototype.getByColorId = function(params) {
+  assert(_.isObject(params), 'Expected Object params, got ' + params)
+  assert(_.isNumber(params.colorId), 'Expected number params.colorId, got ' + params.colorId)
+
+  if (params.colorId === 0)
+    return this.getUncolored()
+
+  var result = null
+
+  var record = this.cdStore.get({ colorId: params.colorId })
+  if (record !== null)
+    result = record2ColorDefinition(record)
+
+  return result
+}
+
+/**
  * Return ColorDefinition instance if scheme in store.
  *  Otherwise if data.autoAdd is true creates new ColorDefinition, add to store and return it
  *

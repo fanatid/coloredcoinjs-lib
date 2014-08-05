@@ -30,6 +30,25 @@ describe('ColorDefinitionManager', function() {
     })
   })
 
+  describe('getByColorId', function() {
+    it('return null', function() {
+      var result = cdManager.getByColorId({ colorId: 10 })
+      expect(result).to.be.null
+    })
+
+    it('return uncolred', function() {
+      var uncolred = cdManager.getUncolored()
+      var result = cdManager.getByColorId({ colorId: 0 })
+      expect(result).to.deep.equal(uncolred)
+    })
+
+    it('return ColorDefinition', function() {
+      cdStore.add({ meta: {}, scheme: epobcScheme1 })
+      var result = cdManager.getByColorId({ colorId: 1 })
+      expect(result).to.deep.equal(colordef.EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
+    })
+  })
+
   describe('resolveByScheme', function() {
     it('record is not null', function() {
       cdStore.add({ meta: {}, scheme: epobcScheme1 })
