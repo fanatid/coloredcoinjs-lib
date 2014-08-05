@@ -10,6 +10,7 @@ var Coin = require('./Coin')
  *
  * @param {Array} coins
  */
+ // Todo: give colors for create zero colorvalues
 function CoinList(coins) {
   assert(_.isArray(coins), 'Expected Array coins, got ' + coins)
   coins.forEach(function(coin) {
@@ -27,7 +28,7 @@ function CoinList(coins) {
 }
 
 /**
- * @param {function} cb
+ * @param {function} cb Called on finished with params (error, Array)
  */
 CoinList.prototype.getTotalValue = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)

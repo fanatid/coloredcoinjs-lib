@@ -108,7 +108,7 @@ CoinQuery.prototype.getUnconfirmed = function() {
 /**
  * Select coins and return CoinList via cb
  *
- * @param {function} cb
+ * @param {function} cb Called on finished with params (error, CoinList)
  */
 CoinQuery.prototype.getCoins = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)

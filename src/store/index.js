@@ -4,6 +4,5 @@ module.exports = {
   /* end-test-code */
 
   ColorDataStore: require('./ColorDataStore'),
-  ColorDefinitionStore: require('./ColorDefinitionStore'),
-  ConfigStore: require('./ConfigStore')
+  ColorDefinitionStore: require('./ColorDefinitionStore')
 }

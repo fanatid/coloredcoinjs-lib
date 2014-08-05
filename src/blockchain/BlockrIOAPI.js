@@ -46,9 +46,17 @@ function BlockrIOAPI(opts) {
   BlockchainStateBase.call(this)
 
   this.isTestnet = opts.testnet
+
   this.cache = LRU({
-    max: opts.maxCacheAge,
+    max: opts.maxCacheSize,
     maxAge: opts.maxCacheAge
+  })
+
+  this.requestPathCacheSize = 100
+  this.requestPathCacheMaxAge = 2*1000
+  this.requestPathCache = LRU({
+    max: this.requestPathCacheSize,
+    maxAge: this.requestPathCacheMaxAge
   })
 }
 
@@ -64,24 +72,34 @@ BlockrIOAPI.prototype.request = function(path, cb) {
   assert(_.isString(path), 'Expected string path, got ' + path)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
+  var _this = this
+
+  /** check in cache */
   var cachedValue = this.cache.get(path)
   if (!_.isUndefined(cachedValue)) {
     process.nextTick(function() { cb(null, cachedValue) })
     return
   }
 
-  var _this = this
+  /** check already requested */
+  cachedValue = this.requestPathCache.get(path)
+  if (!_.isUndefined(cachedValue)) {
+    setTimeout(function() { _this.request(path, cb) }, 100)
+    return
+  }
 
-  var opts = {
+  /** request */
+  this.requestPathCache.set(path, true)
+  var request = http.request({
     scheme: 'http',
     host: this.isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io',
     port: 80,
     path: path,
     method: 'GET',
     withCredentials: false
-  }
+  })
 
-  http.request(opts, function(res) {
+  request.on('response', function(res) {
     var buf = ''
 
     res.on('data', function(data) {
@@ -109,9 +127,19 @@ BlockrIOAPI.prototype.request = function(path, cb) {
     })
 
     res.on('error', function(error) {
-      cb(error, null)
+      cb(error)
     })
-  }).end()
+  })
+
+  request.setTimeout(this.requestPathCacheMaxAge, function() {
+    request.abort()
+  })
+
+  request.on('error', function(error) {
+    cb(error)
+  })
+
+  request.end()
 }
 
 /**

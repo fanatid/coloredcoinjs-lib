@@ -119,30 +119,4 @@ describe('store', function() {
       ])
     })
   })
-
-  describe('ConfigStore', function() {
-    var cStore
-
-    beforeEach(function() {
-      cStore = new store.ConfigStore()
-    })
-
-    afterEach(function() {
-      cStore.clear()
-    })
-
-    it('inherits DataStore', function() {
-      expect(cStore).to.be.instanceof(store.DataStore)
-      expect(cStore).to.be.instanceof(store.ConfigStore)
-    })
-
-    it('set/get', function() {
-      cStore.set('key', 'myValue!!1')
-      expect(cStore.get('key')).to.equal('myValue!!1')
-    })
-
-    it('get defaultValue', function() {
-      expect(cStore.get('key', 'myDefaultValye')).to.equal('myDefaultValye')
-    })
-  })
 })
