@@ -8,7 +8,7 @@ var store = coloredcoinlib.store
 
 
 describe('ColorValue', function() {
-  var cdStore = new store.ColorDefinitionStore()
+  var cdStore = new store.ColorDefinitionStore({ testEnv: true }) // not need clear, cdManager use only uncolored
   var cdManager = new ColorDefinitionManager(cdStore)
   var uncoloredColorDefinition = cdManager.getUncolored()
   var cv1, cv2

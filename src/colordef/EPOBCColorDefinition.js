@@ -354,13 +354,11 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
   }
 }
 
-/* test-code */
-EPOBCColorDefinition.Tag = Tag
-EPOBCColorDefinition.Tag.number2bitArray = number2bitArray
-EPOBCColorDefinition.Tag.bitArray2number = bitArray2number
-EPOBCColorDefinition.Tag.getTag = getTag
-EPOBCColorDefinition.getXferAffectingInputs = getXferAffectingInputs
-/* end-test-code */
+EPOBCColorDefinition._Tag = Tag
+EPOBCColorDefinition._Tag.number2bitArray = number2bitArray
+EPOBCColorDefinition._Tag.bitArray2number = bitArray2number
+EPOBCColorDefinition._Tag.getTag = getTag
+EPOBCColorDefinition._getXferAffectingInputs = getXferAffectingInputs
 
 
 module.exports = EPOBCColorDefinition

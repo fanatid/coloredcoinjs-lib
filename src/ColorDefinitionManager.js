@@ -131,9 +131,5 @@ ColorDefinitionManager.prototype.getAllColorDefinitions = function() {
   return this.cdStore.getAll().map(record2ColorDefinition)
 }
 
-/* test-code */
-ColorDefinitionManager.record2ColorDefinition = record2ColorDefinition
-/* end-test-code */
-
 
 module.exports = ColorDefinitionManager

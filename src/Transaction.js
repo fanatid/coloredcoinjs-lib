@@ -84,10 +84,6 @@ Transaction.prototype.clone = function() {
     }
   })
 
-  /* test-code */
-  newTx.getId = this.getId
-  /* end-test-code */
-
   return newTx
 }
 

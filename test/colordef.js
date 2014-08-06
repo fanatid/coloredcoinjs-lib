@@ -89,41 +89,41 @@ describe('colordef', function() {
       var tag
 
       it('getPadding return 0', function() {
-        tag = new colordef.EPOBCColorDefinition.Tag(0, true)
+        tag = new colordef.EPOBCColorDefinition._Tag(0, true)
         expect(tag.getPadding()).to.equal(0)
       })
 
       it('getPadding return pow of 2', function() {
-        tag = new colordef.EPOBCColorDefinition.Tag(2, true)
+        tag = new colordef.EPOBCColorDefinition._Tag(2, true)
         expect(tag.getPadding()).to.equal(4)
       })
 
       it('number2bitArray', function() {
-        var bits = colordef.EPOBCColorDefinition.Tag.number2bitArray(54648432)
+        var bits = colordef.EPOBCColorDefinition._Tag.number2bitArray(54648432)
         expect(bits).to.deep.equal([0,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0])
       })
 
       it('bitArray2number', function() {
         var bits = [0,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0]
-        expect(colordef.EPOBCColorDefinition.Tag.bitArray2number(bits)).to.equal(54648432)
+        expect(colordef.EPOBCColorDefinition._Tag.bitArray2number(bits)).to.equal(54648432)
       })
 
       it('getTag return null for coinbase', function() {
         tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-        tag = colordef.EPOBCColorDefinition.Tag.getTag(tx)
+        tag = colordef.EPOBCColorDefinition._Tag.getTag(tx)
         expect(tag).to.be.null
       })
 
       it('getTag return null for not Xfer and not Genesis', function() {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-        tag = colordef.EPOBCColorDefinition.Tag.getTag(tx)
+        tag = colordef.EPOBCColorDefinition._Tag.getTag(tx)
         expect(tag).to.be.null
       })
 
       it('getTag return Tag', function() {
         tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (1<<6))
-        tag = colordef.EPOBCColorDefinition.Tag.getTag(tx)
-        expect(tag).to.be.instanceof(colordef.EPOBCColorDefinition.Tag)
+        tag = colordef.EPOBCColorDefinition._Tag.getTag(tx)
+        expect(tag).to.be.instanceof(colordef.EPOBCColorDefinition._Tag)
         expect(tag.isGenesis).to.equal(true)
         expect(tag.getPadding()).to.equal(2)
       })
@@ -134,14 +134,14 @@ describe('colordef', function() {
 
       it('valueWop equal 0 for tx.outs', function() {
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-        affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 1)
+        affectingInputs = colordef.EPOBCColorDefinition._getXferAffectingInputs(tx, 0, 1)
         expect(affectingInputs).to.deep.equal([])
       })
 
       it('outValueWop equal 0 for tx.outs', function() {
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-        affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 1)
+        affectingInputs = colordef.EPOBCColorDefinition._getXferAffectingInputs(tx, 0, 1)
         expect(affectingInputs).to.deep.equal([])
       })
 
@@ -150,7 +150,7 @@ describe('colordef', function() {
         tx.addInput(tx2.getId(), 0, 4294967295)
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
-        affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 0)
+        affectingInputs = colordef.EPOBCColorDefinition._getXferAffectingInputs(tx, 0, 0)
         expect(affectingInputs).to.deep.equal([])
       })
 
@@ -160,7 +160,7 @@ describe('colordef', function() {
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         tx.ins[0].value = 0
-        affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 0)
+        affectingInputs = colordef.EPOBCColorDefinition._getXferAffectingInputs(tx, 0, 0)
         expect(affectingInputs).to.deep.equal([])
       })
 
@@ -170,7 +170,7 @@ describe('colordef', function() {
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         tx.ins[0].value = 2
-        affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 0)
+        affectingInputs = colordef.EPOBCColorDefinition._getXferAffectingInputs(tx, 0, 0)
         expect(affectingInputs).to.deep.equal([0])
       })
 
@@ -181,7 +181,7 @@ describe('colordef', function() {
         tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
         tx.ins[0].prevTx = tx2
         tx.ins[0].value = 1
-        affectingInputs = colordef.EPOBCColorDefinition.getXferAffectingInputs(tx, 0, 1)
+        affectingInputs = colordef.EPOBCColorDefinition._getXferAffectingInputs(tx, 0, 1)
         expect(affectingInputs).to.deep.equal([])
       })
     })

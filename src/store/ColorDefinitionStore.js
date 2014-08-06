@@ -14,10 +14,7 @@ var DataStore = require('./DataStore')
 function ColorDefinitionStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  this.colorDefinitionsDBKey = DataStore.globalPrefix + 'ColorDefinitions'
-  /* test-code */
-  this.colorDefinitionsDBKey = this.colorDefinitionsDBKey + '_tests'
-  /* end-test-code */
+  this.colorDefinitionsDBKey = this.globalPrefix + 'ColorDefinitions'
 
   if (!_.isArray(this.store.get(this.colorDefinitionsDBKey)))
     this.store.set(this.colorDefinitionsDBKey, [])

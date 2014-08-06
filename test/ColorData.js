@@ -17,7 +17,7 @@ describe('ColorData', function() {
   var cdStore, bs, epobc, tx, tx2, cData
 
   beforeEach(function() {
-    cdStore = new store.ColorDataStore()
+    cdStore = new store.ColorDataStore({ testEnv: true })
     bs = new blockchain.BlockchainStateBase()
     epobc = new colordef.EPOBCColorDefinition({ colorId: 1 },
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
@@ -169,7 +169,7 @@ describe('ColorData', function() {
       })
     })
 
-    it('add to store and return value', function(done) {
+    it.skip('add to store and return value', function(done) {
       cdStore.add({
         colorId: epobc.getColorId(),
         txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',

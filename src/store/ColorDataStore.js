@@ -15,10 +15,7 @@ var Transaction = require('../Transaction')
 function ColorDataStore() {
   DataStore.apply(this, Array.prototype.slice.call(arguments))
 
-  this.colorTxsDBKey = DataStore.globalPrefix + 'colorTxs'
-  /* test-code */
-  this.colorTxsDBKey = this.colorTxsDBKey + '_tests'
-  /* end-test-code */
+  this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
 
   if (!_.isArray(this.store.get(this.colorTxsDBKey)))
     this.store.set(this.colorTxsDBKey, [])

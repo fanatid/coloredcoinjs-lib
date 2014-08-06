@@ -18,7 +18,7 @@ describe('store', function() {
     var ds
 
     it('constructor', function() {
-      ds = new store.DataStore()
+      ds = new store.DataStore({ testEnv: true })
       expect(ds).to.be.instanceof(store.DataStore)
       expect(ds.store).not.to.be.undefined
     })
@@ -30,7 +30,7 @@ describe('store', function() {
     var txId2 = '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff'
 
     beforeEach(function() {
-      cdStore = new store.ColorDataStore()
+      cdStore = new store.ColorDataStore({ testEnv: true })
     })
 
     afterEach(function() {
@@ -67,7 +67,7 @@ describe('store', function() {
     var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
     beforeEach(function() {
-      cdStore = new store.ColorDefinitionStore()
+      cdStore = new store.ColorDefinitionStore({ testEnv: true })
     })
 
     afterEach(function() {

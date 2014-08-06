@@ -131,9 +131,16 @@ BlockrIOAPI.prototype.request = function(path, cb) {
     })
   })
 
-  request.setTimeout(this.requestPathCacheMaxAge, function() {
-    request.abort()
-  })
+/*
+ * See: https://github.com/substack/http-browserify/issues/49
+ *
+ * https://github.com/substack/http-browserify/blob/master/lib/request.js#L87
+ * In http-browserify instead request.abort() myst be called request.destroy() ?
+ */
+
+//  request.setTimeout(this.requestPathCacheMaxAge, function() {
+//    request.abort()
+//  })
 
   request.on('error', function(error) {
     cb(error)

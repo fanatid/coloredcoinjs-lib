@@ -12,7 +12,7 @@ describe('ColorDefinitionManager', function() {
   var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function() {
-    cdStore = new ColorDefinitionStore()
+    cdStore = new ColorDefinitionStore({ testEnv: true })
     cdManager = new ColorDefinitionManager(cdStore)
   })
 
