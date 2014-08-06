@@ -24,13 +24,14 @@ function ColorDataStore() {
 inherits(ColorDataStore, DataStore)
 
 /**
- * Add colorId txOutput to store
+ * Add colorId txOutput to store and return true if data was added
  *
  * @param {Object} data
  * @param {number} data.colorId
  * @param {string} data.txId
  * @param {number} data.outIndex
  * @param {number} data.value
+ * @return {boolean}
  */
 ColorDataStore.prototype.add = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
@@ -41,19 +42,20 @@ ColorDataStore.prototype.add = function(data) {
 
   var colorTxs = this.store.get(this.colorTxsDBKey) || []
 
-  colorTxs.forEach(function(record) {
-    if (record.colorId === data.colorId && record.txId === data.txId && record.outIndex === data.outIndex)
-      throw new Error('UniqueConstraint')
-  })
+  var exists = this.get(data) !== null
 
-  colorTxs.push({
-    colorId: data.colorId,
-    txId: data.txId,
-    outIndex: data.outIndex,
-    value: data.value
-  })
+  if (!exists) {
+    colorTxs.push({
+      colorId: data.colorId,
+      txId: data.txId,
+      outIndex: data.outIndex,
+      value: data.value
+    })
 
-  this.store.set(this.colorTxsDBKey, colorTxs)
+    this.store.set(this.colorTxsDBKey, colorTxs)
+  }
+
+  return !exists
 }
 
 /**

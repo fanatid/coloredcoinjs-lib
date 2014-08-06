@@ -48,10 +48,10 @@ describe('store', function() {
       expect(result).to.deep.equal({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
     })
 
-    it('add, throw error uniqueConstraint', function() {
-      var fn = function() { cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 }) }
-      fn()
-      expect(fn).to.throw(Error)
+    it('add return false', function() {
+      cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+      var result = cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+      expect(result).to.be.false
     })
 
     it('get return null', function() {
