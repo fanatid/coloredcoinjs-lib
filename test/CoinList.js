@@ -10,9 +10,9 @@ describe('CoinQuery', function() {
 
   beforeEach(function() {
     bs = new coloredcoinlib.blockchain.BlockrIOAPI({ testnet: true })
-    cDataStore = new coloredcoinlib.store.ColorDataStore({ testnet: true, testEnv: true })
+    cDataStore = new coloredcoinlib.store.ColorDataStore()
     cData = new coloredcoinlib.ColorData({ cdStore: cDataStore, blockchain: bs })
-    cdStore = new coloredcoinlib.store.ColorDefinitionStore({ testnet: true, testEnv: true })
+    cdStore = new coloredcoinlib.store.ColorDefinitionStore()
     cdManager = new coloredcoinlib.ColorDefinitionManager(cdStore)
     cdManager.resolveByScheme({ scheme: 'epobc:0984352ebe025daec2954cae4d09f77fd7bd79300479838f21acc9961da28cf1:1:271192' })
     colordef = cdManager.resolveByScheme({ scheme: 'epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191' })

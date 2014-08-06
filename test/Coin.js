@@ -10,9 +10,9 @@ describe('Coin', function() {
 
   beforeEach(function() {
     bs = new coloredcoinlib.blockchain.BlockrIOAPI({ testnet: true })
-    cDataStore = new coloredcoinlib.store.ColorDataStore({ testnet: true, testEnv: true })
+    cDataStore = new coloredcoinlib.store.ColorDataStore()
     cData = new coloredcoinlib.ColorData({ cdStore: cDataStore, blockchain: bs })
-    cdStore = new coloredcoinlib.store.ColorDefinitionStore({ testnet: true, testEnv: true })
+    cdStore = new coloredcoinlib.store.ColorDefinitionStore()
     cdManager = new coloredcoinlib.ColorDefinitionManager(cdStore)
   })
 

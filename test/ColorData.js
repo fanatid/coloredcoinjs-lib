@@ -17,7 +17,7 @@ describe('ColorData', function() {
   var cdStore, bs, epobc, tx, tx2, cData
 
   beforeEach(function() {
-    cdStore = new store.ColorDataStore({ testEnv: true })
+    cdStore = new store.ColorDataStore()
     bs = new blockchain.BlockchainStateBase()
     epobc = new colordef.EPOBCColorDefinition({ colorId: 1 },
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
