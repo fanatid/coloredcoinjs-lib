@@ -82,6 +82,17 @@ describe('blockchain', function() {
       expect(bs).to.be.instanceof(blockchain.BlockrIOAPI)
     })
 
+    describe('request', function() {
+      it('request timeout', function(done) {
+        bs.requestPathCacheMaxAge = 1
+        bs.getBlockCount(function(error, response) {
+          expect(error).to.be.instanceof(Error)
+          expect(response).to.be.undefined
+          done()
+        })
+      })
+    })
+
     describe('getBlockCount', function() {
       it('request return error', function(done) {
         bs.request = function(_, cb) { cb('error.request') }

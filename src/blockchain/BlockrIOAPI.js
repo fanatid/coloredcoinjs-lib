@@ -53,7 +53,7 @@ function BlockrIOAPI(opts) {
   })
 
   this.requestPathCacheSize = 100
-  this.requestPathCacheMaxAge = 2*1000
+  this.requestPathCacheMaxAge = 5*1000
   this.requestPathCache = LRU({
     max: this.requestPathCacheSize,
     maxAge: this.requestPathCacheMaxAge
@@ -86,6 +86,13 @@ BlockrIOAPI.prototype.request = function(path, cb) {
   if (!_.isUndefined(cachedValue)) {
     setTimeout(function() { _this.request(path, cb) }, 100)
     return
+  }
+
+  function done(error, result) {
+    if (!_.isUndefined(cb)) {
+      cb(error, result)
+      cb = undefined
+    }
   }
 
   /** request */
@@ -123,11 +130,11 @@ BlockrIOAPI.prototype.request = function(path, cb) {
       if (error === null)
         _this.cache.set(path, result.data)
 
-      cb(error, error === null ? result.data : undefined)
+      done(error, error === null ? result.data : undefined)
     })
 
     res.on('error', function(error) {
-      cb(error)
+      done(error)
     })
   })
 
@@ -137,13 +144,21 @@ BlockrIOAPI.prototype.request = function(path, cb) {
  * https://github.com/substack/http-browserify/blob/master/lib/request.js#L87
  * In http-browserify instead request.abort() myst be called request.destroy() ?
  */
-
 //  request.setTimeout(this.requestPathCacheMaxAge, function() {
 //    request.abort()
 //  })
 
+  setTimeout(function() {
+    if (request.abort)
+      request.abort()
+    else
+      request.destroy()
+
+    done(new Error('Request timeout'))
+  }, this.requestPathCacheMaxAge)
+
   request.on('error', function(error) {
-    cb(error)
+    done(error)
   })
 
   request.end()
