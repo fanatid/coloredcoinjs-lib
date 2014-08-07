@@ -37,9 +37,8 @@ describe('ColorDefinitionManager', function() {
     })
 
     it('return uncolred', function() {
-      var uncolred = cdManager.getUncolored()
       var result = cdManager.getByColorId({ colorId: 0 })
-      expect(result).to.deep.equal(uncolred)
+      expect(result).to.deep.equal(cdManager.getUncolored())
     })
 
     it('return ColorDefinition', function() {
@@ -59,6 +58,11 @@ describe('ColorDefinitionManager', function() {
     it('record is null, autoAdd is false', function() {
       var result = cdManager.resolveByScheme({ scheme: epobcScheme1, autoAdd: false })
       expect(result).to.be.null
+    })
+
+    it('return uncolored', function() {
+      var result = cdManager.resolveByScheme({ scheme: '' })
+      expect(result).to.deep.equal(cdManager.getUncolored())
     })
 
     it('add new record', function() {

@@ -91,6 +91,9 @@ ColorDefinitionManager.prototype.resolveByScheme = function(data) {
   data.autoAdd = _.isUndefined(data.autoAdd) ? true : data.autoAdd
   assert(_.isBoolean(data.autoAdd), 'Expected boolean data.autoAdd, got ' + data.autoAdd)
 
+  if (data.scheme === '')
+    return this.getUncolored()
+
   var record = this.cdStore.get({ scheme: data.scheme })
 
   if (record !== null)
