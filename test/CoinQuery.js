@@ -34,9 +34,14 @@ describe('CoinQuery', function() {
     expect(coinQuery.clone()).to.deep.equal(coinQuery)
   })
 
-  it('onlyColoredAs', function() {
+  it('onlyColoredAs single ColorDefinition', function() {
     coinQuery = coinQuery.onlyColoredAs(cdManager.getUncolored())
-    expect(coinQuery.query.onlyColoredAs).to.deep.equal(cdManager.getUncolored())
+    expect(coinQuery.query.onlyColoredAs).to.deep.equal([cdManager.getUncolored().getColorId()])
+  })
+
+  it('onlyColoredAs array ColorDefinitions', function() {
+    coinQuery = coinQuery.onlyColoredAs([cdManager.getUncolored()])
+    expect(coinQuery.query.onlyColoredAs).to.deep.equal([cdManager.getUncolored().getColorId()])
   })
 
   it('getConfirmed', function() {

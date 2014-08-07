@@ -66,15 +66,20 @@ CoinQuery.prototype.clone = function() {
 /**
  * Select coins only for given ColorDefinition
  *
- * @param {ColorDefinition} colorDefinition
+ * @param {Array|ColorDefinition} data
  * @return {CoinQuery}
  */
-CoinQuery.prototype.onlyColoredAs = function(colorDefinition) {
-  assert(colorDefinition instanceof colordef.ColorDefinition,
-    'Expected instanceof ColorDefinition colorDefinition, got ' + colorDefinition)
+CoinQuery.prototype.onlyColoredAs = function(data) {
+  if (!_.isArray(data))
+    data = [data]
+
+  data.forEach(function(colorDefinition) {
+    assert(colorDefinition instanceof colordef.ColorDefinition,
+      'Expected instanceof Array|ColorDefinition data, got ' + data)
+  })
 
   var newCoinQuery = this.clone()
-  newCoinQuery.query.onlyColoredAs = colorDefinition
+  newCoinQuery.query.onlyColoredAs = data.map(function(cd) { return cd.getColorId() })
 
   return newCoinQuery
 }
@@ -161,7 +166,7 @@ CoinQuery.prototype.getCoins = function(cb) {
           return
         }
 
-        if (_this.query.onlyColoredAs.getColorId() === colorValue.getColorId())
+        if (_this.query.onlyColoredAs.indexOf(colorValue.getColorId()) !== -1)
           coins.push(coin)
 
         filterUTXO(index+1)
