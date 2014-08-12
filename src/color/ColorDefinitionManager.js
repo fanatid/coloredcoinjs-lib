@@ -2,8 +2,10 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var colordef = require('./colordef')
-var store = require('./store')
+var ColorDefinition = require('./ColorDefinition')
+var EPOBCColorDefinition = require('./EPOBCColorDefinition')
+var ColorDefinitionStorage = require('../storage').ColorDefinitionStorage
+
 
 /**
  * Convert record to ColorDefinition instance
@@ -22,7 +24,7 @@ function record2ColorDefinition(record) {
 
   var colorDefinition = null
 
-  var engineClss = [colordef.EPOBCColorDefinition]
+  var engineClss = [EPOBCColorDefinition]
   engineClss.some(function(engineCls) {
     colorDefinition = engineCls.fromScheme({ colorId: record.colorId, meta: record.meta }, record.scheme)
 
@@ -36,12 +38,13 @@ function record2ColorDefinition(record) {
 /**
  * @class ColorDefinitionManager
  *
- * @param {store.ColorDefinitionStore} cdStore
+ * @param {ColorDefinitionStorage} storage
  */
-function ColorDefinitionManager(cdStore) {
-  assert(cdStore instanceof store.ColorDefinitionStore, 'Expected ColorDefinitionStore cdStore, got ' + cdStore)
+function ColorDefinitionManager(storage) {
+  assert(storage instanceof ColorDefinitionStorage,
+    'Expected storage instance of ColorDefinitionStorage, got ' + storage)
 
-  this.cdStore = cdStore
+  this.storage = storage
 }
 
 /**
@@ -50,7 +53,7 @@ function ColorDefinitionManager(cdStore) {
  * @return {ColorDefinition}
  */
 ColorDefinitionManager.prototype.getUncolored = function() {
-  return new colordef.ColorDefinition({ colorId: 0 })
+  return new ColorDefinition({ colorId: 0 })
 }
 
 /**
@@ -69,7 +72,7 @@ ColorDefinitionManager.prototype.getByColorId = function(params) {
 
   var result = null
 
-  var record = this.cdStore.get({ colorId: params.colorId })
+  var record = this.storage.get({ colorId: params.colorId })
   if (record !== null)
     result = record2ColorDefinition(record)
 
@@ -94,7 +97,7 @@ ColorDefinitionManager.prototype.resolveByScheme = function(data) {
   if (data.scheme === '')
     return this.getUncolored()
 
-  var record = this.cdStore.get({ scheme: data.scheme })
+  var record = this.storage.get({ scheme: data.scheme })
 
   if (record !== null)
     return record2ColorDefinition(record)
@@ -109,7 +112,7 @@ ColorDefinitionManager.prototype.resolveByScheme = function(data) {
   })
   assert(result !== null, 'Bad scheme = ' + data.scheme)
 
-  record = this.cdStore.add({ meta: {}, scheme: data.scheme })
+  record = this.storage.add({ meta: {}, scheme: data.scheme })
   return record2ColorDefinition(record)
 }
 
@@ -119,10 +122,10 @@ ColorDefinitionManager.prototype.resolveByScheme = function(data) {
  * @param {ColorDefinition} colorDefinition
  */
 ColorDefinitionManager.prototype.updateMeta = function(colorDefinition) {
-  assert(colorDefinition instanceof colordef.ColorDefinition,
+  assert(colorDefinition instanceof ColorDefinition,
     'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
 
-  this.cdStore.updateMeta({ colorId: colorDefinition.getColorId(), meta: colorDefinition.getMeta() })
+  this.storage.updateMeta({ colorId: colorDefinition.getColorId(), meta: colorDefinition.getMeta() })
 }
 
 /**
@@ -131,7 +134,7 @@ ColorDefinitionManager.prototype.updateMeta = function(colorDefinition) {
  * @return {Array}
  */
 ColorDefinitionManager.prototype.getAllColorDefinitions = function() {
-  return this.cdStore.getAll().map(record2ColorDefinition)
+  return this.storage.getAll().map(record2ColorDefinition)
 }
 
 

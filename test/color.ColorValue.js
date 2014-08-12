@@ -1,15 +1,13 @@
 var expect = require('chai').expect
 
-var coloredcoinlib = require('../src/index')
-var colordef = coloredcoinlib.colordef
-var ColorDefinitionManager = coloredcoinlib.ColorDefinitionManager
-var ColorValue = coloredcoinlib.ColorValue
-var store = coloredcoinlib.store
+var cclib = require('../src/index')
+var ColorDefinition = cclib.color.ColorDefinition
+var ColorValue = cclib.color.ColorValue
 
 
-describe('ColorValue', function() {
-  var cdStore = new store.ColorDefinitionStore() // not need clear, cdManager use only uncolored
-  var cdManager = new ColorDefinitionManager(cdStore)
+describe('color.ColorValue', function() {
+  var cdStorage = new cclib.storage.ColorDefinitionStorage() // not need clear, cdManager use only uncolored
+  var cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
   var uncoloredColorDefinition = cdManager.getUncolored()
   var cv1, cv2
 
@@ -31,7 +29,7 @@ describe('ColorValue', function() {
   })
 
   it('checkCompatibility return false', function() {
-    cv2 = new ColorValue({ colordef: new colordef.ColorDefinition({ colorId: 1 }), value: 0 })
+    cv2 = new ColorValue({ colordef: new ColorDefinition({ colorId: 1 }), value: 0 })
     expect(cv1.checkCompatibility(cv2)).to.equal(false)
   })
 
@@ -46,7 +44,7 @@ describe('ColorValue', function() {
   })
 
   it('add with not compatibility', function() {
-    cv2 = new ColorValue({ colordef: new colordef.ColorDefinition({ colorId: 1 }), value: 1 })
+    cv2 = new ColorValue({ colordef: new ColorDefinition({ colorId: 1 }), value: 1 })
     cv1.add(cv2)
     expect(cv1.getValue()).to.equal(0)
   })

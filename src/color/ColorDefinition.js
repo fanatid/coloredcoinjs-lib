@@ -10,7 +10,7 @@ var _ = require('lodash')
  *
  * @param {Object} data
  * @param {number} data.colorId ColorDefinition unique id
- * @param {Object} [data.meta] Meta information for ColorDefinition
+ * @param {Object} [data.meta={}] Meta information for ColorDefinition
  */
 function ColorDefinition(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)

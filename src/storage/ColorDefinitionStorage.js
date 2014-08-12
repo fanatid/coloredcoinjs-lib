@@ -3,16 +3,16 @@ var inherits = require('util').inherits
 
 var _ = require('lodash')
 
-var DataStore = require('./DataStore')
+var SyncStorage = require('./SyncStorage')
 
 
 /**
- * @class ColorDefinitionStore
+ * @class ColorDefinitionStorage
  *
- * Inherits DataStore
+ * Inherits SyncStorage
  */
-function ColorDefinitionStore() {
-  DataStore.apply(this, Array.prototype.slice.call(arguments))
+function ColorDefinitionStorage() {
+  SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 
   this.colorDefinitionsDBKey = this.globalPrefix + 'ColorDefinitions'
 
@@ -20,7 +20,7 @@ function ColorDefinitionStore() {
     this.store.set(this.colorDefinitionsDBKey, [])
 }
 
-inherits(ColorDefinitionStore, DataStore)
+inherits(ColorDefinitionStorage, SyncStorage)
 
 /**
  * @param {Object} data
@@ -28,7 +28,7 @@ inherits(ColorDefinitionStore, DataStore)
  * @param {string} data.scheme
  * @return {Object}
  */
-ColorDefinitionStore.prototype.add = function(data) {
+ColorDefinitionStorage.prototype.add = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isObject(data.meta), 'Expected Object data.meta, got ' + data.meta)
   assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
@@ -62,7 +62,7 @@ ColorDefinitionStore.prototype.add = function(data) {
  * @param {string} [data.scheme]
  * @return {Object|null}
  */
-ColorDefinitionStore.prototype.get = function(data) {
+ColorDefinitionStorage.prototype.get = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   if (_.isUndefined(data.colorId))
     assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
@@ -89,7 +89,7 @@ ColorDefinitionStore.prototype.get = function(data) {
  * @param {number} data.colorId
  * @param {Object} data.meta
  */
-ColorDefinitionStore.prototype.updateMeta = function(data) {
+ColorDefinitionStorage.prototype.updateMeta = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
   assert(_.isObject(data.meta), 'Expected Object data.meta, got ' + data.meta)
@@ -107,7 +107,7 @@ ColorDefinitionStore.prototype.updateMeta = function(data) {
 /**
  * @return {Array}
  */
-ColorDefinitionStore.prototype.getAll = function() {
+ColorDefinitionStorage.prototype.getAll = function() {
   var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
 
   return colorDefinitions
@@ -116,8 +116,8 @@ ColorDefinitionStore.prototype.getAll = function() {
 /**
  * Remove all ColorDefinitions
  */
-ColorDefinitionStore.prototype.clear = function() {
+ColorDefinitionStorage.prototype.clear = function() {
   this.store.remove(this.colorDefinitionsDBKey)
 }
 
-module.exports = ColorDefinitionStore
+module.exports = ColorDefinitionStorage

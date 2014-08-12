@@ -2,11 +2,11 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var blockchain = require('./blockchain')
-var colordef = require('./colordef')
+var BlockchainStateBase = require('../blockchain').BlockchainStateBase
+var ColorDefinition = require('./ColorDefinition')
 var ColorValue = require('./ColorValue')
-var store = require('./store')
-var Transaction = require('./Transaction')
+var ColorDataStorage = require('../storage').ColorDataStorage
+var Transaction = require('../tx').Transaction
 
 
 /**
@@ -14,38 +14,36 @@ var Transaction = require('./Transaction')
  *
  * Color data which needs access to the blockchain state up to the genesis of color
  *
- * @param {Object} data
- * @param {store.ColorDataStore} data.cdStore
- * @param {blockchain.BlockchainStateBase} data.blockchain
+ * @param {ColorDataStorage} storage
+ * @param {blockchain.BlockchainStateBase} blockchain
  */
-function ColorData(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(data.cdStore instanceof store.ColorDataStore,
-    'Expected store.ColorDataStore data.cdStore, got ' + data.cdStore)
-  assert(data.blockchain instanceof blockchain.BlockchainStateBase,
-    'Expected blockchain.BlockchainStateBase data.blockchain, got ' + data.blockchain)
+function ColorData(storage, blockchain) {
+  assert(storage instanceof ColorDataStorage,
+    'Expected storage instance of ColorDataStorage, got ' + storage)
+  assert(blockchain instanceof BlockchainStateBase,
+    'Expected blockchain instance of BlockchainStateBase, got ' + blockchain)
 
-  this.cdStore = data.cdStore
-  this.blockchain = data.blockchain
+  this.storage = storage
+  this.blockchain = blockchain
 }
 
 /**
- * Return ColorValue currently present in ColorDataStore
+ * Return ColorValue currently present in ColorDataStorage
  *
  * @param {string} txId
  * @param {number} outIndex
- * @param {colordef.ColorDefinition} colorDefinition
+ * @param {ColorDefinition} colorDefinition
  * @return {ColorValue|null}
  */
 ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(colorDefinition instanceof colordef.ColorDefinition,
+  assert(colorDefinition instanceof ColorDefinition,
     'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
 
   var colorValue = null
 
-  var colorData = this.cdStore.get({
+  var colorData = this.storage.get({
     colorId: colorDefinition.getColorId(),
     txId: txId,
     outIndex: outIndex
@@ -61,7 +59,7 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
  *
  * @param {Transaction} tx
  * @param {Array|null} outputIndices
- * @param {colordef.ColorDefinition} colorDefinition
+ * @param {ColorDefinition} colorDefinition
  * @param {function} cb Called on finished with params (error)
  */
 ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
@@ -70,8 +68,8 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
   if (_.isArray(outputIndices))
     assert(outputIndices.every(function(oi) { return _.isNumber(oi) }),
       'Expected outputIndices Array numbers, got ' + outputIndices)
-  assert(colorDefinition instanceof colordef.ColorDefinition,
-    'Expected colordef.ColorDefinition colorDefinition, got ' + colorDefinition)
+  assert(colorDefinition instanceof ColorDefinition,
+    'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   var _this = this
@@ -80,7 +78,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
   var empty = true
 
   tx.ins.forEach(function(input) {
-    var colorData = _this.cdStore.get({
+    var colorData = _this.storage.get({
       colorId: colorDefinition.getColorId(),
       txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
       outIndex: input.index
@@ -106,7 +104,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
 
         if (!skipAdd) {
           try {
-            _this.cdStore.add({
+            _this.storage.add({
               colorId: colorDefinition.getColorId(),
               txId: tx.getId(),
               outIndex: index,
@@ -133,13 +131,13 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
  *
  * @param {string} txId
  * @param {number} outIndex
- * @param {colordef.ColorDefinition} colorDefinition
+ * @param {ColorDefinition} colorDefinition
  * @param {function} cb Called on finished with params (error, ColorValue|null)
  */
 ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(colorDefinition instanceof colordef.ColorDefinition,
+  assert(colorDefinition instanceof ColorDefinition,
     'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 

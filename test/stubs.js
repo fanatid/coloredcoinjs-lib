@@ -2,7 +2,7 @@ var assert = require('assert')
 var _ = require('lodash')
 
 var coloredcoinlib = require('../src/index')
-var Transaction = coloredcoinlib.Transaction
+var Transaction = coloredcoinlib.tx.Transaction
 
 
 /**

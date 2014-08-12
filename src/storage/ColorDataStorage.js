@@ -3,17 +3,17 @@ var inherits = require('util').inherits
 
 var _ = require('lodash')
 
-var DataStore = require('./DataStore')
-var Transaction = require('../Transaction')
+var SyncStorage = require('./SyncStorage')
+var Transaction = require('../tx').Transaction
 
 
 /**
- * @class ColorDataStore
+ * @class ColorDataStorage
  *
- * Inherits DataStore
+ * Inherits SyncStorage
  */
-function ColorDataStore() {
-  DataStore.apply(this, Array.prototype.slice.call(arguments))
+function ColorDataStorage() {
+  SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 
   this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
 
@@ -21,7 +21,7 @@ function ColorDataStore() {
     this.store.set(this.colorTxsDBKey, [])
 }
 
-inherits(ColorDataStore, DataStore)
+inherits(ColorDataStorage, SyncStorage)
 
 /**
  * Add colorId txOutput to store and return true if data was added
@@ -33,7 +33,7 @@ inherits(ColorDataStore, DataStore)
  * @param {number} data.value
  * @return {boolean}
  */
-ColorDataStore.prototype.add = function(data) {
+ColorDataStorage.prototype.add = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
   assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
@@ -67,7 +67,7 @@ ColorDataStore.prototype.add = function(data) {
  * @param {number} data.outIndex
  * @return {Object|null}
  */
-ColorDataStore.prototype.get = function(data) {
+ColorDataStorage.prototype.get = function(data) {
   assert(_.isObject(data), 'Expected Object data, got ' + data)
   assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
   assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
@@ -91,9 +91,9 @@ ColorDataStore.prototype.get = function(data) {
 /**
  * Remove all colorTxs
  */
-ColorDataStore.prototype.clear = function() {
+ColorDataStorage.prototype.clear = function() {
   this.store.remove(this.colorTxsDBKey)
 }
 
 
-module.exports = ColorDataStore
+module.exports = ColorDataStorage

@@ -4,9 +4,9 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var ColorDefinition = require('./ColorDefinition')
-var ColorValue = require('../ColorValue')
+var ColorValue = require('./ColorValue')
 var blockchain = require('../blockchain')
-var Transaction = require('../Transaction')
+var Transaction = require('../tx').Transaction
 
 
 var xferTagBits = [1, 1, 0, 0, 1, 1]

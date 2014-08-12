@@ -1,28 +1,27 @@
 var expect = require('chai').expect
 
-var coloredcoinlib = require('../src/index')
-var colordef = coloredcoinlib.colordef
-var ColorDefinitionManager = coloredcoinlib.ColorDefinitionManager
-var ColorDefinitionStore = coloredcoinlib.store.ColorDefinitionStore
+var cclib = require('../src/index')
+var ColorDefinition = cclib.color.ColorDefinition
+var EPOBCColorDefinition = cclib.color.EPOBCColorDefinition
 
 
-describe('ColorDefinitionManager', function() {
-  var cdManager, cdStore
+describe('color.ColorDefinitionManager', function() {
+  var cdManager, cdStorage
   var epobcScheme1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
   var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function() {
-    cdStore = new ColorDefinitionStore()
-    cdManager = new ColorDefinitionManager(cdStore)
+    cdStorage = new cclib.storage.ColorDefinitionStorage()
+    cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
   })
 
   afterEach(function() {
-    cdStore.clear()
+    cdStorage.clear()
   })
 
   describe('getUncolored', function() {
     it('is ColorDefinition', function() {
-      expect(cdManager.getUncolored()).to.be.instanceof(colordef.ColorDefinition)
+      expect(cdManager.getUncolored()).to.be.instanceof(ColorDefinition)
     })
 
     it('colorId is 0', function() {
@@ -42,17 +41,17 @@ describe('ColorDefinitionManager', function() {
     })
 
     it('return ColorDefinition', function() {
-      cdStore.add({ meta: {}, scheme: epobcScheme1 })
+      cdStorage.add({ meta: {}, scheme: epobcScheme1 })
       var result = cdManager.getByColorId({ colorId: 1 })
-      expect(result).to.deep.equal(colordef.EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
+      expect(result).to.deep.equal(EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
     })
   })
 
   describe('resolveByScheme', function() {
     it('record is not null', function() {
-      cdStore.add({ meta: {}, scheme: epobcScheme1 })
+      cdStorage.add({ meta: {}, scheme: epobcScheme1 })
       var result = cdManager.resolveByScheme({ scheme: epobcScheme1 })
-      expect(result).to.deep.equal(colordef.EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
+      expect(result).to.deep.equal(EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
     })
 
     it('record is null, autoAdd is false', function() {
@@ -67,14 +66,14 @@ describe('ColorDefinitionManager', function() {
 
     it('add new record', function() {
       var result = cdManager.resolveByScheme({ scheme: epobcScheme1 })
-      expect(result).to.deep.equal(colordef.EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
+      expect(result).to.deep.equal(EPOBCColorDefinition.fromScheme({ colorId: 1 }, epobcScheme1))
     })
   })
 
   describe('updateMeta', function() {
     it('update', function() {
       cdManager.resolveByScheme({ scheme: epobcScheme1 })
-      var epobc = colordef.EPOBCColorDefinition.fromScheme({ colorId:1, meta: {'a': 'b'} }, epobcScheme1)
+      var epobc = EPOBCColorDefinition.fromScheme({ colorId:1, meta: {'a': 'b'} }, epobcScheme1)
       cdManager.updateMeta(epobc)
       var result = cdManager.resolveByScheme({ scheme: epobcScheme1 })
       expect(result).to.deep.equal(epobc)

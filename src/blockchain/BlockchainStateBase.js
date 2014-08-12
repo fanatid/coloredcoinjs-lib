@@ -2,7 +2,7 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var Transaction = require('../Transaction')
+var Transaction = require('../tx').Transaction
 
 
 /**

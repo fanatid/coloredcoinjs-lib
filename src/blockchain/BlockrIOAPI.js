@@ -6,7 +6,7 @@ var _ = require('lodash')
 var LRU = require('lru-cache')
 
 var BlockchainStateBase = require('./BlockchainStateBase')
-var Transaction = require('../Transaction')
+var Transaction = require('../tx').Transaction
 
 
 function isHexString(s) {
@@ -90,8 +90,9 @@ BlockrIOAPI.prototype.request = function(path, cb) {
 
   function done(error, result) {
     if (!_.isUndefined(cb)) {
-      cb(error, result)
+      var savedCallback = cb
       cb = undefined
+      savedCallback(error, result)
     }
   }
 
@@ -173,14 +174,8 @@ BlockrIOAPI.prototype.getBlockCount = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   this.request('/api/v1/block/info/last', function(error, response) {
-    if (error === null) {
-      try {
-        assert(_.isNumber(response.nb), 'Expected number nb, got ' + response.nb)
-
-      } catch (newError) {
-        error = newError
-      }
-    }
+    if (error === null && !_.isNumber(response.nb))
+      error = new Error('Expected number nb, got ' + response.nb)
 
     cb(error, error === null ? response.nb : undefined)
   })
@@ -210,6 +205,12 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
   })
 }
 
+/**
+ * Parse bitcoin amount (BlockrIO give us btc value not satoshi)
+ *
+ * @param {string} amount
+ * @return {number}
+ */
 function parseAmount(amount) {
   var items = amount.split('.')
   return parseInt(items[0])*100000000 + parseInt(items[1])

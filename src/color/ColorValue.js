@@ -2,25 +2,19 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var colordef
-function getColordef() {
-  if (_.isUndefined(colordef))
-    colordef = require('./colordef')
-
-  return colordef
-}
+var ColorDefinition = require('./ColorDefinition')
 
 
 /**
  * @class ColorValue
  *
  * @param data
- * @param {colordef.ColorDefinition} data.colordef 
+ * @param {ColorDefinition} data.colordef 
  * @param {number} data.value
  */
 function ColorValue(data) {
   assert(_.isObject(data), 'Expected object data, got ' + data)
-  assert(data.colordef instanceof getColordef().ColorDefinition,
+  assert(data.colordef instanceof ColorDefinition,
     'Expected ColorDefinition data.colordef, got ' + data.colordef)
   assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
 

@@ -2,12 +2,10 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var blockchain = require('./blockchain')
+var blockchain = require('../blockchain')
 var Coin = require('./Coin')
 var CoinList = require('./CoinList')
-var ColorData = require('./ColorData')
-var colordef = require('./colordef')
-var ColorDefinitionManager = require('./ColorDefinitionManager')
+var color = require('../color')
 
 
 /**
@@ -28,9 +26,9 @@ function CoinQuery(params) {
   })
   assert(params.blockchain instanceof blockchain.BlockchainStateBase,
     'Expected params.blockchain instanceof BlockchainStateBase, got ' + params.blockchain)
-  assert(params.colorData instanceof ColorData,
+  assert(params.colorData instanceof color.ColorData,
     'Expected params.colorData instanceof ColorData, got ' + params.colorData)
-  assert(params.colorDefinitionManager instanceof ColorDefinitionManager,
+  assert(params.colorDefinitionManager instanceof color.ColorDefinitionManager,
     'Expected params.colorDefinitionManager instanceof ColorDefinitionManager, got ' + params.colorDefinitionManager)
 
   this.addresses = params.addresses
@@ -74,7 +72,7 @@ CoinQuery.prototype.onlyColoredAs = function(data) {
     data = [data]
 
   data.forEach(function(colorDefinition) {
-    assert(colorDefinition instanceof colordef.ColorDefinition,
+    assert(colorDefinition instanceof color.ColorDefinition,
       'Expected instanceof Array|ColorDefinition data, got ' + data)
   })
 

@@ -1,24 +1,24 @@
 var expect = require('chai').expect
 
-var coloredcoinlib = require('../src/index')
-var Coin = coloredcoinlib.Coin
+var cclib = require('../src/index')
+var Coin = cclib.coin.Coin
 
 
-describe('Coin', function() {
-  var bs, cDataStore, cData, cdStore, cdManager
+describe('coin.Coin', function() {
+  var bs, cDataStorage, cData, cdStorage, cdManager
   var coin
 
   beforeEach(function() {
-    bs = new coloredcoinlib.blockchain.BlockrIOAPI({ testnet: true })
-    cDataStore = new coloredcoinlib.store.ColorDataStore()
-    cData = new coloredcoinlib.ColorData({ cdStore: cDataStore, blockchain: bs })
-    cdStore = new coloredcoinlib.store.ColorDefinitionStore()
-    cdManager = new coloredcoinlib.ColorDefinitionManager(cdStore)
+    bs = new cclib.blockchain.BlockrIOAPI({ testnet: true })
+    cDataStorage = new cclib.storage.ColorDataStorage()
+    cData = new cclib.color.ColorData(cDataStorage, bs)
+    cdStorage = new cclib.storage.ColorDefinitionStorage()
+    cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
   })
 
   afterEach(function() {
-    cDataStore.clear()
-    cdStore.clear()
+    cDataStorage.clear()
+    cdStorage.clear()
   })
 
   describe('isConfirmed', function() {
@@ -72,7 +72,7 @@ describe('Coin', function() {
 
     it('getColorValue return more than one ColorValue', function(done) {
       coin.getColorValue = function(_, cb) {
-        cb(null, new coloredcoinlib.ColorValue({ colordef: cdManager.getUncolored(), value: 0 }))
+        cb(null, new cclib.color.ColorValue({ colordef: cdManager.getUncolored(), value: 0 }))
       }
       coin.getMainColorValue(function(error, colorValue) {
         expect(error).to.deep.equal(new Error('Coin ' + coin + ' have more that one ColorValue'))
@@ -84,7 +84,7 @@ describe('Coin', function() {
     it('return ColorValue, sended from genesis', function(done) {
       coin.getMainColorValue(function(error, colorValue) {
         expect(error).to.be.null
-        expect(colorValue).to.deep.equal(new coloredcoinlib.ColorValue({
+        expect(colorValue).to.deep.equal(new cclib.color.ColorValue({
           colordef: cdManager.resolveByScheme({ scheme: 'epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191' }),
           value: 500000
         }))
@@ -98,7 +98,7 @@ describe('Coin', function() {
       coin.value = 3457000000
       coin.getMainColorValue(function(error, colorValue) {
         expect(error).to.be.null
-        expect(colorValue).to.deep.equal(new coloredcoinlib.ColorValue({
+        expect(colorValue).to.deep.equal(new cclib.color.ColorValue({
           colordef: cdManager.getUncolored(),
           value: 3457000000
         }))

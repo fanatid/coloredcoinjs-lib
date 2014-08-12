@@ -41,7 +41,7 @@ module.exports = function(grunt) {
         strict: false,
         trailing: true
       },
-      files: ['src/*.js', 'src/blockchain/*.js', 'src/colordef/*.js', 'src/store/*.js']
+      files: ['src']
     },
     mocha_istanbul: {
       coverage: {
@@ -49,7 +49,8 @@ module.exports = function(grunt) {
         options: {
           excludes: ['mocks.js', 'stubs.js'],
           mask: '*.js',
-          reporter: 'spec'
+          reporter: 'spec',
+          timeout: 5000
         }
       },
       coveralls: {
@@ -58,7 +59,8 @@ module.exports = function(grunt) {
           coverage: true,
           excludes: ['mocks.js', 'stubs.js'],
           mask: '*.js',
-          reporter: 'spec'
+          reporter: 'spec',
+          timeout: 5000
         }
       }
     },

@@ -1,0 +1,175 @@
+{
+  "runKernel": [
+    {
+      "description": "genesis, pad 8, direct",
+      "inputs": [9],
+      "outputs": [9],
+      "inColorValues": [1],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 2, 5, 6, 7],
+      "expect": [1]
+    },
+    {
+      "description": "genesis, pad 32, split",
+      "inputs": [59],
+      "outputs": [33, 26],
+      "inColorValues": [1],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 2, 5, 6, 8],
+      "expect": [1, null]
+    },
+    {
+      "description": "genesis, pad 16, join",
+      "inputs": [12, 5],
+      "outputs": [17],
+      "inColorValues": [1],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 2, 5, 8],
+      "expect": [1]
+    },
+    {
+      "description": "transfer, pad 8, direct",
+      "inputs": [9],
+      "outputs": [9],
+      "inColorValues": [1],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [1]
+    },
+    {
+      "description": "transfer, pad 8, split",
+      "inputs": [13],
+      "outputs": [10, 11],
+      "inColorValues": [5],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [2, 3]
+    },
+    {
+      "description": "transfer, pad 8, join",
+      "inputs": [10, 11],
+      "outputs": [13],
+      "inColorValues": [2, 3],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [5]
+    },
+    {
+      "description": "0's all around",
+      "inputs": [8, 8, 8],
+      "outputs": [8, 8, 8],
+      "inColorValues": [null, null, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null, null]
+    },
+    {
+      "description": "null values before and after",
+      "inputs": [9, 10, 11, 20],
+      "outputs": [9, 13, 20],
+      "inColorValues": [null, 2, 3, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, 5, null]
+    },
+    {
+      "description": "color values don't add up the same #1",
+      "inputs": [9, 10, 11],
+      "outputs": [13, 15, 0],
+      "inColorValues": [1, 2, 3],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [5, null, null]
+    },
+    {
+      "description": "color values don't add up the same #2",
+      "inputs": [9, 10, 11],
+      "outputs": [9, 15, 0],
+      "inColorValues": [1, 2, 3],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [1, null, null]
+    },
+    {
+      "description": "color values don't add up the same #3",
+      "inputs": [9, 10, 11],
+      "outputs": [19, 9, 0],
+      "inColorValues": [1, 2, 3],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null, null]
+    },
+    {
+      "description": "sum before color values is not the same",
+      "inputs": [5, 10, 11],
+      "outputs": [6, 13],
+      "inColorValues": [null, 2, 3],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null]
+    },
+    {
+      "description": "nonnull color values are not adjacent",
+      "inputs": [10, 10, 10, 12, 10],
+      "outputs": [10, 32, 10],
+      "inColorValues": [null, 2, null, 4, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null, null]
+    },
+    {
+      "description": "sequence before don't add up the same",
+      "inputs": [10, 10, 10, 11, 10],
+      "outputs": [15, 13, 10],
+      "inColorValues": [null, null, 2, 3, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null, null]
+    },
+    {
+      "description": "sequence before does add up the same",
+      "inputs": [10, 10, 10, 11, 10],
+      "outputs": [9, 11, 13, 10],
+      "inColorValues": [null, null, 2, 3, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null, 5, null]
+    },
+    {
+      "description": "split to many",
+      "inputs": [10, 10, 13, 40],
+      "outputs": [10, 10, 9, 9, 9, 9, 9, 5],
+      "inColorValues": [null, null, 5, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, null, 1, 1, 1, 1, 1, null]
+    },
+    {
+      "description": "combine many",
+      "inputs": [10, 9, 9, 9, 9, 9, 10],
+      "outputs": [10, 13, 32],
+      "inColorValues": [null, 1, 1, 1, 1, 1, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, 5, null]
+    },
+    {
+      "description": "split and combine",
+      "inputs": [10, 10, 11, 12, 13, 14, 10],
+      "outputs": [10, 13, 17, 14, 30],
+      "inColorValues": [null, 2, 3, 4, 5, 6, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [null, 5, 9, 6, null]
+    },
+    {
+      "description": "combine and split",
+      "inputs": [13, 17, 14, 30],
+      "outputs": [10, 11, 12, 13, 14, 10],
+      "inColorValues": [5, 9, 6, null],
+      "txId": "0123012301230123012301230123012301230123012301230123012301230123",
+      "inputSequenceIndices": [0, 1, 4, 5, 6, 7],
+      "expect": [2, 3, 4, 5, 6, null]
+    }
+  ]
+}

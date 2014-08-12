@@ -2,11 +2,8 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var ColorDefinitionManager = require('./ColorDefinitionManager')
-var ColorData = require('./ColorData')
-var ColorDefinition = require('./colordef').ColorDefinition
-var ColorValue = require('./ColorValue')
-var Transaction = require('./Transaction')
+var color = require('../color')
+var Transaction = require('../tx').Transaction
 
 
 /**
@@ -22,9 +19,9 @@ var Transaction = require('./Transaction')
  */
 function Coin(params) {
   assert(_.isObject(params), 'Expected Object params, got ' + params)
-  assert(params.colorData instanceof ColorData,
+  assert(params.colorData instanceof color.ColorData,
     'Expected params.colorData instanceof ColorData, got ' + params.colorData)
-  assert(params.colorDefinitionManager instanceof ColorDefinitionManager,
+  assert(params.colorDefinitionManager instanceof color.ColorDefinitionManager,
     'Expected params.colorDefinitionManager instanceof ColorDefinitionManager, got ' + params.colorDefinitionManager)
   assert(Transaction.isTxId(params.txId), 'Expected transaction id params.txId, got ' + params.txId)
   assert(_.isNumber(params.outIndex), 'Expected number params.outIndex, got ' + params.outIndex)
@@ -55,7 +52,7 @@ Coin.prototype.isConfirmed = function() {
  * @param {function} cb
  */
 Coin.prototype.getColorValue = function(colorDefinition, cb) {
-  assert(colorDefinition instanceof ColorDefinition,
+  assert(colorDefinition instanceof color.ColorDefinition,
     'Expected colorDefinition instanceof ColorDefinition, got ' + colorDefinition)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
@@ -79,7 +76,7 @@ Coin.prototype.getMainColorValue = function (cb) {
     if (colorDefinitions.length === index) {
       if (coinColorValue === null) {
         var uncolored = _this.cdManager.getUncolored()
-        coinColorValue = new ColorValue({ colordef: uncolored, value: _this.value })
+        coinColorValue = new color.ColorValue({ colordef: uncolored, value: _this.value })
       }
 
       cb(null, coinColorValue)

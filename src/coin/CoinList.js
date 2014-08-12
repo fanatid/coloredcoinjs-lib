@@ -37,12 +37,11 @@ CoinList.prototype.getTotalValue = function(cb) {
   var dColorValues = {}
   function getMainColorValue(index) {
     if (_this.coins.length === index) {
-      var colorValues = []
-      Object.keys(dColorValues).forEach(function(colorId) {
-        colorValues.push(dColorValues[colorId])
+      var colorValues = Object.keys(dColorValues).map(function(colorId) {
+        return dColorValues[colorId]
       })
 
-      cb(null, colorValues) // Todo: return ColorValue if colorValues.length === 1 ?
+      cb(null, colorValues)
       return
     }
 

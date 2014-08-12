@@ -7,12 +7,12 @@ var store = require('store')
 
 
 /**
- * @class DataStore
+ * @class SyncStorage
  *
  * @param {Object} [opts]
  * @param {string} [opts.globalPrefix=cc_]
  */
-function DataStore(opts) {
+function SyncStorage(opts) {
   opts = _.isUndefined(opts) ? {} : opts
 
   assert(_.isObject(opts), 'Expected Object opts, got ' + opts)
@@ -30,4 +30,4 @@ function DataStore(opts) {
 }
 
 
-module.exports = DataStore
+module.exports = SyncStorage

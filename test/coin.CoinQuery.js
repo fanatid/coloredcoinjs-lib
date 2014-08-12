@@ -1,23 +1,22 @@
 var expect = require('chai').expect
 
-var coloredcoinlib = require('../src/index')
-var CoinQuery = coloredcoinlib.CoinQuery
+var cclib = require('../src/index')
 
 
-describe('CoinQuery', function() {
-  var bs, cDataStore, cData, cdStore, cdManager, colordef
+describe('coin.CoinQuery', function() {
+  var bs, cDataStorage, cData, cdStorage, cdManager, colordef
   var coinQuery
 
   beforeEach(function() {
-    bs = new coloredcoinlib.blockchain.BlockrIOAPI({ testnet: true })
-    cDataStore = new coloredcoinlib.store.ColorDataStore()
-    cData = new coloredcoinlib.ColorData({ cdStore: cDataStore, blockchain: bs })
-    cdStore = new coloredcoinlib.store.ColorDefinitionStore()
-    cdManager = new coloredcoinlib.ColorDefinitionManager(cdStore)
+    bs = new cclib.blockchain.BlockrIOAPI({ testnet: true })
+    cDataStorage = new cclib.storage.ColorDataStorage()
+    cData = new cclib.color.ColorData(cDataStorage, bs)
+    cdStorage = new cclib.storage.ColorDefinitionStorage()
+    cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
     cdManager.resolveByScheme({ scheme: 'epobc:0984352ebe025daec2954cae4d09f77fd7bd79300479838f21acc9961da28cf1:1:271192' })
     colordef = cdManager.resolveByScheme({ scheme: 'epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191' })
 
-    coinQuery = new CoinQuery({
+    coinQuery = new cclib.coin.CoinQuery({
       addresses: ['mtwcUY5zfQwgLdrCNDq9JiYAu54h257RA1'],
       blockchain: bs,
       colorData: cData,
@@ -26,8 +25,8 @@ describe('CoinQuery', function() {
   })
 
   afterEach(function() {
-    cDataStore.clear()
-    cdStore.clear()
+    cDataStorage.clear()
+    cdStorage.clear()
   })
 
   it('clone', function() {
@@ -73,7 +72,7 @@ describe('CoinQuery', function() {
     it('onlyUnconfirmed', function(done) {
       coinQuery.getUnconfirmed().getCoins(function(error, coinList) {
         expect(error).to.be.null
-        expect(coinList).to.be.instanceof(coloredcoinlib.CoinList).with.to.have.length(0)
+        expect(coinList).to.be.instanceof(cclib.coin.CoinList).with.to.have.length(0)
         done()
       })
     })
@@ -81,7 +80,7 @@ describe('CoinQuery', function() {
     it('split from genesis', function(done) {
       coinQuery.getCoins(function(error, coinList) {
         expect(error).to.be.null
-        expect(coinList).to.be.instanceof(coloredcoinlib.CoinList).with.to.have.length(1)
+        expect(coinList).to.be.instanceof(cclib.coin.CoinList).with.to.have.length(1)
         expect(coinList[0].toString()).to.equal('9251fb943863fdced00bf9a8f327b5ac8e6aab60e46ee48713e3f21adba74f91:1')
         done()
       })
@@ -90,7 +89,7 @@ describe('CoinQuery', function() {
     it('split from genesis + onlyColoredAs', function(done) {
       coinQuery.onlyColoredAs(colordef).getCoins(function(error, coinList) {
         expect(error).to.be.null
-        expect(coinList).to.be.instanceof(coloredcoinlib.CoinList).with.to.have.length(1)
+        expect(coinList).to.be.instanceof(cclib.coin.CoinList).with.to.have.length(1)
         expect(coinList[0].toString()).to.equal('9251fb943863fdced00bf9a8f327b5ac8e6aab60e46ee48713e3f21adba74f91:1')
         done()
       })

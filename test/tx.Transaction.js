@@ -2,7 +2,7 @@ var expect = require('chai').expect
 var bitcoin = require('bitcoinjs-lib')
 
 var coloredcoinlib = require('../src/index')
-var Transaction = coloredcoinlib.Transaction
+var Transaction = coloredcoinlib.tx.Transaction
 
 
 describe('Transaction', function() {
