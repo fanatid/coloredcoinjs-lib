@@ -39,13 +39,17 @@ describe('color.ColorValue', function() {
 
   it('add with compatibility', function() {
     cv2 = new ColorValue({ colordef: uncoloredColorDefinition, value: 1 })
-    cv1.add(cv2)
-    expect(cv1.getValue()).to.equal(1)
+    cv1.add(cv2, function(error, result) {
+      expect(error).to.be.null
+      expect(result.getValue()).to.equal(1)
+    })
   })
 
   it('add with not compatibility', function() {
     cv2 = new ColorValue({ colordef: new ColorDefinition({ colorId: 1 }), value: 1 })
-    cv1.add(cv2)
-    expect(cv1.getValue()).to.equal(0)
+    cv1.add(cv2, function(error, result) {
+      expect(error).to.be.instanceof(Error)
+      expect(result).to.be.undefined
+    })
   })
 })

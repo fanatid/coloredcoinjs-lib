@@ -4,6 +4,7 @@ var _ = require('lodash')
 
 var ColorDefinition = require('./ColorDefinition')
 var EPOBCColorDefinition = require('./EPOBCColorDefinition')
+var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorDefinitionStorage = require('../storage').ColorDefinitionStorage
 
 
@@ -53,7 +54,7 @@ function ColorDefinitionManager(storage) {
  * @return {ColorDefinition}
  */
 ColorDefinitionManager.prototype.getUncolored = function() {
-  return new ColorDefinition({ colorId: 0 })
+  return new UncoloredColorDefinition()
 }
 
 /**

@@ -3,7 +3,7 @@ var expect = require('chai').expect
 var cclib = require('../src/index')
 
 
-describe('coin.CoinQuery', function() {
+describe('coin.CoinList', function() {
   var bs, cDataStorage, cData, cdStorage, cdManager, colordef
   var coinQuery
 

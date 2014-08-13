@@ -35,6 +35,7 @@ CoinList.prototype.getTotalValue = function(cb) {
 
   var _this = this
   var dColorValues = {}
+
   function getMainColorValue(index) {
     if (_this.coins.length === index) {
       var colorValues = Object.keys(dColorValues).map(function(colorId) {
@@ -53,12 +54,21 @@ CoinList.prototype.getTotalValue = function(cb) {
 
       var colorId = colorValue.getColorId()
 
-      if (_.isUndefined(dColorValues[colorId]))
+      if (_.isUndefined(dColorValues[colorId])) {
         dColorValues[colorId] = colorValue
-      else
-        dColorValues[colorId].add(colorValue)
+        getMainColorValue(index+1)
+        return
+      }
 
-      getMainColorValue(index+1)
+      dColorValues[colorId].add(colorValue, function(error, result) {
+        if (error !== null) {
+          cb(error)
+          return
+        }
+
+        dColorValues[colorId] = result
+        getMainColorValue(index+1)
+      })
     })
   }
 
