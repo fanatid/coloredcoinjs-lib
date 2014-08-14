@@ -1,5 +1,7 @@
 var expect = require('chai').expect
 
+var bitcoin = require('bitcoinjs-lib')
+
 var cclib = require('../src/index')
 var stubs = require('./stubs')
 
@@ -96,6 +98,39 @@ fff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec1\
 fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
 9a3156fbe7e5ef635226b0bafd495ff03afe2c843d7e3a4b51ac00000000')
         done()
+      })
+    })
+  })
+
+  describe('sendTx', function() {
+    var hdnode = bitcoin.HDNode.fromSeedHex('00000000000000000000000000000000', bitcoin.networks.testnet)
+    // address is mhW9PYb5jsjpsS5x6dcLrZj7gPvw9mMb9c
+    var address = hdnode.pubKey.getAddress(bitcoin.networks.testnet).toBase58Check()
+
+    it('send coins', function(done) {
+      bs = new cclib.blockchain.BlockrIOAPI({ testnet: true })
+      bs.getUTXO(address, function(error, response) {
+        expect(error).to.be.null
+        expect(response).to.be.instanceof(Array).with.to.have.length.least(1)
+        var totalValue = response.reduce(function(a, b) { return { value: a.value+b.value } }).value
+        expect(totalValue).to.be.at.least(20000)
+
+        // send 0.1 mBTC to msGccLNBLYWBg9U1J2RVribprvsEF3uYGK and change to addreses represented by pubKey
+        var tx = new cclib.tx.Transaction()
+        response.forEach(function(unspent) {
+          tx.addInput(unspent.txId, unspent.outIndex)
+        })
+        tx.addOutput('msGccLNBLYWBg9U1J2RVribprvsEF3uYGK', 10000)
+        tx.addOutput(address, totalValue - 20000)
+        tx.ins.forEach(function(input, index) {
+          tx.sign(index, hdnode.privKey)
+        })
+
+        bs.sendTx(tx, function(error, response) {
+          expect(error).to.be.null
+          expect(response).to.be.a('string').with.to.have.length(64)
+          done()
+        })
       })
     })
   })

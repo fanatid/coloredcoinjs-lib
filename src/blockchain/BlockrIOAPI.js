@@ -4,6 +4,7 @@ var inherits = require('util').inherits
 
 var _ = require('lodash')
 var LRU = require('lru-cache')
+var querystring = require('querystring')
 
 var BlockchainStateBase = require('./BlockchainStateBase')
 var Transaction = require('../tx').Transaction
@@ -63,13 +64,26 @@ function BlockrIOAPI(opts) {
 inherits(BlockrIOAPI, BlockchainStateBase)
 
 /**
+ * @callback BlockrIOAPI~request
+ * @param {Error|null} error
+ * @param {string} response
+ */
+
+/**
  * Make request to the server
  *
  * @param {string} path Path to resource
- * @param {function} cb Called on response with params  (error, string)
+ * @param {Object} [data=null] Data for POST request, may be missed
+ * @param {BlockrIOAPI~request} cb
  */
-BlockrIOAPI.prototype.request = function(path, cb) {
+BlockrIOAPI.prototype.request = function(path, data, cb) {
   assert(_.isString(path), 'Expected string path, got ' + path)
+  data = _.isUndefined(data) ? null : data
+  if (_.isFunction(data) && _.isUndefined(cb)) {
+    cb = data
+    data = null
+  }
+  assert(_.isObject(data) || _.isNull(data), 'Expected Object|null data, got ' + data)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   var _this = this
@@ -90,22 +104,22 @@ BlockrIOAPI.prototype.request = function(path, cb) {
 
   function done(error, result) {
     if (!_.isUndefined(cb)) {
-      var savedCallback = cb
+      cb(error, result)
       cb = undefined
-      savedCallback(error, result)
     }
   }
 
   /** request */
   this.requestPathCache.set(path, true)
-  var request = http.request({
+  var requestOpts = {
     scheme: 'http',
     host: this.isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io',
     port: 80,
     path: path,
-    method: 'GET',
+    method: data === null ? 'GET' : 'POST',
     withCredentials: false
-  })
+  }
+  var request = http.request(requestOpts)
 
   request.on('response', function(res) {
     var buf = ''
@@ -162,13 +176,22 @@ BlockrIOAPI.prototype.request = function(path, cb) {
     done(error)
   })
 
+  if (data !== null)
+    request.write(querystring.encode(data))
+
   request.end()
 }
 
 /**
+ * @callback BlockrIOAPI~getBlockCount
+ * @param {Error|null} error
+ * @param {number} blockCount
+ */
+
+/**
  * Get block count in blockchain
  *
- * @param {function} cb Called on response with params  (error, number)
+ * @param {BlockrIOAPI~getBlockCount} cb
  */
 BlockrIOAPI.prototype.getBlockCount = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -182,10 +205,16 @@ BlockrIOAPI.prototype.getBlockCount = function(cb) {
 }
 
 /**
+ * @callback BlockrIOAPI~getTx
+ * @param {Error|null} error
+ * @param {Transaction} tx
+ */
+
+/**
  * Get transaction by txId
  *
  * @param {string} txId Transaction id
- * @param {function} cb Called on response with params (error, Transaction)
+ * @param {BlockrIOAPI~getTx} cb
  */
 BlockrIOAPI.prototype.getTx = function(txId, cb) {
   assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
@@ -206,6 +235,24 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
 }
 
 /**
+ * @callback BlockrIOAPI~sendTx
+ * @param {Error|null} error
+ */
+
+/**
+ * Send transaction tx to server which broadcast tx to network
+ *
+ * @param {Transaction} tx
+ * @param {BlockrIOAPI~sendTx} cb
+ */
+BlockrIOAPI.prototype.sendTx = function(tx, cb) {
+  assert(tx instanceof Transaction, 'Expected tx instance of Transaction, got ' + tx)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  this.request('/api/v1/tx/push', { 'hex': tx.toHex() }, cb)
+}
+
+/**
  * Parse bitcoin amount (BlockrIO give us btc value not satoshi)
  *
  * @param {string} amount
@@ -215,6 +262,12 @@ function parseAmount(amount) {
   var items = amount.split('.')
   return parseInt(items[0])*100000000 + parseInt(items[1])
 }
+
+/**
+ * @callback BlockrIOAPI~getUTXO
+ * @param {Error|null} error
+ * @param {Array} utxo Array of Objects { txId: string, outIndex: number, value: number, confrimations: number }
+ */
 
 /**
  *
@@ -258,7 +311,6 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
 
     cb(error, error === null ? utxo : undefined)
   })
-
 }
 
 
