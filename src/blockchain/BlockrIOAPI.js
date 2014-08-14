@@ -272,7 +272,7 @@ function parseAmount(amount) {
 /**
  *
  * @param {string} address
- * @param {function} cb Called on finished with params (error, Array)
+ * @param {function} cb
  */
 BlockrIOAPI.prototype.getUTXO = function(address, cb) {
   assert(_.isString(address), 'Expected Address address, got ' + address)

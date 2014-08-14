@@ -11,11 +11,17 @@ var Transaction = require('../tx').Transaction
 function BlockchainStateBase() {}
 
 /**
+ * @callback BlockchainStateBase~ensureInputValues
+ * @param {Error|null} error
+ * @param {Transaction} tx
+ */
+
+/**
  * Get previous transaction for all tx.ins and
  *  return new transaction via callback cb
  *
  * @param {Transaction} tx
- * @param {function} cb Called on finished with params (error, Transaction|null)
+ * @param {BlockchainStateBase~ensureInputValues}
  */
 BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
@@ -62,6 +68,67 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
   }
 
   process.nextTick(function() { processOne(0) })
+}
+
+/**
+ * @callback BlockchainStateBase~getBlockCount
+ * @param {Error|null} error
+ * @param {number} blockCount
+ */
+
+/**
+ * Get block count in blockchain
+ *
+ * @param {BlockchainStateBase~getBlockCount} cb
+ */
+BlockchainStateBase.prototype.getBlockCount = function(cb) {
+  throw new Error('not implemented')
+}
+
+/**
+ * @callback BlockchainStateBase~getTx
+ * @param {Error|null} error
+ * @param {Transaction} tx
+ */
+
+/**
+ * Get transaction by txId
+ *
+ * @param {string} txId
+ * @param {BlockchainStateBase~getTx} cb
+ */
+BlockchainStateBase.prototype.getTx = function(txId, cb) {
+  throw new Error('not implemented')
+}
+
+/**
+ * @callback BlockchainStateBase~sendTx
+ * @param {Error|null} error
+ */
+
+/**
+ * Send transaction tx to server which broadcast tx to network
+ *
+ * @param {Transaction} tx
+ * @param {BlockchainStateBase~sendTx} cb
+ */
+BlockchainStateBase.prototype.sendTx = function(tx, cb) {
+  throw new Error('not implemented')
+}
+
+/**
+ * @callback BlockchainStateBase~getUTXO
+ * @param {Error|null} error
+ * @param {Array} utxo Array of Objects { txId: string, outIndex: number, value: number, confrimations: number }
+ */
+
+/**
+ *
+ * @param {string} address
+ * @param {function} cb
+ */
+BlockchainStateBase.prototype.getUTXO = function(address, cb) {
+  throw new Error('not implemented')
 }
 
 

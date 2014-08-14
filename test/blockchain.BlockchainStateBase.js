@@ -58,4 +58,20 @@ describe('blockchain.BlockchainStateBase', function() {
       })
     })
   })
+
+  it('getBlockCount', function() {
+    expect(bs.getBlockCount).to.throw(Error)
+  })
+
+  it('getTx', function() {
+    expect(bs.getTx).to.throw(Error)
+  })
+
+  it('sendTx', function() {
+    expect(bs.sendTx).to.throw(Error)
+  })
+
+  it('getUTXO', function() {
+    expect(bs.getUTXO).to.throw(Error)
+  })
 })
