@@ -5,6 +5,7 @@ module.exports = {
   ColorDefinitionManager: require('./ColorDefinitionManager'),
 
   ColorData: require('./ColorData'),
+  ColorSet: require('./ColorSet'),
   ColorValue: require('./ColorValue'),
   ColorTarget: require('./ColorTarget')
 }

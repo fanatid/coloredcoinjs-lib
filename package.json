@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "bitcoinjs-lib": "1.0.2",
+    "bs58": "1.2.1",
     "localStorage": "1.0.2",
     "lodash": "2.4.1",
     "lru-cache": "2.5.0",
