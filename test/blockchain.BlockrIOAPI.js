@@ -113,15 +113,14 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
         expect(error).to.be.null
         expect(response).to.be.instanceof(Array).with.to.have.length.least(1)
         var totalValue = response.reduce(function(a, b) { return { value: a.value+b.value } }).value
-        expect(totalValue).to.be.at.least(20000)
+        expect(totalValue).to.be.at.least(15500)
 
-        // send 0.1 mBTC to msGccLNBLYWBg9U1J2RVribprvsEF3uYGK and change to addreses represented by pubKey
+        // send totalValue minus 0.1 mBTC to mhW9PYb5jsjpsS5x6dcLrZj7gPvw9mMb9c
         var tx = new cclib.tx.Transaction()
         response.forEach(function(unspent) {
           tx.addInput(unspent.txId, unspent.outIndex)
         })
-        tx.addOutput('msGccLNBLYWBg9U1J2RVribprvsEF3uYGK', 10000)
-        tx.addOutput(address, totalValue - 20000)
+        tx.addOutput(address, totalValue - 10000)
         tx.ins.forEach(function(input, index) {
           tx.sign(index, hdnode.privKey)
         })

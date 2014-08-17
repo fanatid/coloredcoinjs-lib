@@ -236,7 +236,8 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
 
 /**
  * @callback BlockrIOAPI~sendTx
- * @param {Error|null} error
+ * @param {?Error} error
+ * @param {string} txId
  */
 
 /**

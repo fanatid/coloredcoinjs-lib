@@ -18,6 +18,7 @@ OperationalTx.prototype.getTargets = function() {
  * For uncolored coins sum of values of UTXO objects must also include
  *  a fee (usually it is ComposedTx)
  *
+ * @abstract
  * @param {ColorValue}
  * @param {Object|null} [feeEstimator=null]
  * @param {function} cb
@@ -29,6 +30,7 @@ OperationalTx.prototype.selectCoins = function(colorValue, feeEstimator, cb) {
 /**
  * Returns an address which can be used as a change for given colorDefinition
  *
+ * @abstract
  * @param {ColorDefinition}
  * @return {string}
  */
@@ -39,6 +41,7 @@ OperationalTx.prototype.getChangeAddr = function(colorDefinition) {
 /**
  * Returns ColorValue object representing the fee for a certain tx size
  *
+ * @abstract
  * @param {number} txSize
  * @return {ColorValue}
  */
@@ -50,6 +53,7 @@ OperationalTx.prototype.getRequiredFee = function(txSize) {
  * Returns ColorValue object representing smallest satoshi value
  *  which isn't dust according to current parameters
  *
+ * @abstract
  * @return {number}
  */
 OperationalTx.prototype.getDustThreshold = function() {

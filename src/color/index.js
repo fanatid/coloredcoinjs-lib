@@ -1,5 +1,6 @@
 module.exports = {
   ColorDefinition: require('./ColorDefinition'),
+  UncoloredColorDefinition: require('./UncoloredColorDefinition'),
   EPOBCColorDefinition: require('./EPOBCColorDefinition'),
 
   ColorDefinitionManager: require('./ColorDefinitionManager'),

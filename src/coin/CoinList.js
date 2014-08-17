@@ -8,27 +8,39 @@ var Coin = require('./Coin')
 /**
  * @class CoinList
  *
- * @param {Array} coins
+ * @param {Coin[]}
  */
- // Todo: give colors for create zero colorvalues
 function CoinList(coins) {
   assert(_.isArray(coins), 'Expected Array coins, got ' + coins)
   coins.forEach(function(coin) {
     assert(coin instanceof Coin, 'Expected Array of Coin coins, got ' + coins)
   })
 
-  this.coins = coins
+  var self = this
 
-  this.length = coins.length
+  self.coins = coins
 
-  var _this = this
-  coins.forEach(function(coin, index) {
-    _this[index] = coin
+  self.length = self.coins.length
+  self.coins.forEach(function(coin, index) {
+    self[index] = coin
   })
 }
 
 /**
- * @param {function} cb Called on finished with params (error, Array)
+ * @return {Coin[]}
+ */
+CoinList.prototype.getCoins = function() {
+  return this.coins
+}
+
+/**
+ * @callback CoinList~getTotalValue
+ * @param {?Error} error
+ * @param {ColorValue[]} colorValues
+ */
+
+/**
+ * @param {CoinList~getTotalValue} cb
  */
 CoinList.prototype.getTotalValue = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -54,21 +66,12 @@ CoinList.prototype.getTotalValue = function(cb) {
 
       var colorId = colorValue.getColorId()
 
-      if (_.isUndefined(dColorValues[colorId])) {
+      if (_.isUndefined(dColorValues[colorId]))
         dColorValues[colorId] = colorValue
-        getMainColorValue(index+1)
-        return
-      }
+      else
+        dColorValues[colorId] = dColorValues[colorId].plus(colorValue)
 
-      dColorValues[colorId].add(colorValue, function(error, result) {
-        if (error !== null) {
-          cb(error)
-          return
-        }
-
-        dColorValues[colorId] = result
-        getMainColorValue(index+1)
-      })
+      getMainColorValue(index+1)
     })
   }
 

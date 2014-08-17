@@ -2,6 +2,7 @@ var assert = require('assert')
 var inherits = require('util').inherits
 
 var _ = require('lodash')
+var Q = require('q')
 
 var ColorDefinition = require('./ColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
@@ -366,19 +367,13 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
     var colorValues = [new ColorValue({ colordef: _this, value: 0 })]
     colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
 
-    ColorValue.sum(colorValues, function(error, result) {
-      if (error !== null) {
-        cb(error)
-        return
-      }
+    var totalColorValue = ColorValue.sum(colorValues)
+    if (totalColorValue.getValue() >= outValueWop)
+      outColorValues.push(new ColorValue({ colordef: _this, value: outValueWop }))
+    else
+      outColorValues.push(null)
 
-      if (result.getValue() >= outValueWop)
-        outColorValues.push(new ColorValue({ colordef: _this, value: outValueWop }))
-      else
-        outColorValues.push(null)
-
-      processOutTx(tx, outIndex+1)
-    })
+    processOutTx(tx, outIndex+1)
   }
 }
 
@@ -387,45 +382,45 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
  *  return affecting inputs of transaction tx in a Array via callback cb
  *
  * @param {Transaction} tx
- * @param {Array} outputSet
- * @param {coloredcoinlib.blockchain.BlockchainState} bs
+ * @param {number[]} outputSet
+ * @param {BlockchainStateBase} bs
  * @param {function} cb Called on finished with params (error, Array)
  */
 EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, cb) {
-  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
+  assert(tx instanceof Transaction, 'Expected tx instance of Transaction, got ' + tx)
   assert(_.isArray(outputSet), 'Expected Array outputSet, got ' + outputSet)
   assert(outputSet.every(function(oi) { return _.isNumber(oi) }),
     'Expected outputSet Array numbers, got ' + outputSet)
   assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var tag = getTag(tx)
+  Q.fcall(function() {
+    var tag = getTag(tx)
+    if (tag === null || tag.isGenesis)
+      return []
 
-  if (tag === null || tag.isGenesis) {
-    cb(null, [])
-
-  } else {
     var padding = tag.getPadding()
+    function getAffectingInputs(tx) {
+      var aii = {}
 
-    bs.ensureInputValues(tx, function(error, tx) {
-      var inputs
-
-      if (error === null) {
-        var aii = []
-
-        outputSet.forEach(function(outIndex) {
-          getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-            if (aii.indexOf(ai) === -1)
-              aii.push(ai)
-          })
+      outputSet.forEach(function(outIndex) {
+        getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
+          aii[ai] = 1
         })
+      })
 
-        inputs = aii.map(function(ii) { return tx.ins[ii] })
-      }
+      return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
+    }
 
-      cb(error, inputs)
-    })
-  }
+    return Q.ninvoke(bs, 'ensureInputValues', tx).then(getAffectingInputs)
+
+  }).then(function(result) {
+    cb(null, result)
+
+  }).fail(function(error) {
+    cb(error)
+
+  })
 }
 
 /**
@@ -665,6 +660,7 @@ EPOBCColorDefinition.prototype.composeTx = function(operationalTx, cb) {
   }
 
   function finish() {
+    // set sequence via third param addInput
     composedTx.setSequence(0, tag.toSequence())
     cb(null, composedTx)
   }

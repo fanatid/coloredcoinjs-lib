@@ -107,7 +107,7 @@ ColorDefinitionManager.prototype.resolveByScheme = function(data) {
     return null
 
   var result = record2ColorDefinition({
-    colorId: -2, // 0 for uncolored, -1 for genesis
+    colorId: -1, // 0 for uncolored
     meta: {},
     scheme: data.scheme
   })

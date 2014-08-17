@@ -5,6 +5,8 @@ var _ = require('lodash')
 var bitcoin = require('bitcoinjs-lib')
 
 
+// Todo: not make inherits, add methods to bitcoin.Transaction and return it
+
 /**
  * @class Transaction
  *

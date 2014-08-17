@@ -70,42 +70,31 @@ ColorValue.prototype.clone = function() {
  * Check compatibility with other ColorValue
  *
  * @param {ColorValue} other
- * @return {boolean}
+ * @throws {TypeError} If not compatibility
  */
 ColorValue.prototype.checkCompatibility = function(other) {
   var isCompatibility = (
     other instanceof ColorValue &&
     this.getColorId() === other.getColorId())
 
-  return isCompatibility
+  if (!isCompatibility)
+    throw new TypeError('ColorValues not compatibility')
 }
 
 /**
- * @callback ColorValue~addCallback
- * @param {Error|null} error
- * @param {ColorValue} result
- */
-
-/**
- * Add value from other ColorValue from current ColorValue and return new ColorValue
+ * Create new ColorValue with value as sum of current and other
  *
  * @param {ColorValue} other
- * @param {ColorValue~addCallback} cb
+ * @return {ColorValue}
+ * @throws {TypeError} If not compatibility
  */
-ColorValue.prototype.add = function(other, cb) {
-  var self = this
+ColorValue.prototype.plus = function(other) {
+  this.checkCompatibility(other)
 
-  function error() { cb(new TypeError('Incompatible ColorValues')) }
+  var newColorValue = this.clone()
+  newColorValue.value += other.value
 
-  function success() {
-    cb(null, new ColorValue({
-      colordef: self.getColorDefinition(),
-      value: self.getValue() + other.getValue()
-    }))
-  }
-
-  var isCompatibility = self.checkCompatibility(other)
-  process.nextTick(isCompatibility ? success : error)
+  return newColorValue
 }
 
 /**
@@ -114,76 +103,34 @@ ColorValue.prototype.add = function(other, cb) {
  * @return {ColorValue}
  */
 ColorValue.prototype.neg = function() {
-  return new ColorValue({
-    colordef: this.getColorDefinition(),
-    value: -this.getValue()
-  })
+  var newColorValue = this.clone()
+  newColorValue.value = -newColorValue.value
+
+  return newColorValue
 }
 
 /**
- * @callback ColorValue~subCallback
- * @param {Error|null} error
- * @param {ColorValue} result
- */
-
-/**
- * Sub value from other ColorValue from current ColorValue and return new ColorValue
+ * Create new ColorValue with value as difference of current and other
  *
  * @param {ColorValue} other
- * @param {ColorValue~subCallback} cb
+ * @return {ColorValue}
+ * @throws {TypeError} If not compatibility
  */
-ColorValue.prototype.sub = function(other, cb) {
-  var self = this
-
-  function error() { cb(new TypeError('Incompatible ColorValues')) }
-
-  function success() {
-    cb(null, new ColorValue({
-      colordef: self.getColorDefinition(),
-      value: self.getValue() - other.getValue()
-    }))
-  }
-
-  var isCompatibility = self.checkCompatibility(other)
-  process.nextTick(isCompatibility ? success : error)
+ColorValue.prototype.minus = function(other) {
+  return this.plus(other.neg())
 }
-
-/**
- * @callback ColorValue~sumCallback
- * @param {Error|null} error
- * @param {ColorValue} result
- */
 
 /**
  * Sum values of colorValues
  *
- * @param {Array} colorValues
- * @param {ColorValue~sumCallback} cb
+ * @param {ColorValue[]} colorValues
+ * @throws {TypeError} If colorValues not incompatible
  */
-ColorValue.sum = function(colorValues, cb) {
-  assert(_.isArray(colorValues), 'Expected Array colorValues, got ' + colorValues)
-  assert(colorValues.length > 0, 'Expected Array of ColorValues, got ' + colorValues)
-  colorValues.forEach(function(colorValue) {
-    assert(colorValue instanceof ColorValue, 'Expected Array of ColorValues, got ' + colorValues)
-  })
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ColorValue.sum = function(colorValues) {
+  // Todo add RangeError
+  var totalColorValue = colorValues.reduce(function(a, b) { return a.plus(b) })
 
-  function error() { cb(new TypeError('Incompatible ColorValues')) }
-
-  function success() {
-    var totalColorValue = colorValues.reduce(function(cv1, cv2) {
-      return new ColorValue({
-        colordef: cv1.getColorDefinition(),
-        value: cv1.getValue() + cv2.getValue()
-      })
-    })
-    cb(null, totalColorValue)
-  }
-
-  var isCompatibility = colorValues.every(function(colorValue) {
-    return colorValues[0].checkCompatibility(colorValue)
-  })
-  process.nextTick(isCompatibility ? success : error)
+  return totalColorValue
 }
 
 

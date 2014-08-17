@@ -12,6 +12,7 @@ var Transaction = require('../tx').Transaction
  * @param {Object} params
  * @param {ColorData} params.colorData
  * @param {ColorDefinitionManager} params.colorDefinitionManager
+ * @param {string} params.address
  * @param {string} params.txId
  * @param {number} params.outIndex
  * @param {number} params.value
@@ -30,6 +31,7 @@ function Coin(params) {
 
   this.cdManager = params.colorDefinitionManager
   this.cData = params.colorData
+  this.address = params.address
   this.txId = params.txId
   this.outIndex = params.outIndex
   this.value = params.value

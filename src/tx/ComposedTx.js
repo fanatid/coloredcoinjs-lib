@@ -17,123 +17,91 @@ function ComposedTx(operationalTx) {
     'Expected operationalTx instance of OperationalTx, got ' + operationalTx)
 
   this.operationalTx = operationalTx
-  // Todo: not sure
-  // txIns -- array of coins? how get privkey for sign?
   this.txIns = []
   this.txOuts = []
 }
 
 /**
- * @param {} txIn
+ * @param {Coin} txIn
  */
 ComposedTx.prototype.addTxIn = function(txIn) {
   this.txIns.push(txIn)
 }
 
 /**
- * @param {Array} txIns
+ * @param {Coin[]} txIns
  */
 ComposedTx.prototype.addTxIns = function(txIns) {
-  assert(_.isArray(txIns), 'Expected Array txIns, got ' + txIns)
+  txIns.forEach(this.addTxIn.bind(this))
+}
 
-  var self = this
-
-  txIns.forEach(function(txIn) {
-    self.addTxIn(txIn)
-  })
+/**
+ * @return {Coin[]}
+ */
+ComposedTx.prototype.getTxIns = function() {
+  return this.txIns
 }
 
 /**
  * @param {Object} data
- * @param {ColorTarget} [data.target]
- * @param {string} [data.targetAddr]
+ * @param {ColorTarget} [data.target] If data.target is not undefined, address and value will be extracted from target
+ * @param {string} [data.address]
  * @param {number} [data.value]
- * @param {boolean} [data.isFeeChange=false]
- * @param {function} cb
+ * @throws {Error} If target is colored
  */
-ComposedTx.prototype.addTxOut = function(data, cb) {
-  // get data in type-checks
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+ComposedTx.prototype.addTxOut = function(data) {
+  if (!_.isUndefined(data.target)) {
+    if (!data.target.isUncolored())
+      throw new Error('target is colored')
 
-  if (_.isUndefined(data.value) && !_.isUndefined(data.target) && data.target.isUncolored())
+    data.address = data.target.getAddress()
     data.value = data.target.getValue()
-  if (data.value instanceof ColorValue && data.value.isUncolored())
-    data.value = data.value.getValue()
+  }
+
+  assert(_.isString(data.address), 'Expected string data.address, got ' + data.address)
   assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
 
-  if (_.isUndefined(data.targetAddr) && !_.isUndefined(data.target))
-    data.targetAddr = data.target.getAddress()
-  assert(_.isString(data.targetAddr), 'Expected string data.targetAddr, got ' + data.targetAddr)
-
-  if (_.isUndefined(data.isFeeChange)) data.isFeeChange = false
-  assert(_.isBoolean(data.isFeeChange), 'Expected boolean data.isFeeChange, got ' + data.isFeeChange)
-
   this.txOuts.push({
-    targetAddr: data.targetAddr,
-    value: data.value,
-    isFeeChange: data.isFeeChange
+    address: data.address,
+    value: data.value
   })
-
-  process.nextTick(function() { cb(null) })
 }
 
 /**
- * @param {Array} txOuts Array of ColorTarget
- * @param {function} cb
+ * @param {ColorTarget[]} colorTargets
  */
-ComposedTx.prototype.addTxOuts = function(txOuts, cb) {
-  assert(_.isArray(txOuts), 'Expected Array txOuts, got ' + txOuts)
-  txOuts.forEach(function(txOut) {
-    assert(txOut instanceof ColorTarget, 'Expected Array of ColorTarget, got ' + txOuts)
+ComposedTx.prototype.addTxOuts = function(colorTargets) {
+  colorTargets = colorTargets.map(function(target) {
+    return { target: target }
   })
 
-  var self = this
+  colorTargets.forEach(this.addTxOut.bind(this))
+}
 
-  txOuts = txOuts.map(function(txOut) {
-    return { address: txOut.getAddress, value: txOut.getValue() }
-  })
-
-  function add(index) {
-    if (index == txOuts.length) {
-      cb(null)
-      return
-    }
-
-    self.addTxOut(txOuts[index], function(error) {
-      if (error === null)
-        add(index+1)
-      else
-        cb(error)
-    })
-  }
-
-  add(0)
+/**
+ * @return {ColorTarget[]}
+ */
+ComposedTx.prototype.getTxOuts = function() {
+  return this.txOuts
 }
 
 /**
  * Estimate transaction size
  *
- * @param {Object} data
- * @param {number} [data.extraTxIns=0]
- * @param {number} [data.extraTxOuts=0]
- * @param {number} [data.extraBytes=0]
+ * @param {Object} extra
+ * @param {number} [extra.txIns=0]
+ * @param {number} [extra.txOuts=0]
+ * @param {number} [extra.bytes=0]
  */
-ComposedTx.prototype.estimateSize = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  if (_.isUndefined(data.extraTxIns)) data.extraTxIns = 0
-  assert(_.isNumber(data.extraTxIns), 'Expected number data.extraTxIns, got ' + data.extraTxIns)
-  if (_.isUndefined(data.extraTxOuts)) data.extraTxOuts = 0
-  assert(_.isNumber(data.extraTxOuts), 'Expected number data.extraTxOuts, got ' + data.extraTxOuts)
-  if (_.isUndefined(data.extraBytes)) data.extraBytes = 0
-  assert(_.isNumber(data.extraBytes), 'Expected number data.extraBytes, got ' + data.extraBytes)
+ComposedTx.prototype.estimateSize = function(extra) {
+  extra = _.isUndefined(extra) ? {} : extra
+  extra.txIns  = _.isUndefined(extra.txIns)  ? 0 : extra.txIns
+  extra.txOuts = _.isUndefined(extra.txOuts) ? 0 : extra.txOuts
+  extra.bytes  = _.isUndefined(extra.bytes)  ? 0 : extra.bytes
 
-/*
-return (181 * (len(self.txins) + extra_txins) + 
-                34 * (len(self.txouts) + extra_txouts) + 
-                10 + extra_bytes)
-*/
-  var size = 0
+  var size = (181 * (this.txIns.length + extra.txIns) +
+              34 * (this.txOuts.length + extra.txOuts) + 
+              10 + extra.bytes)
 
   return size
 }
@@ -141,17 +109,19 @@ return (181 * (len(self.txins) + extra_txins) +
 /**
  * Estimate required fee for current transaction
  *
- * @param {Object} data
- * @param {number} [data.extraTxIns=0]
- * @param {number} [data.extraTxOuts=1]
- * @param {number} [data.extraBytes=0]
+ * @param {Object} extra
+ * @param {number} [extra.txIns=0]
+ * @param {number} [extra.txOuts=1]
+ * @param {number} [extra.bytes=0]
  */
-ComposedTx.prototype.estimateRequiredFee = function(data) {
-  if (_.isUndefined(data.extraTxOuts)) data.extraTxOuts = 1
+ComposedTx.prototype.estimateRequiredFee = function(extra) {
+  extra = _.isUndefined(extra) ? {} : extra
+  extra.txOuts = _.isUndefined(extra.txOuts) ? 1 : extra.txOuts
 
-  var txSize = this.estimateSize(data)
+  var size = this.estimateSize(extra)
+  var fee = this.operationalTx.getRequiredFee(size)
 
-  return this.operationalTx.getRequiredFee(txSize)
+  return fee
 }
 
 

@@ -44,7 +44,7 @@ function CoinQuery(params) {
 }
 
 /**
- * Create clone current CoinQuery
+ * Return clone of current CoinQuery
  *
  * @return {CoinQuery}
  */
@@ -109,9 +109,15 @@ CoinQuery.prototype.getUnconfirmed = function() {
 }
 
 /**
+ * @callback CoinQuery~getCoins
+ * @param {?Error} error
+ * @param {CoinList} coinList
+ */
+
+/**
  * Select coins and return CoinList via cb
  *
- * @param {function} cb Called on finished with params (error, CoinList)
+ * @param {CoinQuery~getCoins} cb
  */
 CoinQuery.prototype.getCoins = function(cb) {
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
@@ -131,6 +137,9 @@ CoinQuery.prototype.getCoins = function(cb) {
         return
       }
 
+      result.forEach(function(record) {
+        record.address = _this.addresses[index]
+      })
       utxo = utxo.concat(result)
       getUTXO(index+1)
     })
@@ -146,6 +155,7 @@ CoinQuery.prototype.getCoins = function(cb) {
     var coin = new Coin({
       colorData: _this.colorData,
       colorDefinitionManager: _this.colorDefinitionManager,
+      address: utxo[index].address,
       txId: utxo[index].txId,
       outIndex: utxo[index].outIndex,
       value: utxo[index].value,

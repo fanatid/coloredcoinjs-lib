@@ -62,22 +62,20 @@ ColorTarget.prototype.isUncolored = function() {
 }
 
 /**
- * @callback ColorTarget~sumCallback
- * @param {Error|null} error
- * @param {ColorValue} result
+ * @typedef {Object} AbstractColorTarget
+ * @property {function} getColorValue
  */
 
 /**
  * Calculate total sum of targets
  *
- * @param {Array} targets Array of ColorTargets or class instances that have method getColorValue()
- * @param {ColorTarget~sumCallback} cb
+ * @param {AbstractColorTarget[]}
+ * @throws {Error} Will throw an error if colorValues of targets not incompatible
+ * @return {number}
  */
-ColorTarget.sum = function(targets, cb) {
-  assert(_.isArray(targets), 'Expected Array targets, got ' + targets)
-
+ColorTarget.sum = function(targets) {
   var colorValues = targets.map(function(target) { return target.getColorValue() })
-  targets[0].constructor.sum(colorValues, cb)
+  return colorValues[0].constructor.sum(colorValues)
 }
 
 

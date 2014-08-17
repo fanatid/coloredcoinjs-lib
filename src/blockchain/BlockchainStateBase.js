@@ -72,13 +72,14 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
 
 /**
  * @callback BlockchainStateBase~getBlockCount
- * @param {Error|null} error
+ * @param {?Error} error
  * @param {number} blockCount
  */
 
 /**
  * Get block count in blockchain
  *
+ * @abstract
  * @param {BlockchainStateBase~getBlockCount} cb
  */
 BlockchainStateBase.prototype.getBlockCount = function(cb) {
@@ -87,13 +88,14 @@ BlockchainStateBase.prototype.getBlockCount = function(cb) {
 
 /**
  * @callback BlockchainStateBase~getTx
- * @param {Error|null} error
+ * @param {?Error} error
  * @param {Transaction} tx
  */
 
 /**
  * Get transaction by txId
  *
+ * @abstract
  * @param {string} txId
  * @param {BlockchainStateBase~getTx} cb
  */
@@ -103,12 +105,14 @@ BlockchainStateBase.prototype.getTx = function(txId, cb) {
 
 /**
  * @callback BlockchainStateBase~sendTx
- * @param {Error|null} error
+ * @param {?Error} error
+ * @param {string} txId
  */
 
 /**
  * Send transaction tx to server which broadcast tx to network
  *
+ * @abstract
  * @param {Transaction} tx
  * @param {BlockchainStateBase~sendTx} cb
  */
@@ -117,13 +121,24 @@ BlockchainStateBase.prototype.sendTx = function(tx, cb) {
 }
 
 /**
- * @callback BlockchainStateBase~getUTXO
- * @param {Error|null} error
- * @param {Array} utxo Array of Objects { txId: string, outIndex: number, value: number, confrimations: number }
+ * @typedef UTXO
+ * @type {Object}
+ * @property {string} txId Transaction id
+ * @property {number} outIndex Output index
+ * @property {number} value Coin value in satoshi
+ * @property {number} confrimations Number of transaction confirmation
  */
 
 /**
+ * @callback BlockchainStateBase~getUTXO
+ * @param {?Error} error
+ * @param {UTXO[]} utxo
+ */
+
+/**
+ * Get UTXO for given address
  *
+ * @abstract
  * @param {string} address
  * @param {function} cb
  */
