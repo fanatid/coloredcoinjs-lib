@@ -17,8 +17,12 @@ function UncoloredColorDefinition() {
 
 inherits(UncoloredColorDefinition, ColorDefinition)
 
+UncoloredColorDefinition.prototype.getScheme = function() {
+  return ''
+}
+
 /**
- * @callback UncoloredColorDefinition~makeComposeTx
+ * @callback UncoloredColorDefinition~makeComposedTx
  * @param {?Error} error
  * @param {ComposedTx} composedTx
  */
@@ -27,9 +31,9 @@ inherits(UncoloredColorDefinition, ColorDefinition)
  * Create ComposeTx from OperationalTx
  *
  * @param {OperationalTx} operationalTx
- * @param {UncoloredColorDefinition~makeComposeTx} cb
+ * @param {UncoloredColorDefinition~makeComposedTx} cb
  */
-UncoloredColorDefinition.makeComposeTx = function(operationalTx, cb) {
+UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
   var self = this
 
   var composedTx
@@ -52,7 +56,7 @@ UncoloredColorDefinition.makeComposeTx = function(operationalTx, cb) {
 
     if (change.getValue() > operationalTx.getDustThreshold().getValue())
       composedTx.addTxOut({
-        address: operationalTx.getChangeAddress(),
+        address: operationalTx.getChangeAddress(new UncoloredColorDefinition()),
         value: change.getValue()
       })
 

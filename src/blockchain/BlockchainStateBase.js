@@ -83,7 +83,7 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
  * @param {BlockchainStateBase~getBlockCount} cb
  */
 BlockchainStateBase.prototype.getBlockCount = function(cb) {
-  throw new Error('not implemented')
+  throw new Error('getBlockCount not implemented')
 }
 
 /**
@@ -100,7 +100,7 @@ BlockchainStateBase.prototype.getBlockCount = function(cb) {
  * @param {BlockchainStateBase~getTx} cb
  */
 BlockchainStateBase.prototype.getTx = function(txId, cb) {
-  throw new Error('not implemented')
+  throw new Error('getTx not implemented')
 }
 
 /**
@@ -117,7 +117,7 @@ BlockchainStateBase.prototype.getTx = function(txId, cb) {
  * @param {BlockchainStateBase~sendTx} cb
  */
 BlockchainStateBase.prototype.sendTx = function(tx, cb) {
-  throw new Error('not implemented')
+  throw new Error('sendTx not implemented')
 }
 
 /**
@@ -143,7 +143,7 @@ BlockchainStateBase.prototype.sendTx = function(tx, cb) {
  * @param {function} cb
  */
 BlockchainStateBase.prototype.getUTXO = function(address, cb) {
-  throw new Error('not implemented')
+  throw new Error('getUTXO not implemented')
 }
 
 

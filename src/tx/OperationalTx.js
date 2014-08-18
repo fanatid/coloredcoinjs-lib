@@ -9,7 +9,7 @@ function OperationalTx() {}
  * @return {Array}
  */
 OperationalTx.prototype.getTargets = function() {
-  throw new Error('not implemented')
+  throw new Error('getTargets not implemented')
 }
 
 /**
@@ -24,7 +24,7 @@ OperationalTx.prototype.getTargets = function() {
  * @param {function} cb
  */
 OperationalTx.prototype.selectCoins = function(colorValue, feeEstimator, cb) {
-  throw new Error('not implemented')
+  throw new Error('selectCoins not implemented')
 }
 
 /**
@@ -34,8 +34,8 @@ OperationalTx.prototype.selectCoins = function(colorValue, feeEstimator, cb) {
  * @param {ColorDefinition}
  * @return {string}
  */
-OperationalTx.prototype.getChangeAddr = function(colorDefinition) {
-  throw new Error('not implemented')
+OperationalTx.prototype.getChangeAddress = function(colorDefinition) {
+  throw new Error('getChangeAddress not implemented')
 }
 
 /**
@@ -46,7 +46,7 @@ OperationalTx.prototype.getChangeAddr = function(colorDefinition) {
  * @return {ColorValue}
  */
 OperationalTx.prototype.getRequiredFee = function(txSize) {
-  throw new Error('not implemented')
+  throw new Error('getRequiredFee not implemented')
 }
 
 /**
@@ -57,7 +57,7 @@ OperationalTx.prototype.getRequiredFee = function(txSize) {
  * @return {number}
  */
 OperationalTx.prototype.getDustThreshold = function() {
-  throw new Error('not implemented')
+  throw new Error('getDustThreshold not implemented')
 }
 
 /**

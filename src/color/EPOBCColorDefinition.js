@@ -70,36 +70,26 @@ Tag.genesisTagBits = [1, 0, 1, 0, 0, 1]
 
 
 /**
- * @callback Tag~closestPaddingCodeCallback
- * @param {Error} error
- * @param {number} result
- */
-
-/**
  * Calculate paddingCode from minPadding
  *
  * @param {number} minPadding
- * @param {Tag~closestPaddingCodeCallback} cb
+ * @return {number}
+ * @throws {Error} If paddingCode greater that 63
  */
-Tag.closestPaddingCode = function(minPadding, cb) {
+Tag.closestPaddingCode = function(minPadding) {
   assert(_.isNumber(minPadding), 'Expected number minPadding, got ' + minPadding)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  process.nextTick(function() {
-    if (minPadding <= 0) {
-      cb(null, 0)
-      return
-    }
+  if (minPadding <= 0)
+    return 0
 
-    var paddingCode = 1
-    while (Math.pow(2, paddingCode) < minPadding && paddingCode <= 63)
-      paddingCode += 1
+  var paddingCode = 1
+  while (Math.pow(2, paddingCode) < minPadding && paddingCode <= 63)
+    paddingCode += 1
 
-    if (paddingCode > 63)
-      cb(new Error('Requires to much padding'))
-    else
-      cb(null, paddingCode)
-  })
+  if (paddingCode > 63)
+    throw new Error('Requires to much padding')
+
+  return paddingCode
 }
 
 /**
@@ -424,246 +414,131 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
 }
 
 /**
- *
+ * @callback EPOBCColorDefinition~makeComposedTx
+ * @param {?Error} error
+ * @param {ComposedTx} composedTx
  */
-EPOBCColorDefinition.prototype.composeTx = function(operationalTx, cb) {
-  var composedTx = operationalTx.makeComposedTx()
-  var dustThreshold = operationalTx.getDustThreshold().getValue()
-  var inputsByColor = {}
-  var minPadding = 0
-  var tag
-  var fee
+
+/**
+ * Create ComposeTx from OperationalTx
+ *
+ * @param {OperationalTx} operationalTx
+ * @param {EPOBCColorDefinition~makeComposedTx} cb
+ */
+EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
+  var self = this
 
   var targetsByColor, targetsColorIds
   var uncoloredTargets, uncoloredNeeded, uncoloredChange
+  var dustThreshold, coinsByColor, minPadding
+  var composedTx, tag, fee
 
-  groupTargetsByColor(operationalTx.getTargets(), EPOBCColorDefinition, function(error, result) {
-    if (error !== null) {
-      cb(error)
-      return
-    }
+  Q.fcall(function() {
+    targetsByColor = groupTargetsByColor(operationalTx.getTargets(), EPOBCColorDefinition)
 
-    uncoloredTargets = result[0] || []
-    delete result[0]
-    targetsByColor = result
-    targetsColorIds = Object.keys(targetsByColor)
+    uncoloredTargets = targetsByColor[new UncoloredColorDefinition().getColorId()] || []
+    delete targetsByColor[new UncoloredColorDefinition().getColorId()]
 
     if (uncoloredTargets.length === 0)
-      uncoloredNeededCallback(null, new ColorValue({ colordef: new UncoloredColorDefinition(), value: 0 }))
+      uncoloredNeeded = new ColorValue({ colordef: new UncoloredColorDefinition(), value: 0 })
     else
-      ColorTarget.sum(uncoloredTargets, uncoloredNeededCallback)
-  })
+      uncoloredNeeded = ColorTarget.sum(uncoloredTargets)
 
-  function uncoloredNeededCallback(error, result) {
-    if (error !== null) {
-      cb(error)
-      return
-    }
+    targetsColorIds = Object.keys(targetsByColor)
+    dustThreshold = operationalTx.getDustThreshold()
+    coinsByColor = {}
+    minPadding = 0
 
-    uncoloredNeeded = result
-    step1(0)
-  }
-
-  // step 1: get inputs, create change targets, compute min padding
-  function step1(index) {
-    if (targetsColorIds.length === index) {
-      Tag.closestPaddingCode(minPadding, function(error, paddingCode) {
-        if (error !== null) {
-          cb(error)
-          return
-        }
-
-        tag = new Tag(paddingCode, false)
-        step2(0)
-      })
-    }
-
-    var targets = targetsByColor[targetsColorIds[index]]
-
-    ColorTarget.sum(targets, function(error, neededSum) {
-      if (error !== null) {
-        cb(error)
+    // get inputs, create change targets, compute min padding
+    function step1(index) {
+      if (targetsColorIds.length === index)
         return
-      }
 
-      operationalTx.selectCoins(neededSum, null, function(error, inputs, total) {
-        if (error !== null) {
-          cb(error)
-          return
-        }
+      var targets = targetsByColor[targetsColorIds[index]]
+      neededSum = ColorTarget.sum(targets)
 
-        inputsByColor[targetsColorIds[index]] = inputs
-        total.sub(neededSum, function(error, change) {
-          if (error) {
-            cb(error)
-            return
-          }
+      return Q.ninvoke(operationalTx, 'selectCoins', neededSum, null)
+        .spread(function(coins, coinsValue) {
+          coinsByColor[targetsColorIds[index]] = coins
 
+          var change = coinsValue.minus(neededSum)
           if (change.getValue() > 0)
             targets.push(new ColorTarget(
-              operationalTx.getChangeAddr(change.getColorDefinition()),
+              operationalTx.getChangeAddress(change.getColorDefinition()),
               change
             ))
 
           targets.forEach(function(target) {
-            var paddingNeeded = dustThreshold - target.getValue()
+            var paddingNeeded = dustThreshold.getValue() - target.getValue()
             if (paddingNeeded > minPadding)
               minPadding = paddingNeeded
           })
 
-          step1(index+1)
+          return step1(index+1)
         })
-      })
-    })
-  }
+    }
 
-  // step 2: create txins & txouts, compute uncolored requirements
-  function step2(stepIndex) {
-    if (targetsColorIds.length === stepIndex) {
-      addUncoloredTargets()
+    return step1(0)
+
+  }).then(function() {
+    composedTx = operationalTx.makeComposedTx()
+    tag = new Tag(Tag.closestPaddingCode(minPadding), false)
+
+    // create txins & txouts, compute uncolored requirements
+    function step2(index) {
+      if (targetsColorIds.length === index)
+        return
+
+      coinsByColor[targetsColorIds[index]].forEach(function(coin) {
+        var coinValue = new ColorValue({ colordef: new UncoloredColorDefinition(), value: coin.value })
+        uncoloredNeeded = uncoloredNeeded.minus(coinValue)
+        composedTx.addTxIn(coin)
+      })
+
+      targetsByColor[targetsColorIds[index]].forEach(function(target) {
+        var targetValue = target.getValue() + tag.getPadding()
+        var uncoloredValue = new ColorValue({ colordef: new UncoloredColorDefinition(), value: targetValue })
+        uncoloredNeeded = uncoloredNeeded.plus(uncoloredValue)
+        composedTx.addTxOut({ address: target.getAddress(), value: targetValue })
+      })
+
+      return step2(index+1)
+    }
+
+    return step2(0)
+
+  }).then(function() {
+    composedTx.addTxOuts(uncoloredTargets)
+
+    fee = composedTx.estimateRequiredFee()
+    if (uncoloredNeeded.plus(fee).getValue() <= 0) {
+      uncoloredChange = uncoloredNeeded.neg().minus(fee)
       return
     }
 
-    var colorId = targetsColorIds[stepIndex]
-
-    function addTxIn(index) {
-      if (inputsByColor[colorId].length === index) {
-        addTxOut(0)
-        return
-      }
-
-      var input = inputsByColor[colorId][index]
-      composedTx.addTxIn(input)
-
-      var uncoloredValue = new ColorValue({ colordef: new UncoloredColorDefinition(), value: input.value })
-      uncoloredNeeded.sub(uncoloredValue, function(error, result) {
-        if (error !== null) {
-          cb(error)
-          return
-        }
-
-        uncoloredNeeded = result
-        addTxIn(index+1)
+    return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx)
+      .spread(function(coins, coinsValue) {
+        composedTx.addTxIns(coins)
+        fee = composedTx.estimateRequiredFee()
+        uncoloredChange = coinsValue.minus(uncoloredNeeded).minus(fee)
       })
-    }
 
-    function addTxOut(index) {
-      if (targetsByColor[colorId].length === index) {
-        step2(stepIndex+1)
-        return
-      }
-
-      var target = targetsByColor[colorId][index]
-      var targetValue = target.getValue() + tag.getPadding()
-      composedTx.addTxOut({ value: targetValue, target: target }, function(error) {
-        if (error !== null) {
-          cb(error)
-          return
-        }
-
-        var uncoloredValue = new ColorValue({ colordef: new UncoloredColorDefinition(), value: targetValue })
-        uncoloredNeeded.add(uncoloredValue, function(error, result) {
-          if (error !== null) {
-            cb(error)
-            return
-          }
-
-          uncoloredNeeded = result
-          addTxOut(index+1)
-        })
+  }).then(function() {
+    if (uncoloredChange.getValue() > dustThreshold.getValue())
+      composedTx.addTxOut({
+        address: operationalTx.getChangeAddress(new UncoloredColorDefinition()),
+        value: uncoloredChange.getValue()
       })
-    }
 
-    addTxIn(0)
-  }
+    composedTx.txIns[0].sequence = tag.toSequence()
 
-  function addUncoloredTargets() {
-    composedTx.addTxOuts(uncoloredTargets, function(error) {
-      if (error !== null) {
-        cb(error)
-        return
-      }
-
-      fee = composedTx.estimateRequiredFee()
-      uncoloredNeeded.add(fee, function(error, totalUncoloredNeeded) {
-        if (error !== null) {
-          cb(error)
-          return
-        }
-
-        if (totalUncoloredNeeded.getValue() <= 0) {
-          uncoloredNeeded.neg().sub(fee, function(error, result) {
-            if (error === null) {
-              uncoloredChange = result
-              addUncoloredChange()
-
-            } else {
-              cb(error)
-
-            }
-          })
-        }
-
-        operationalTx.selectCoins(uncoloredNeeded, composedTx, function(error, inputs, total) {
-          if (error !== null) {
-            cb(error)
-            return
-          }
-
-          composedTx.addTxIns(inputs)
-          total.sub(uncoloredNeeded, function(error, result) {
-            if (error !== null) {
-              cb(error)
-              return
-            }
-
-            result.sub(composedTx.estimateRequiredFee(), function(error, result) {
-              if (error === null) {
-                uncoloredChange = result
-                addUncoloredChange()
-
-              } else {
-                cb(error)
-
-              }
-            })
-          })
-        })
-      })
-    })
-  }
-
-  function addUncoloredChange() {
-    uncoloredChange.gt(operationalTx.getDustThreshold(), function(error, result) {
-      if (error !== null) {
-        cb(error)
-        return
-      }
-
-      if (!result) {
-        finish()
-        return
-      }
-
-      var data = {
-        value: uncoloredChange.getValue(),
-        targetAddr: operationalTx.getChangeAddr(new UncoloredColorDefinition()),
-        isFeeChange: true
-      }
-      composedTx.addTxOut(data, function(error) {
-        if (error === null)
-          finish()
-        else
-          cb(error)
-      })
-    })
-  }
-
-  function finish() {
-    // set sequence via third param addInput
-    composedTx.setSequence(0, tag.toSequence())
+  }).then(function() {
     cb(null, composedTx)
-  }
+
+  }).fail(function(error) {
+    cb(error)
+
+  }).done()
 }
 
 

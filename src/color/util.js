@@ -6,48 +6,53 @@ var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 
 
 /**
- * @callback groupTragetsByColorCallback
- * @param {Error|null} error
- * @param {Object} targetsByColor Object represent dict { colorId1: [target1, target2], colorId2: [target3] } 
+ * @typedef {Object} AbstractTarget
+ * @property {function} getColorDefinition Return ColorDefiniton for target
+ * @property {function} getColorId Return colorId of ColorDefiniton for target
+ */
+
+/**
+ * @typedef {Object} GroupedTargets
+ * @property {AbstractTarget[]} colorId1
+ * @property {AbstractTarget[]} colorId2
+ * @property {AbstractTarget[]} colorIdN
  */
 
 /**
  * Group targets by ColorId or return error if target is not uncolored
  *  or not instance of targetCls
  *
- * @param {Array} targets Array of targets that have method getColorDefinition()
+ * @param {AbstractTarget[]} targets
  * @param {function} targetCls ColorDefinition constructor for filter targets
- * @param {groupTragetsByColorCallback} cb
+ * @return {GroupedTargets}
+ * @throws {Error} If ColorDefinition not Uncolored and not targetCls
  */
-function groupTargetsByColor(targets, targetCls, cb) {
+function groupTargetsByColor(targets, targetCls) {
   assert(_.isArray(targets), 'Expected Array targets, got ' + targets)
   assert(_.isFunction(targetCls), 'Expected function targetCls, got ' + targetCls)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var isExpected = targets.every(function(target) {
+  var targetsByColor = {}
+  targets.forEach(function(target) {
     var colorDefinition = target.getColorDefinition()
 
     var isUncoloredCls = colorDefinition instanceof UncoloredColorDefinition
     var isTargetCls = colorDefinition instanceof targetCls
 
-    return isUncoloredCls || isTargetCls
-  })
-  if (!isExpected) {
-    process.nextTick(function() { cb(new Error('Incompatible color definition')) })
-    return
-  }
+    if (isUncoloredCls || isTargetCls) {
+      var colorId = target.getColorId()
 
-  var targetsByColor = {}
-  targets.forEach(function(target) {
-    var colorId = target.getColorId()
+      if (_.isUndefined(targetsByColor[colorId]))
+        targetsByColor[colorId] = []
 
-    if (_.isUndefined(targetsByColor[colorId]))
-      targetsByColor[colorId] = [target]
-    else
       targetsByColor[colorId].push(target)
+
+      return
+    }
+
+    throw new Error('Incompatible color definition')
   })
 
-  process.nextTick(function() { cb(null, targetsByColor) })
+  return targetsByColor
 }
 
 
