@@ -49,8 +49,8 @@ describe('coin.Coin', function() {
 
   describe('getMainColorValue', function() {
     beforeEach(function() {
-      cdManager.resolveByScheme({ scheme: 'epobc:0984352ebe025daec2954cae4d09f77fd7bd79300479838f21acc9961da28cf1:1:271192' })
-      cdManager.resolveByScheme({ scheme: 'epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191' })
+      cdManager.resolveByScheme('epobc:0984352ebe025daec2954cae4d09f77fd7bd79300479838f21acc9961da28cf1:1:271192')
+      cdManager.resolveByScheme('epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191')
       coin = new Coin({
         colorDefinitionManager: cdManager,
         colorData: cData,
@@ -72,7 +72,7 @@ describe('coin.Coin', function() {
 
     it('getColorValue return more than one ColorValue', function(done) {
       coin.getColorValue = function(_, cb) {
-        cb(null, new cclib.color.ColorValue({ colordef: cdManager.getUncolored(), value: 0 }))
+        cb(null, new cclib.color.ColorValue(cdManager.getUncolored(), 0))
       }
       coin.getMainColorValue(function(error, colorValue) {
         expect(error).to.deep.equal(new Error('Coin ' + coin + ' have more that one ColorValue'))
@@ -84,10 +84,8 @@ describe('coin.Coin', function() {
     it('return ColorValue, sended from genesis', function(done) {
       coin.getMainColorValue(function(error, colorValue) {
         expect(error).to.be.null
-        expect(colorValue).to.deep.equal(new cclib.color.ColorValue({
-          colordef: cdManager.resolveByScheme({ scheme: 'epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191' }),
-          value: 500000
-        }))
+        var colordef = cdManager.resolveByScheme('epobc:e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc:0:271191')
+        expect(colorValue).to.deep.equal(new cclib.color.ColorValue(colordef, 500000))
         done()
       })
     })
@@ -98,10 +96,7 @@ describe('coin.Coin', function() {
       coin.value = 3457000000
       coin.getMainColorValue(function(error, colorValue) {
         expect(error).to.be.null
-        expect(colorValue).to.deep.equal(new cclib.color.ColorValue({
-          colordef: cdManager.getUncolored(),
-          value: 3457000000
-        }))
+        expect(colorValue).to.deep.equal(new cclib.color.ColorValue(cdManager.getUncolored(), 3457000000))
         done()
       })
     })

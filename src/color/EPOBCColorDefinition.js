@@ -16,7 +16,7 @@ var groupTargetsByColor = require('./util').groupTargetsByColor
 /**
  * @param {number} n
  * @param {number} [bits=32]
- * @return {Array}
+ * @return {number[]}
  */
 function number2bitArray(n, bits) {
   assert(_.isNumber(n), 'Expected number n, got ' + n)
@@ -30,7 +30,7 @@ function number2bitArray(n, bits) {
 }
 
 /**
- * @param {Array} bits
+ * @param {number[]} bits
  * @return {number}
  */
 function bitArray2number(bits) {
@@ -93,6 +93,26 @@ Tag.closestPaddingCode = function(minPadding) {
 }
 
 /**
+ * Create new Tag from sequence
+ *
+ * @param {number} sequence
+ * @return {Tag}
+ */
+Tag.fromSequence = function(sequence) {
+  var bits = number2bitArray(sequence)
+  var tagBits = bits.slice(0, 6)
+
+  var isXfer = tagBits.every(function(v, i) { return v === Tag.xferTagBits[i] })
+  var isGenesis = tagBits.every(function(v, i) { return v === Tag.genesisTagBits[i] })
+
+  if (!(isXfer || isGenesis))
+    return null
+
+  var paddingCode = bitArray2number(bits.slice(6, 12))
+  return new Tag(paddingCode, isGenesis)
+}
+
+/**
  * @return {number}
  */
 Tag.prototype.toSequence = function() {
@@ -123,9 +143,8 @@ Tag.prototype.getPadding = function() {
 
 /**
  * @param {Transaction} tx
- * @return {Tag|null} Tag instance if tx is genesis or xfer and not coinbase
+ * @return {?Tag} Tag instance if tx is genesis or xfer and not coinbase
  */
-// Todo: move part to static method fromSequence
 function getTag(tx) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
 
@@ -135,18 +154,7 @@ function getTag(tx) {
   if (isCoinbase)
     return null
 
-  var nSequence = tx.ins[0].sequence
-  var bits = number2bitArray(nSequence)
-  var tagBits = bits.slice(0, 6)
-
-  var isXfer = tagBits.every(function(v, i) { return v === Tag.xferTagBits[i] })
-  var isGenesis = tagBits.every(function(v, i) { return v === Tag.genesisTagBits[i] })
-
-  if (!(isXfer || isGenesis))
-    return null
-
-  var paddingCode = bitArray2number(bits.slice(6, 12))
-  return new Tag(paddingCode, isGenesis)
+  return Tag.fromSequence(tx.ins[0].sequence)
 }
 
 /**
@@ -157,7 +165,7 @@ function getTag(tx) {
  * @param {Transaction} tx
  * @param {number} padding
  * @param {number} outIndex
- * @return {Array}
+ * @return {number[]}
  */
 function getXferAffectingInputs(tx, padding, outIndex) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
@@ -207,18 +215,22 @@ function getXferAffectingInputs(tx, padding, outIndex) {
 
 
 /**
+ * @typedef {Object} EPOBCColorDefinitionGenesis
+ * @param {string} txId
+ * @param {number} outIndex
+ * @param {number} height
+ */
+
+/**
  * @class EPOBCColorDefinition
  *
  * Inherits ColorDefinition
  *
- * @param {Object} data
- * @param {Object} genesis
- * @param {string} genesis.txId
- * @param {number} genesis.outIndex
- * @param {number} genesis.height
+ * @param {number} colorId
+ * @param {EPOBCColorDefinitionGenesis} genesis
  */
-function EPOBCColorDefinition(data, genesis) {
-  ColorDefinition.call(this, data)
+function EPOBCColorDefinition(colorId, genesis) {
+  ColorDefinition.call(this, colorId)
 
   assert(_.isObject(genesis), 'Expected object genesis, got ' + genesis)
   assert(Transaction.isTxId(genesis.txId), 'Expected transaction id txId, got ' + genesis.txId)
@@ -231,33 +243,28 @@ function EPOBCColorDefinition(data, genesis) {
 inherits(EPOBCColorDefinition, ColorDefinition)
 
 /**
- * Create EPOBCColorDefinition from data and scheme.
- *  Return null if scheme not describe EPOBCColorDefinition
+ * Create EPOBCColorDefinition from colorId and scheme
  *
- * @param {Object} data
+ * @param {number} colorId
  * @param {string} scheme
- * @return {EPOBCColorDefinition|null}
+ * @return {EPOBCColorDefinition}
+ * @throws {Error} On wrong scheme
  */
-EPOBCColorDefinition.fromScheme = function(data, scheme) {
+// Todo: add exceptions
+EPOBCColorDefinition.fromScheme = function(colorId, scheme) {
   assert(_.isString(scheme), 'Expected string scheme, got ' + scheme)
 
-  var colorDefinition = null
-
   var items = scheme.split(':')
-  if (items[0] === 'epobc') {
-    try {
-      colorDefinition = new EPOBCColorDefinition(data, {
-        txId: items[1],
-        outIndex: parseInt(items[2]),
-        height: parseInt(items[3])
-      })
+  if (items[0] !== 'epobc')
+    throw new Error('Wrong scheme')
 
-    } catch(e) {
-      colorDefinition = null
-    }
+  var genesis = {
+    txId: items[1],
+    outIndex: parseInt(items[2]),
+    height: parseInt(items[3])
   }
 
-  return colorDefinition
+  return new EPOBCColorDefinition(colorId, genesis)
 }
 
 /**
@@ -282,15 +289,20 @@ EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
   return isSpecialTx
 }
 
+/**
+ * @callback EPOBCColorDefinition~runKernel
+ * @param {?Error} error
+ * @param {?ColorValue[]} colorValues
+ */
 
 /**
  * Given a transaction tx and the colorValues in a Array colorValueSet,
  *  return the colorValues of the tx.outs in a Array via callback cb
  *
  * @param {Transaction} tx
- * @param {Array} colorValueSet
+ * @param {?ColorValue[]} colorValueSet
  * @param {coloredcoinlib.blockchain.BlockchainState} bs
- * @param {function} cb Called on finished with params (error, Array)
+ * @param {EPOBCColorDefinition~runKernel} cb
  */
 EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
@@ -312,7 +324,7 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
       var valueWop = tx.outs[0].value - tag.getPadding()
 
       if (valueWop > 0)
-        outColorValues[0] = new ColorValue({ colordef: this, value: valueWop })
+        outColorValues[0] = new ColorValue(this, valueWop)
     }
 
     cb(null, outColorValues)
@@ -354,12 +366,12 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
       return
     }
 
-    var colorValues = [new ColorValue({ colordef: _this, value: 0 })]
+    var colorValues = [new ColorValue(_this, 0 )]
     colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
 
     var totalColorValue = ColorValue.sum(colorValues)
     if (totalColorValue.getValue() >= outValueWop)
-      outColorValues.push(new ColorValue({ colordef: _this, value: outValueWop }))
+      outColorValues.push(new ColorValue(_this, outValueWop))
     else
       outColorValues.push(null)
 
@@ -368,13 +380,19 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
 }
 
 /**
+ * @callback EPOBCColorDefinition~getAffectingInputs
+ * @param {?Error} error
+ * @param {Object[]} affectingInputs
+ */
+
+/**
  * Given transaction tx, outputIndex in a Array as outputSet and
  *  return affecting inputs of transaction tx in a Array via callback cb
  *
  * @param {Transaction} tx
  * @param {number[]} outputSet
  * @param {BlockchainStateBase} bs
- * @param {function} cb Called on finished with params (error, Array)
+ * @param {function} cb
  */
 EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, cb) {
   assert(tx instanceof Transaction, 'Expected tx instance of Transaction, got ' + tx)
@@ -390,19 +408,18 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
       return []
 
     var padding = tag.getPadding()
-    function getAffectingInputs(tx) {
-      var aii = {}
+    return Q.ninvoke(bs, 'ensureInputValues', tx)
+      .then(function(tx) {
+        var aii = {}
 
-      outputSet.forEach(function(outIndex) {
-        getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-          aii[ai] = 1
+        outputSet.forEach(function(outIndex) {
+          getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
+            aii[ai] = 1
+          })
         })
+
+        return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
       })
-
-      return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
-    }
-
-    return Q.ninvoke(bs, 'ensureInputValues', tx).then(getAffectingInputs)
 
   }).then(function(result) {
     cb(null, result)
@@ -426,8 +443,6 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
  * @param {EPOBCColorDefinition~makeComposedTx} cb
  */
 EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
-  var self = this
-
   var targetsByColor, targetsColorIds
   var uncoloredTargets, uncoloredNeeded, uncoloredChange
   var dustThreshold, coinsByColor, minPadding
@@ -440,7 +455,7 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
     delete targetsByColor[new UncoloredColorDefinition().getColorId()]
 
     if (uncoloredTargets.length === 0)
-      uncoloredNeeded = new ColorValue({ colordef: new UncoloredColorDefinition(), value: 0 })
+      uncoloredNeeded = new ColorValue(new UncoloredColorDefinition(), 0)
     else
       uncoloredNeeded = ColorTarget.sum(uncoloredTargets)
 
@@ -455,7 +470,7 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
         return
 
       var targets = targetsByColor[targetsColorIds[index]]
-      neededSum = ColorTarget.sum(targets)
+      var neededSum = ColorTarget.sum(targets)
 
       return Q.ninvoke(operationalTx, 'selectCoins', neededSum, null)
         .spread(function(coins, coinsValue) {
@@ -490,14 +505,14 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
         return
 
       coinsByColor[targetsColorIds[index]].forEach(function(coin) {
-        var coinValue = new ColorValue({ colordef: new UncoloredColorDefinition(), value: coin.value })
+        var coinValue = new ColorValue(new UncoloredColorDefinition(), coin.value)
         uncoloredNeeded = uncoloredNeeded.minus(coinValue)
         composedTx.addTxIn(coin)
       })
 
       targetsByColor[targetsColorIds[index]].forEach(function(target) {
         var targetValue = target.getValue() + tag.getPadding()
-        var uncoloredValue = new ColorValue({ colordef: new UncoloredColorDefinition(), value: targetValue })
+        var uncoloredValue = new ColorValue(new UncoloredColorDefinition(), targetValue)
         uncoloredNeeded = uncoloredNeeded.plus(uncoloredValue)
         composedTx.addTxOut({ address: target.getAddress(), value: targetValue })
       })

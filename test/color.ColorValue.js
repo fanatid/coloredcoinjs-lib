@@ -12,7 +12,7 @@ describe('color.ColorValue', function() {
   var cv1, cv2
 
   beforeEach(function() {
-    cv1 = new ColorValue({ colordef: uncoloredColorDefinition, value: 0 })
+    cv1 = new ColorValue(uncoloredColorDefinition, 0)
   })
 
   it('getColorDefinition', function() {
@@ -24,13 +24,13 @@ describe('color.ColorValue', function() {
   })
 
   it('checkCompatibility not throw', function() {
-    cv2 = new ColorValue({ colordef: uncoloredColorDefinition, value: 0 })
+    cv2 = new ColorValue(uncoloredColorDefinition, 0)
     var fn = function() { cv1.checkCompatibility(cv2) }
     expect(fn).to.not.throw(TypeError)
   })
 
   it('checkCompatibility throw error', function() {
-    cv2 = new ColorValue({ colordef: new ColorDefinition({ colorId: 1 }), value: 0 })
+    cv2 = new ColorValue(new ColorDefinition(1), 0)
     var fn = function() { cv1.checkCompatibility(cv2) }
     expect(fn).to.throw(TypeError)
   })
@@ -40,13 +40,13 @@ describe('color.ColorValue', function() {
   })
 
   it('add with compatibility', function() {
-    cv2 = new ColorValue({ colordef: uncoloredColorDefinition, value: 1 })
+    cv2 = new ColorValue(uncoloredColorDefinition, 1)
     cv2 = cv1.plus(cv2)
     expect(cv2.getValue()).to.equal(1)
   })
 
   it('add with not compatibility', function() {
-    cv2 = new ColorValue({ colordef: new ColorDefinition({ colorId: 1 }), value: 1 })
+    cv2 = new ColorValue(new ColorDefinition(1), 1)
     var fn = function() { cv1.plus(cv2) }
     expect(fn).to.throw(TypeError)
   })

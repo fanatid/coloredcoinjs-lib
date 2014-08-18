@@ -19,11 +19,11 @@ OperationalTx.prototype.getTargets = function() {
  *  a fee (usually it is ComposedTx)
  *
  * @abstract
- * @param {ColorValue}
+ * @param {ColorValue} colorValue
  * @param {Object|null} [feeEstimator=null]
  * @param {function} cb
  */
-OperationalTx.prototype.selectCoins = function(colorValue, feeEstimator, cb) {
+OperationalTx.prototype.selectCoins = function() {
   throw new Error('selectCoins not implemented')
 }
 
@@ -31,10 +31,10 @@ OperationalTx.prototype.selectCoins = function(colorValue, feeEstimator, cb) {
  * Returns an address which can be used as a change for given colorDefinition
  *
  * @abstract
- * @param {ColorDefinition}
+ * @param {ColorDefinition} colorDefinition
  * @return {string}
  */
-OperationalTx.prototype.getChangeAddress = function(colorDefinition) {
+OperationalTx.prototype.getChangeAddress = function() {
   throw new Error('getChangeAddress not implemented')
 }
 
@@ -45,7 +45,7 @@ OperationalTx.prototype.getChangeAddress = function(colorDefinition) {
  * @param {number} txSize
  * @return {ColorValue}
  */
-OperationalTx.prototype.getRequiredFee = function(txSize) {
+OperationalTx.prototype.getRequiredFee = function() {
   throw new Error('getRequiredFee not implemented')
 }
 

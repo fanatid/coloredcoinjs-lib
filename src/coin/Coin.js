@@ -78,7 +78,7 @@ Coin.prototype.getMainColorValue = function (cb) {
     if (colorDefinitions.length === index) {
       if (coinColorValue === null) {
         var uncolored = _this.cdManager.getUncolored()
-        coinColorValue = new color.ColorValue({ colordef: uncolored, value: _this.value })
+        coinColorValue = new color.ColorValue(uncolored, _this.value)
       }
 
       cb(null, coinColorValue)

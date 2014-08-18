@@ -1,26 +1,15 @@
-var assert = require('assert')
-
-var _ = require('lodash')
-
-var ColorDefinition = require('./ColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 
 
 /**
  * @class ColorValue
  *
- * @param data
- * @param {ColorDefinition} data.colordef 
- * @param {number} data.value
+ * @param {ColorDefinition} colordef 
+ * @param {number} value
  */
-function ColorValue(data) {
-  assert(_.isObject(data), 'Expected object data, got ' + data)
-  assert(data.colordef instanceof ColorDefinition,
-    'Expected ColorDefinition data.colordef, got ' + data.colordef)
-  assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
-
-  this.colordef = data.colordef
-  this.value = data.value
+function ColorValue(colordef, value) {
+  this.colordef = colordef
+  this.value = value
 }
 
 /**
@@ -46,8 +35,6 @@ ColorValue.prototype.isUncolored = function() {
 }
 
 /**
- * Get value from ColorValue
- *
  * @return {number}
  */
 ColorValue.prototype.getValue = function() {
@@ -55,15 +42,10 @@ ColorValue.prototype.getValue = function() {
 }
 
 /**
- * Create new ColorValue from current
- *
  * @return {ColorValue}
  */
 ColorValue.prototype.clone = function() {
-  return new ColorValue({
-    colordef: this.getColorDefinition(),
-    value: this.getValue()
-  })
+  return new ColorValue(this.getColorDefinition(), this.getValue())
 }
 
 /**

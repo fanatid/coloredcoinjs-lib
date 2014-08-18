@@ -1,43 +1,28 @@
-var assert = require('assert')
-
 var _ = require('lodash')
+var Q = require('q')
 
-var blockchain = require('../blockchain')
 var Coin = require('./Coin')
 var CoinList = require('./CoinList')
-var color = require('../color')
 
 
 /**
  * @class CoinQuery
  *
- * @param {Object} params
- * @param {Array} params.addresses
- * @param {BlockchainStateBase} params.blockchain
- * @param {ColorData} params.colorData
- * @param {ColorDefinitionManager} params.colorDefinitionManager
+ * @param {Object} opts
+ * @param {BlockchainStateBase} opts.blockchain
+ * @param {ColorData} opts.colorData
+ * @param {ColorDefinitionManager} opts.colorDefinitionManager
+ * @param {string[]} opts.addresses
  */
-function CoinQuery(params) {
-  assert(_.isObject(params), 'Expected Object params, got ' + params)
-  assert(_.isArray(params.addresses), 'Expected Array params.addresses, got ' + params.addresses)
-  params.addresses.forEach(function(address) {
-    // Check address instead string
-    assert(_.isString(address), 'Expected Array of string params.addresses, got ' + params.addresses)
-  })
-  assert(params.blockchain instanceof blockchain.BlockchainStateBase,
-    'Expected params.blockchain instanceof BlockchainStateBase, got ' + params.blockchain)
-  assert(params.colorData instanceof color.ColorData,
-    'Expected params.colorData instanceof ColorData, got ' + params.colorData)
-  assert(params.colorDefinitionManager instanceof color.ColorDefinitionManager,
-    'Expected params.colorDefinitionManager instanceof ColorDefinitionManager, got ' + params.colorDefinitionManager)
-
-  this.addresses = params.addresses
-  this.blockchain = params.blockchain
-  this.colorData = params.colorData
-  this.colorDefinitionManager = params.colorDefinitionManager
+function CoinQuery(opts) {
+  this.blockchain = opts.blockchain
+  this.colorData = opts.colorData
+  this.cdManager = opts.colorDefinitionManager
+  this.addresses = opts.addresses
 
   this.query = {
     onlyColoredAs: null,
+    onlyAddresses: null,
     onlyConfirmed: false,
     onlyUnconfirmed: false
   }
@@ -53,7 +38,7 @@ CoinQuery.prototype.clone = function() {
     addresses: this.addresses,
     blockchain: this.blockchain,
     colorData: this.colorData,
-    colorDefinitionManager: this.colorDefinitionManager
+    colorDefinitionManager: this.cdManager
   })
 
   newCoinQuery.query = _.clone(this.query)
@@ -64,20 +49,31 @@ CoinQuery.prototype.clone = function() {
 /**
  * Select coins only for given ColorDefinition
  *
- * @param {Array|ColorDefinition} data
+ * @param {(ColorDefinition|ColorDefinition[])} data
  * @return {CoinQuery}
  */
 CoinQuery.prototype.onlyColoredAs = function(data) {
   if (!_.isArray(data))
     data = [data]
 
-  data.forEach(function(colorDefinition) {
-    assert(colorDefinition instanceof color.ColorDefinition,
-      'Expected instanceof Array|ColorDefinition data, got ' + data)
-  })
-
   var newCoinQuery = this.clone()
   newCoinQuery.query.onlyColoredAs = data.map(function(cd) { return cd.getColorId() })
+
+  return newCoinQuery
+}
+
+/**
+ * Select coins only belong to given addresses
+ *
+ * @param {(string|string[])} data
+ * @return {CoinQuery}
+ */
+CoinQuery.prototype.onlyAddresses = function(data) {
+  if (!_.isArray(data))
+    data = [data]
+
+  var newCoinQuery = this.clone()
+  newCoinQuery.query.onlyAddresses = data
 
   return newCoinQuery
 }
@@ -120,73 +116,79 @@ CoinQuery.prototype.getUnconfirmed = function() {
  * @param {CoinQuery~getCoins} cb
  */
 CoinQuery.prototype.getCoins = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  var _this = this
+  var addresses = self.addresses
+  if (self.query.onlyAddresses !== null)
+    addresses = addresses.filter(function(address) { return self.query.onlyAddresses.indexOf(address) !== -1 })
 
-  var utxo = []
-  function getUTXO(index) {
-    if (_this.addresses.length === index) {
-      filterUTXO(0)
-      return
+  Q.fcall(function() {
+    var utxo = []
+
+    function getUTXO(index) {
+      if (addresses.length === index)
+        return utxo
+
+      return Q.ninvoke(self.blockchain, 'getUTXO', addresses[index])
+        .then(function(addressUTXO) {
+          utxo = utxo.concat(addressUTXO)
+          return getUTXO(index + 1)
+        })
     }
 
-    _this.blockchain.getUTXO(_this.addresses[index], function(error, result) {
-      if (error !== null) {
-        cb(error)
-        return
-      }
+    return getUTXO(0)
 
-      result.forEach(function(record) {
-        record.address = _this.addresses[index]
-      })
-      utxo = utxo.concat(result)
-      getUTXO(index+1)
-    })
-  }
+  }).then(function(utxo) {
+    var coins = []
 
-  var coins = []
-  function filterUTXO(index) {
-    if (utxo.length === index) {
-      cb(null, new CoinList(coins))
-      return
-    }
+    function filterUTXO(index) {
+      if (utxo.length === index)
+        return coins
 
-    var coin = new Coin({
-      colorData: _this.colorData,
-      colorDefinitionManager: _this.colorDefinitionManager,
-      address: utxo[index].address,
-      txId: utxo[index].txId,
-      outIndex: utxo[index].outIndex,
-      value: utxo[index].value,
-      confirmations: utxo[index].confirmations
-    })
+      return Q.fcall(function() {
+        var coin = new Coin({
+          colorData: self.colorData,
+          colorDefinitionManager: self.cdManager,
+          address: utxo[index].address,
+          txId: utxo[index].txId,
+          outIndex: utxo[index].outIndex,
+          value: utxo[index].value,
+          confirmations: utxo[index].confirmations
+        })
 
-    if ((_this.query.onlyConfirmed && !coin.isConfirmed()) || (_this.query.onlyUnconfirmed && coin.isConfirmed())) {
-      process.nextTick(function() { filterUTXO(index+1) })
-      return
-    }
+        if (self.query.onlyConfirmed && !coin.isConfirmed())
+          return
 
-    if (_this.query.onlyColoredAs !== null) {
-      coin.getMainColorValue(function(error, colorValue) {
-        if (error !== null) {
-          cb(error)
+        if (self.query.onlyUnconfirmed && coin.isConfirmed())
+          return
+
+        if (self.query.onlyColoredAs === null) {
+          coins.push(coin)
           return
         }
 
-        if (_this.query.onlyColoredAs.indexOf(colorValue.getColorId()) !== -1)
-          coins.push(coin)
+        return Q.ninvoke(coin, 'getMainColorValue')
+          .then(function(colorValue) {
+            if (self.query.onlyColoredAs.indexOf(colorValue.getColorId()) !== -1)
+              coins.push(coin)
 
-        filterUTXO(index+1)
+          })
+
+      }).then(function() {
+        return filterUTXO(index + 1)
+
       })
-
-    } else {
-      coins.push(coin)
-      process.nextTick(function() { filterUTXO(index+1) })
     }
-  }
 
-  getUTXO(0)
+    return filterUTXO(0)
+
+  }).then(function(coins) {
+    cb(null, new CoinList(coins))
+
+  }).fail(function(error) {
+    cb(error)
+
+  }).done()
 }
 
 //Todo

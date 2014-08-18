@@ -1,24 +1,13 @@
-var assert = require('assert')
-
-var _ = require('lodash')
-
 /**
  * Represents a color definition scheme. This means how color exists and
  *  is transferred in the blockchain
  *
  * @class ColorDefinition
  *
- * @param {Object} data
- * @param {number} data.colorId ColorDefinition unique id
- * @param {Object} [data.meta={}] Meta information for ColorDefinition
+ * @param {number} colorId
  */
-function ColorDefinition(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
-  assert(_.isObject(data.meta) || _.isUndefined(data.meta), 'Expected Object data.meta, got ' + data.meta)
-
-  this.colorId = data.colorId
-  this.meta = data.meta || {}
+function ColorDefinition(colorId) {
+  this.colorId = colorId
 }
 
 /**
@@ -31,12 +20,39 @@ ColorDefinition.prototype.getColorId = function() {
 }
 
 /**
- * Return meta
- *
- * @return {Object}
+ * Return scheme of current ColorDefinition
+ * @abstract
+ * @return {string}
  */
-ColorDefinition.prototype.getMeta = function() {
-  return this.meta
+ColorDefinition.prototype.getScheme = function() {
+  throw new Error('ColorDefinition.getScheme not implemented')
+}
+
+/**
+ * Create new ColorDefinition from scheme or throw error
+ * @abstract
+ * @param {number} colorId
+ * @param {string} scheme
+ * @return {ColorDefinition}
+ */
+ColorDefinition.fromScheme = function() {
+  throw new Error('ColorDefinition.fromScheme not implemented')
+}
+
+/**
+ * @callback ColorDefinition~makeComposedTx
+ * @param {?Error} error
+ * @param {ComposedTx} composedTx
+ */
+
+/**
+ * Create ComposedTx from OperationalTx
+ * @abstract
+ * @param {OperationalTx} operationalTx
+ * @param {ColorDefinition~makeComposedTx} cb
+ */
+ColorDefinition.makeComposedTx = function() {
+  throw new Error('ColorDefinition.makeComposedTx not implemented')
 }
 
 

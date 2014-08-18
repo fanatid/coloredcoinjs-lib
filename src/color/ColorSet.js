@@ -24,7 +24,7 @@ function ColorSet(cdManager, colorSchemes) {
 
   this.colorSchemes = colorSchemes
   this.colorIds = this.colorSchemes.map(function(colorScheme) {
-    return cdManager.resolveByScheme({ scheme: colorScheme }).getColorId()
+    return cdManager.resolveByScheme(colorScheme).getColorId()
   })
 }
 
@@ -53,24 +53,17 @@ ColorSet.prototype.getColorHash = function() {
 }
 
 /**
- * @return {Array}
+ * @return {string[]}
  */
 ColorSet.prototype.getColorSchemes = function() {
   return this.colorSchemes
 }
 
 /**
- * @return {Array}
+ * @return {number[]}
  */
 ColorSet.prototype.getColorIds = function() {
   return this.colorIds
-}
-
-/**
- * @return {Array}
- */
-ColorSet.prototype.getData = function() {
-  return this.getColorSchemes()
 }
 
 

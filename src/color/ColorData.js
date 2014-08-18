@@ -49,7 +49,7 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
     outIndex: outIndex
   })
   if (colorData !== null)
-    colorValue = new ColorValue({ colordef: colorDefinition, value: colorData.value })
+    colorValue = new ColorValue(colorDefinition, colorData.value)
 
   return colorValue
 }
@@ -87,7 +87,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
     var colorValue = null
     if (colorData !== null) {
       empty = false
-      colorValue = new ColorValue({ colordef: colorDefinition, value: colorData.value })
+      colorValue = new ColorValue(colorDefinition, colorData.value)
     }
     inColorValues.push(colorValue)
   })

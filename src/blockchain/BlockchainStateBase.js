@@ -21,7 +21,7 @@ function BlockchainStateBase() {}
  *  return new transaction via callback cb
  *
  * @param {Transaction} tx
- * @param {BlockchainStateBase~ensureInputValues}
+ * @param {BlockchainStateBase~ensureInputValues} cb
  */
 BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
@@ -78,11 +78,10 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
 
 /**
  * Get block count in blockchain
- *
  * @abstract
  * @param {BlockchainStateBase~getBlockCount} cb
  */
-BlockchainStateBase.prototype.getBlockCount = function(cb) {
+BlockchainStateBase.prototype.getBlockCount = function() {
   throw new Error('getBlockCount not implemented')
 }
 
@@ -94,12 +93,11 @@ BlockchainStateBase.prototype.getBlockCount = function(cb) {
 
 /**
  * Get transaction by txId
- *
  * @abstract
  * @param {string} txId
  * @param {BlockchainStateBase~getTx} cb
  */
-BlockchainStateBase.prototype.getTx = function(txId, cb) {
+BlockchainStateBase.prototype.getTx = function() {
   throw new Error('getTx not implemented')
 }
 
@@ -111,12 +109,11 @@ BlockchainStateBase.prototype.getTx = function(txId, cb) {
 
 /**
  * Send transaction tx to server which broadcast tx to network
- *
  * @abstract
  * @param {Transaction} tx
  * @param {BlockchainStateBase~sendTx} cb
  */
-BlockchainStateBase.prototype.sendTx = function(tx, cb) {
+BlockchainStateBase.prototype.sendTx = function() {
   throw new Error('sendTx not implemented')
 }
 
@@ -137,12 +134,11 @@ BlockchainStateBase.prototype.sendTx = function(tx, cb) {
 
 /**
  * Get UTXO for given address
- *
  * @abstract
  * @param {string} address
  * @param {function} cb
  */
-BlockchainStateBase.prototype.getUTXO = function(address, cb) {
+BlockchainStateBase.prototype.getUTXO = function() {
   throw new Error('getUTXO not implemented')
 }
 

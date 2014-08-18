@@ -2,8 +2,6 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var ColorValue = require('../color/ColorValue')
-var ColorTarget = require('../color/ColorTarget')
 var OperationalTx = require('./OperationalTx')
 
 

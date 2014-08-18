@@ -298,6 +298,7 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
             throw new TypeError('bad txOut value')
 
           return {
+            address: address,
             txId: txOut.tx,
             outIndex: txOut.n,
             value: value,

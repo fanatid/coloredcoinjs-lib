@@ -2,7 +2,6 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var ColorDefinition = require('./ColorDefinition')
 var EPOBCColorDefinition = require('./EPOBCColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorDefinitionStorage = require('../storage').ColorDefinitionStorage
@@ -11,25 +10,19 @@ var ColorDefinitionStorage = require('../storage').ColorDefinitionStorage
 /**
  * Convert record to ColorDefinition instance
  *
- * @param {Object} record
- * @param {number} record.colorId
- * @param {Object} record.meta
- * @param {string} record.scheme
+ * @param {ColorDefinitionRecord} record
  * @return {ColorDefinition}
  */
 function record2ColorDefinition(record) {
-  assert(_.isObject(record), 'Expected Object record, got ' + record)
-  assert(_.isNumber(record.colorId), 'Expected number record.colorId, got ' + record.colorId)
-  assert(_.isObject(record.meta), 'Expected Object record.meta, got ' + record.meta)
-  assert(_.isString(record.scheme), 'Expected string record.scheme, got ' + record.scheme)
-
   var colorDefinition = null
 
-  var engineClss = [EPOBCColorDefinition]
+  var engineClss = [UncoloredColorDefinition, EPOBCColorDefinition]
   engineClss.some(function(engineCls) {
-    colorDefinition = engineCls.fromScheme({ colorId: record.colorId, meta: record.meta }, record.scheme)
+    try {
+      colorDefinition = engineCls.fromScheme(record.colorId, record.scheme)
+    } catch (e) {}
 
-    return (colorDefinition !== null)
+    return colorDefinition !== null
   })
 
   return colorDefinition
@@ -58,81 +51,58 @@ ColorDefinitionManager.prototype.getUncolored = function() {
 }
 
 /**
- * Get ColorDefinition from store by colorId or return null if not exists.
+ * Get ColorDefinition from storage by colorId or return null if not exists
  *
- * @param {Object} params
- * @param {number} params.colorId
- * @return {ColorDefinition|null}
+ * @param {number} colorId
+ * @return {?ColorDefinition}
  */
-ColorDefinitionManager.prototype.getByColorId = function(params) {
-  assert(_.isObject(params), 'Expected Object params, got ' + params)
-  assert(_.isNumber(params.colorId), 'Expected number params.colorId, got ' + params.colorId)
+ColorDefinitionManager.prototype.getByColorId = function(colorId) {
+  var uncolored = this.getUncolored()
+  if (uncolored.getColorId() === colorId)
+    return uncolored
 
-  if (params.colorId === 0)
-    return this.getUncolored()
-
-  var result = null
-
-  var record = this.storage.get({ colorId: params.colorId })
-  if (record !== null)
-    result = record2ColorDefinition(record)
-
-  return result
-}
-
-/**
- * Return ColorDefinition instance if scheme in store.
- *  Otherwise if data.autoAdd is true creates new ColorDefinition, add to store and return it
- *
- * @param {Object} data
- * @param {string} data.scheme
- * @param {boolean} [data.autoAdd=true]
- * @return {ColorDefinition|null}
- */
-ColorDefinitionManager.prototype.resolveByScheme = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
-  data.autoAdd = _.isUndefined(data.autoAdd) ? true : data.autoAdd
-  assert(_.isBoolean(data.autoAdd), 'Expected boolean data.autoAdd, got ' + data.autoAdd)
-
-  if (data.scheme === '')
-    return this.getUncolored()
-
-  var record = this.storage.get({ scheme: data.scheme })
+  var record = this.storage.getByColorId(colorId)
 
   if (record !== null)
     return record2ColorDefinition(record)
 
-  if (data.autoAdd === false)
-    return null
-
-  var result = record2ColorDefinition({
-    colorId: -1, // 0 for uncolored
-    meta: {},
-    scheme: data.scheme
-  })
-  assert(result !== null, 'Bad scheme = ' + data.scheme)
-
-  record = this.storage.add({ meta: {}, scheme: data.scheme })
-  return record2ColorDefinition(record)
+  return null
 }
 
 /**
- * Update meta-information for given ColorDefinition or throw Error if record not found
+ * Return ColorDefinition instance if scheme in store.
+ *  Otherwise if autoAdd is true creates new ColorDefinition, add to store and return it
  *
- * @param {ColorDefinition} colorDefinition
+ * @param {string} scheme
+ * @param {boolean} [autoAdd=true]
+ * @return {?ColorDefinition}
  */
-ColorDefinitionManager.prototype.updateMeta = function(colorDefinition) {
-  assert(colorDefinition instanceof ColorDefinition,
-    'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
+ColorDefinitionManager.prototype.resolveByScheme = function(scheme, autoAdd) {
+  var uncolored = this.getUncolored()
+  if (uncolored.getScheme() === scheme)
+    return uncolored
 
-  this.storage.updateMeta({ colorId: colorDefinition.getColorId(), meta: colorDefinition.getMeta() })
+  autoAdd = _.isUndefined(autoAdd) ? true : autoAdd
+
+  var record = this.storage.getByScheme(scheme)
+
+  if (record !== null)
+    return record2ColorDefinition(record)
+
+  if (autoAdd === false)
+    return null
+
+  var colordef = record2ColorDefinition({ colorId: -1, scheme: scheme })
+  assert(colordef !== null, 'Bad sceme: ' + scheme)
+
+  record = this.storage.add(scheme)
+  return record2ColorDefinition(record)
 }
 
 /**
  * Get all ColorDefinitions
  *
- * @return {Array}
+ * @return {ColorDefinition[]}
  */
 ColorDefinitionManager.prototype.getAllColorDefinitions = function() {
   return this.storage.getAll().map(record2ColorDefinition)

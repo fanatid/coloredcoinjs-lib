@@ -3,7 +3,9 @@ var inherits = require('util').inherits
 var Q = require('q')
 
 var ColorDefinition = require('./ColorDefinition')
-var tx = require('../tx')
+
+
+var UncoloredColorId = 0
 
 
 /**
@@ -12,13 +14,32 @@ var tx = require('../tx')
  * Inherits ColorDefinition
  */
 function UncoloredColorDefinition() {
-  ColorDefinition.call(this, { colorId: 0 })
+  ColorDefinition.call(this, UncoloredColorId)
 }
 
 inherits(UncoloredColorDefinition, ColorDefinition)
 
+/**
+ * @return {string}
+ */
 UncoloredColorDefinition.prototype.getScheme = function() {
   return ''
+}
+
+/**
+ * @param {number} colorId
+ * @param {string} sceme
+ * @return {UncoloredColorDefinition}
+ * @throws {Error} If colorId not equal UncoloredColorDefinition.colorId or scheme not equal ''
+ */
+UncoloredColorDefinition.fromScheme = function(colorId, scheme) {
+  if (colorId !== UncoloredColorId)
+    throw new Error('wrong colorId')
+
+  if (scheme !== '')
+    throw new Error('bad scheme')
+
+  return new UncoloredColorDefinition()
 }
 
 /**
@@ -28,14 +49,12 @@ UncoloredColorDefinition.prototype.getScheme = function() {
  */
 
 /**
- * Create ComposeTx from OperationalTx
+ * Create ComposedTx from OperationalTx
  *
  * @param {OperationalTx} operationalTx
  * @param {UncoloredColorDefinition~makeComposedTx} cb
  */
 UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
-  var self = this
-
   var composedTx
   var targets, targetsTotalValue
 

@@ -26,9 +26,4 @@ describe('color.ColorSet', function() {
     colorSet = new ColorSet(cdManager, [''])
     expect(colorSet.getColorIds()).to.deep.equal([0])
   })
-
-  it('getData', function() {
-    colorSet = new ColorSet(cdManager, [''])
-    expect(colorSet.getData()).to.deep.equal([''])
-  })
 })

@@ -1,10 +1,15 @@
-var assert = require('assert')
 var inherits = require('util').inherits
 
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
 
+
+/**
+ * @typedef {Object} ColorDefinitionRecord
+ * @param {number} id
+ * @param {string} schemes
+ */
 
 /**
  * @class ColorDefinitionStorage
@@ -23,93 +28,68 @@ function ColorDefinitionStorage() {
 inherits(ColorDefinitionStorage, SyncStorage)
 
 /**
- * @param {Object} data
- * @param {Object} data.meta
- * @param {string} data.scheme
- * @return {Object}
+ * @param {string} scheme
+ * @return {ColorDefinitionRecord}
+ * @throws {Error} If scheme aready uses
  */
-ColorDefinitionStorage.prototype.add = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isObject(data.meta), 'Expected Object data.meta, got ' + data.meta)
-  assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
-
-  var maxColorId = 0
+ColorDefinitionStorage.prototype.add = function(scheme) {
+  var newColorId = 1
   var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
 
   colorDefinitions.forEach(function(record) {
-    if (record.scheme === data.scheme)
+    if (record.scheme === scheme)
       throw new Error('UniqueConstraint')
 
-    if (record.colorId > maxColorId)
-      maxColorId = record.colorId
+    if (record.colorId >= newColorId)
+      newColorId = record.colorId + 1
   })
 
-  var result = {
-    colorId: maxColorId + 1,
-    meta: data.meta,
-    scheme: data.scheme
-  }
-  colorDefinitions.push(result)
-
+  var record = { colorId: newColorId, scheme: scheme }
+  colorDefinitions.push(record)
   this.store.set(this.colorDefinitionsDBKey, colorDefinitions)
 
-  return result
+  return record
 }
 
 /**
- * @param {Object} data
- * @param {number} [data.colorId]
- * @param {string} [data.scheme]
- * @return {Object|null}
+ * Get record by colorId
+ *
+ * @param {number} colorId
+ * @return {?ColorDefinitionRecord}
  */
-ColorDefinitionStorage.prototype.get = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  if (_.isUndefined(data.colorId))
-    assert(_.isString(data.scheme), 'Expected string data.scheme, got ' + data.scheme)
-  else
-    assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
-
-  var result = null
-  var records = this.store.get(this.colorDefinitionsDBKey) || []
-
-  records.some(function(record) {
-    if ( record.colorId === data.colorId || record.scheme === data.scheme) {
-      result = record
-      return true
-    }
-
-    return false
+ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
+  var records = this.getAll().filter(function(record) {
+    return record.colorId === colorId
   })
 
-  return result
+  if (records.length === 0)
+    return null
+
+  return records[0]
 }
 
 /**
- * @param {Object} data
- * @param {number} data.colorId
- * @param {Object} data.meta
+ * Get record by scheme
+ *
+ * @param {string} scheme
+ * @return {?ColorDefinitionRecord}
  */
-ColorDefinitionStorage.prototype.updateMeta = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
-  assert(_.isObject(data.meta), 'Expected Object data.meta, got ' + data.meta)
-
-  var records = this.store.get(this.colorDefinitionsDBKey) || []
-
-  records.forEach(function(record) {
-    if (record.colorId === data.colorId)
-      record.meta = data.meta
+ColorDefinitionStorage.prototype.getByScheme = function(scheme) {
+  var records = this.getAll().filter(function(record) {
+    return record.scheme === scheme
   })
 
-  this.store.set(this.colorDefinitionsDBKey, records)
+  if (records.length === 0)
+    return null
+
+  return records[0]
 }
 
 /**
- * @return {Array}
+ * @return {ColorDefinitionRecord[]}
  */
 ColorDefinitionStorage.prototype.getAll = function() {
   var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
-
   return colorDefinitions
 }
 

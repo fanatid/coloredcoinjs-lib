@@ -12,7 +12,7 @@ describe('color.ColorData', function() {
   beforeEach(function() {
     cdStorage = new cclib.storage.ColorDataStorage()
     bs = new cclib.blockchain.BlockchainStateBase()
-    epobc = new cclib.color.EPOBCColorDefinition({ colorId: 1 },
+    epobc = new cclib.color.EPOBCColorDefinition(1,
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
     tx1 = new cclib.tx.Transaction()
     tx2 = new cclib.tx.Transaction()

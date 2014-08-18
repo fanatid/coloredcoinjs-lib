@@ -27,18 +27,13 @@ describe('color.EPOBCColorDefinition', function() {
   })
 
   describe('fromScheme', function() {
-    it('not epobc', function(){
-      epobc = EPOBCColorDefinition.fromScheme({}, 'obc:11:2:3')
-      expect(epobc).to.be.null
-    })
-
-    it('data not Object', function(){
-      epobc = EPOBCColorDefinition.fromScheme('', 'epobc:11:2:3')
-      expect(epobc).to.be.null
+    it('throw error', function(){
+      function fn() { EPOBCColorDefinition.fromScheme(1, 'obc:11:2:3') }
+      expect(fn).to.throw(Error)
     })
 
     it('create new EPOBCColorDefinition', function() {
-      epobc = EPOBCColorDefinition.fromScheme({ colorId: epobc.getColorId() }, epobc.getScheme())
+      epobc = EPOBCColorDefinition.fromScheme(epobc.getColorId(), epobc.getScheme())
       expect(epobc).to.deep.equal(epobc)
     })
   })
@@ -189,7 +184,7 @@ describe('color.EPOBCColorDefinition', function() {
 
         var colorValueSet = f.inColorValues.map(function(cv) {
           if (cv !== null)
-            cv = new cclib.color.ColorValue({ colordef: epobc, value: cv })
+            cv = new cclib.color.ColorValue(epobc, cv)
           return cv
         })
 
