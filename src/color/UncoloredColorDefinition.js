@@ -22,6 +22,13 @@ inherits(UncoloredColorDefinition, ColorDefinition)
 /**
  * @return {string}
  */
+UncoloredColorDefinition.prototype.getColorType = function() {
+  return 'uncolored'
+}
+
+/**
+ * @return {string}
+ */
 UncoloredColorDefinition.prototype.getScheme = function() {
   return ''
 }

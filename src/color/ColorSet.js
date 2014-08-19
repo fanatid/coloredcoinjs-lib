@@ -3,6 +3,7 @@ var crypto = require('crypto')
 
 var base58 = require('bs58')
 var _ = require('lodash')
+
 var ColorDefinitionManager = require('./ColorDefinitionManager')
 
 
@@ -23,23 +24,10 @@ function ColorSet(cdManager, colorSchemes) {
   })
 
   this.colorSchemes = colorSchemes
-  this.colorIds = this.colorSchemes.map(function(colorScheme) {
-    return cdManager.resolveByScheme(colorScheme).getColorId()
+  this.colorDefinitions = this.colorSchemes.map(function(colorScheme) {
+    return cdManager.resolveByScheme(colorScheme)
   })
-}
-
-/**
- * @return {boolean}
- */
-ColorSet.prototype.isUncoloredOnly = function() {
-  return this.colorSchemes.every(function(scheme) { return scheme === '' })
-}
-
-/**
- * @return {boolean}
- */
-ColorSet.prototype.isEPOBCOnly = function() {
-  return this.colorSchemes.every(function(scheme) { return scheme.indexOf('epobc') === 0 })
+  this.colorIds = this.colorDefinitions.map(function(colordef) { return colordef.getColorId() })
 }
 
 /**
@@ -57,6 +45,13 @@ ColorSet.prototype.getColorHash = function() {
  */
 ColorSet.prototype.getColorSchemes = function() {
   return this.colorSchemes
+}
+
+/**
+ * @return {ColorDefinition[]}
+ */
+ColorSet.prototype.getColorDefinitions = function() {
+  return this.colorDefinitions
 }
 
 /**
