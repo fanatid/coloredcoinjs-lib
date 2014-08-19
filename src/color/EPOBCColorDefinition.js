@@ -243,6 +243,13 @@ function EPOBCColorDefinition(colorId, genesis) {
 inherits(EPOBCColorDefinition, ColorDefinition)
 
 /**
+ * @return {string}
+ */
+EPOBCColorDefinition.prototype.getColorType = function() {
+  return 'epobc'
+}
+
+/**
  * Create EPOBCColorDefinition from colorId and scheme
  *
  * @param {number} colorId

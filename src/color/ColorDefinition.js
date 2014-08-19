@@ -20,6 +20,15 @@ ColorDefinition.prototype.getColorId = function() {
 }
 
 /**
+ * Return ColorDefinition type
+ * @abstract
+ * @return {string}
+ */
+ColorDefinition.prototype.getColorType = function() {
+  throw new Error('ColorDefinition.getColorType not implemented')
+}
+
+/**
  * Return scheme of current ColorDefinition
  * @abstract
  * @return {string}
