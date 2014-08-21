@@ -113,6 +113,7 @@ BlockrIOAPI.prototype.request = function(path, data, cb) {
 
         }
 
+        self.cache.set(path, result.data)
         resolve(result.data)
       })
 
@@ -309,7 +310,7 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
 /**
  * @callback BlockrIOAPI~getHistory
  * @param {?Error} error
- * @param {HistoryObject} records
+ * @param {HistoryObject[]} records
  */
 
 /**

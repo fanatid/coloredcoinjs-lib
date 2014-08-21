@@ -147,7 +147,7 @@ BlockchainStateBase.prototype.getUTXO = function() {
 /**
  * @callback BlockchainStateBase~getHistory
  * @param {?Error} error
- * @param {HistoryObject} records
+ * @param {HistoryObject[]} records
  */
 
 /**
