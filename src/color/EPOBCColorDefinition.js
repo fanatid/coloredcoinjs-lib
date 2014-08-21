@@ -319,71 +319,64 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
   assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var _this = this
+  var self = this
 
-  var outColorValues = []
-  var tag = getTag(tx)
+  Q.fcall(function() {
+    var outColorValues = []
+    var tag = getTag(tx)
 
-  if (tag === null || tag.isGenesis) {
-    outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
+    if (tag === null || tag.isGenesis) {
+      outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
 
-    if (tag !== null && this.isSpecialTx(tx)) {
-      var valueWop = tx.outs[0].value - tag.getPadding()
+      if (tag !== null && self.isSpecialTx(tx)) {
+        var valueWop = tx.outs[0].value - tag.getPadding()
 
-      if (valueWop > 0)
-        outColorValues[0] = new ColorValue(this, valueWop)
+        if (valueWop > 0)
+          outColorValues[0] = new ColorValue(self, valueWop)
+      }
+
+      return outColorValues
     }
 
-    cb(null, outColorValues)
-    return
-  }
+    function scanOutTx(tx, outIndex) {
+      if (outIndex === tx.outs.length)
+        return outColorValues
 
-  bs.ensureInputValues(tx, function(error, tx) {
-    if (error !== null) {
-      cb(error)
-      return
+      var padding = tag.getPadding()
+      var outValueWop = tx.outs[outIndex].value - padding
+
+      if (outValueWop <= 0) {
+        outColorValues.push(null)
+        return scanOutTx(tx, outIndex+1)
+      }
+
+      var affectingInputs = getXferAffectingInputs(tx, padding, outIndex)
+      var allColored = affectingInputs.every(function(ai) {
+        return (colorValueSet[ai] !== null && !_.isUndefined(colorValueSet[ai]))
+      })
+
+      if (!allColored) {
+        outColorValues.push(null)
+        return scanOutTx(tx, outIndex+1)
+      }
+
+      var colorValues = [new ColorValue(self, 0 )]
+      colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
+
+      var totalColorValue = ColorValue.sum(colorValues)
+      if (totalColorValue.getValue() >= outValueWop)
+        outColorValues.push(new ColorValue(self, outValueWop))
+      else
+        outColorValues.push(null)
+
+      return scanOutTx(tx, outIndex+1)
     }
 
-    processOutTx(tx, 0)
-  })
-
-  function processOutTx(tx, outIndex) {
-    if (tx.outs.length === outIndex) {
-      cb(null, outColorValues)
-      return
-    }
-
-    var padding = tag.getPadding()
-    var outValueWop = tx.outs[outIndex].value - padding
-
-    if (outValueWop <= 0) {
-      outColorValues.push(null)
-      processOutTx(tx, outIndex+1)
-      return
-    }
-
-    var affectingInputs = getXferAffectingInputs(tx, padding, outIndex)
-    var allColored = affectingInputs.every(function(ai) {
-      return (colorValueSet[ai] !== null && !_.isUndefined(colorValueSet[ai]))
+    return Q.ninvoke(bs, 'ensureInputValues', tx).then(function(tx) {
+      return scanOutTx(tx, 0)
     })
 
-    if (!allColored) {
-      outColorValues.push(null)
-      processOutTx(tx, outIndex+1)
-      return
-    }
-
-    var colorValues = [new ColorValue(_this, 0 )]
-    colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
-
-    var totalColorValue = ColorValue.sum(colorValues)
-    if (totalColorValue.getValue() >= outValueWop)
-      outColorValues.push(new ColorValue(_this, outValueWop))
-    else
-      outColorValues.push(null)
-
-    processOutTx(tx, outIndex+1)
-  }
+  }).done(function(colorValues) { cb(null, colorValues) }, function(error) { cb(error) })
 }
 
 /**

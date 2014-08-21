@@ -1,6 +1,7 @@
 var assert = require('assert')
 
 var _ = require('lodash')
+var Q = require('q')
 
 var color = require('../color')
 var Transaction = require('../tx').Transaction
@@ -48,10 +49,16 @@ Coin.prototype.isConfirmed = function() {
 }
 
 /**
+ * @callback Coin~getColorValue
+ * @param {?Error} error
+ * @param {ColorValue} colorValue
+ */
+
+/**
  * Get ColorValue for current Coin and given ColorDefinition
  *
  * @param {ColorDefinition} colorDefinition
- * @param {function} cb
+ * @param {Coin~getColorValue} cb
  */
 Coin.prototype.getColorValue = function(colorDefinition, cb) {
   assert(colorDefinition instanceof color.ColorDefinition,
@@ -62,47 +69,49 @@ Coin.prototype.getColorValue = function(colorDefinition, cb) {
 }
 
 /**
+ * @callback Coin~getMainColorValue
+ * @param {?Error} error
+ * @param {ColorValue} coinColorValue
+ */
+
+/**
  * Get one ColorValue or error if more than one
  *
- * @param {function} cb Called on finished with params (error, ColorValue)
+ * @param {Coin~getMainColorValue} cb
  */
 Coin.prototype.getMainColorValue = function (cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  var _this = this
+  Q.fcall(function() {
+    var coinColorValue = null
+    var colorDefinitions = self.cdManager.getAllColorDefinitions()
 
-  var coinColorValue = null
-  var colorDefinitions = this.cdManager.getAllColorDefinitions()
+    function getColorValue(index) {
+      if (index === colorDefinitions.length)
+        return coinColorValue
 
-  function getColorValue(index) {
-    if (colorDefinitions.length === index) {
-      if (coinColorValue === null) {
-        var uncolored = _this.cdManager.getUncolored()
-        coinColorValue = new color.ColorValue(uncolored, _this.value)
-      }
+      return Q.ninvoke(self, 'getColorValue', colorDefinitions[index])
+        .then(function(colorValue) {
+          if (coinColorValue !== null && colorValue !== null)
+            throw new Error('Coin ' + self + ' have more that one ColorValue')
 
-      cb(null, coinColorValue)
-      return
+          coinColorValue = colorValue
+
+          return getColorValue(index + 1)
+        })
     }
 
-    _this.getColorValue(colorDefinitions[index], function(error, colorValue) {
-      if (error === null && colorValue !== null) {
-        if (coinColorValue === null)
-          coinColorValue = colorValue
-        else
-          error = new Error('Coin ' + _this + ' have more that one ColorValue')
-      }
+    return getColorValue(0)
 
-      if (error !== null) {
-        cb(error)
-        return
-      }
+  })
+  .then(function(coinColorValue) {
+    if (coinColorValue == null)
+      coinColorValue = new color.ColorValue(self.cdManager.getUncolored(), self.value)
 
-      getColorValue(index+1)
-    })
-  }
+    return coinColorValue
 
-  getColorValue(0)
+  })
+  .done(function(coinColorValue) { cb(null, coinColorValue) }, function(error) { cb(error) })
 }
 
 /**

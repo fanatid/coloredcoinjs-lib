@@ -75,7 +75,8 @@ describe('coin.Coin', function() {
         cb(null, new cclib.color.ColorValue(cdManager.getUncolored(), 0))
       }
       coin.getMainColorValue(function(error, colorValue) {
-        expect(error).to.deep.equal(new Error('Coin ' + coin + ' have more that one ColorValue'))
+        expect(error).to.be.instanceof(Error)
+        expect(error.message).to.equal('Coin ' + coin + ' have more that one ColorValue')
         expect(colorValue).to.be.undefined
         done()
       })

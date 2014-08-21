@@ -19,6 +19,15 @@ describe('blockchain.BlockrIOAPI', function() {
   })
 
   describe('request', function() {
+    it('timeout', function(done) {
+      bs = new cclib.blockchain.BlockrIOAPI({ requestTimeout: 10 })
+      bs.getBlockCount(function(error, response) {
+        expect(error).not.to.be.null
+        expect(error.message).to.equal('Request timeout')
+        expect(response).to.be.undefined
+        done()
+      })
+    })
   })
 
   describe('getBlockCount', function() {

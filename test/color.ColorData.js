@@ -91,7 +91,8 @@ describe('color.ColorData', function() {
       cdStorage.add({ colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6 })
       cdStorage.add = function() { throw new Error('error.scanTx') }
       cData.scanTx(tx2, [0], epobc, function(error) {
-        expect(error).to.deep.equal(new Error('error.scanTx'))
+        expect(error).to.be.instanceof(Error)
+        expect(error.message).to.equal('error.scanTx')
         done()
       })
     })
@@ -154,7 +155,6 @@ describe('color.ColorData', function() {
     it('already in store', function(done) {
       cdStorage.add({ colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15 })
       cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
-        expect(error).to.be.null
         expect(colorValue).to.be.instanceof(cclib.color.ColorValue)
         expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
         expect(colorValue.getValue()).to.be.equal(15)

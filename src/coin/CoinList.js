@@ -1,6 +1,7 @@
 var assert = require('assert')
 
 var _ = require('lodash')
+var Q = require('q')
 
 var Coin = require('./Coin')
 
@@ -43,39 +44,40 @@ CoinList.prototype.getCoins = function() {
  * @param {CoinList~getTotalValue} cb
  */
 CoinList.prototype.getTotalValue = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  var _this = this
-  var dColorValues = {}
+  Q.fcall(function() {
+    var dColorValues = {}
 
-  function getMainColorValue(index) {
-    if (_this.coins.length === index) {
-      var colorValues = Object.keys(dColorValues).map(function(colorId) {
-        return dColorValues[colorId]
-      })
+    function getMainColorValue(index) {
+      if (index === self.coins.length)
+        return dColorValues
 
-      cb(null, colorValues)
-      return
+      return Q.ninvoke(self.coins[index], 'getMainColorValue')
+        .then(function(colorValue) {
+          var colorId = colorValue.getColorId()
+
+          if (_.isUndefined(dColorValues[colorId]))
+            dColorValues[colorId] = colorValue
+          else
+            dColorValues[colorId] = dColorValues[colorId].plus(colorValue)
+
+          return getMainColorValue(index + 1)
+        })
     }
 
-    _this.coins[index].getMainColorValue(function(error, colorValue) {
-      if (error !== null) {
-        cb(error)
-        return
-      }
+    return getMainColorValue(0)
 
-      var colorId = colorValue.getColorId()
-
-      if (_.isUndefined(dColorValues[colorId]))
-        dColorValues[colorId] = colorValue
-      else
-        dColorValues[colorId] = dColorValues[colorId].plus(colorValue)
-
-      getMainColorValue(index+1)
+  })
+  .then(function(dColorValues) {
+    var colorValues = Object.keys(dColorValues).map(function(colorId) {
+      return dColorValues[colorId]
     })
-  }
 
-  getMainColorValue(0)
+    return colorValues
+
+  })
+  .done(function(colorValues) { cb(null, colorValues) }, function(error) { cb(error) })
 }
 
 

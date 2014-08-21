@@ -1,6 +1,7 @@
 var assert = require('assert')
 
 var _ = require('lodash')
+var Q = require('q')
 
 var BlockchainStateBase = require('../blockchain').BlockchainStateBase
 var ColorDefinition = require('./ColorDefinition')
@@ -33,7 +34,7 @@ function ColorData(storage, blockchain) {
  * @param {string} txId
  * @param {number} outIndex
  * @param {ColorDefinition} colorDefinition
- * @return {ColorValue|null}
+ * @return {?ColorValue}
  */
 ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
@@ -55,12 +56,17 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
 }
 
 /**
+ * @callback ColorData~scanTx
+ * @param {?Error} error
+ */
+
+/**
  * Scan transaction to obtain color data for its outputs
  *
  * @param {Transaction} tx
- * @param {Array|null} outputIndices
+ * @param {?number[]} outputIndices
  * @param {ColorDefinition} colorDefinition
- * @param {function} cb Called on finished with params (error)
+ * @param {ColorData~scanTx} cb Called on finished with params (error)
  */
 ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
@@ -72,58 +78,53 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
     'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var _this = this
+  var self = this
 
-  var inColorValues = []
-  var empty = true
+  Q.fcall(function() {
+    var inColorValues = []
+    var empty = true
 
-  tx.ins.forEach(function(input) {
-    var colorData = _this.storage.get({
-      colorId: colorDefinition.getColorId(),
-      txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
-      outIndex: input.index
+    tx.ins.forEach(function(input) {
+      var colorData = self.storage.get({
+        colorId: colorDefinition.getColorId(),
+        txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
+        outIndex: input.index
+      })
+
+      var colorValue = null
+      if (colorData !== null) {
+        empty = false
+        colorValue = new ColorValue(colorDefinition, colorData.value)
+      }
+      inColorValues.push(colorValue)
     })
 
-    var colorValue = null
-    if (colorData !== null) {
-      empty = false
-      colorValue = new ColorValue(colorDefinition, colorData.value)
-    }
-    inColorValues.push(colorValue)
-  })
+    if (empty && !colorDefinition.isSpecialTx(tx))
+      return
 
-  if (empty && !colorDefinition.isSpecialTx(tx)) {
-    cb(null)
-    return
-  }
+    return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, self.blockchain)
+      .then(function(outColorValues) {
+        outColorValues.forEach(function(colorValue, index) {
+          var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
 
-  colorDefinition.runKernel(tx, inColorValues, _this.blockchain, function(error, outColorValues) {
-    if (error === null) {
-      outColorValues.every(function(colorValue, index) {
-        var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
-
-        if (!skipAdd) {
-          try {
-            _this.storage.add({
+          if (!skipAdd)
+            self.storage.add({
               colorId: colorDefinition.getColorId(),
               txId: tx.getId(),
               outIndex: index,
               value: colorValue.getValue()
             })
-
-          } catch (e) {
-            error = e
-            return false
-          }
-        }
-
-        return true
+        })
       })
-    }
 
-    cb(error)
-  })
+  }).done(function(){ cb(null) }, function(error) { cb(error) })
 }
+
+/**
+ * @callback ColorData~getColorValue
+ * @param {?Error} error
+ * @param {?ColorValue} colorValue
+ */
 
 /**
  * For a given txId, outIndex and colorDefinition return ColorValue or null if
@@ -132,7 +133,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
  * @param {string} txId
  * @param {number} outIndex
  * @param {ColorDefinition} colorDefinition
- * @param {function} cb Called on finished with params (error, ColorValue|null)
+ * @param {ColorData~getColorValue} cb
  */
 ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
@@ -141,59 +142,51 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb
     'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var _this = this
-  var scannedOutputs = []
+  var self = this
 
-  function processOne(txId, outIndex, cb) {
-    if (scannedOutputs.indexOf(txId + outIndex) !== -1) {
-      process.nextTick(function() { cb(null) })
-      return
-    }
-    scannedOutputs.push(txId + outIndex)
+  Q.fcall(function() {
+    var scannedOutputs = []
 
-    var colorValue = _this.fetchColorValue(txId, outIndex, colorDefinition)
-    if (colorValue !== null) {
-      process.nextTick(function() { cb(null) })
-      return
-    }
-
-    _this.blockchain.getTx(txId, function(error, tx) {
-      if (error !== null) {
-        cb(error)
+    function processOne(txId, outIndex) {
+      if (scannedOutputs.indexOf(txId + outIndex) !== -1)
         return
+
+      scannedOutputs.push(txId + outIndex)
+
+      var colorValue = self.fetchColorValue(txId, outIndex, colorDefinition)
+      if (colorValue !== null)
+        return
+
+      function processTx(tx) {
+        return Q.ninvoke(colorDefinition, 'getAffectingInputs', tx, [outIndex], self.blockchain)
+          .then(function(inputs) {
+            var promise = Q()
+
+            inputs.forEach(function(input) {
+              var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
+              promise = promise.then(function() {
+                return Q.fcall(processOne, txId, input.index)
+              })
+            })
+
+            promise = promise.then(function() {
+              return Q.ninvoke(self, 'scanTx', tx, null, colorDefinition)
+
+            })
+
+            return promise
+          })
       }
 
-      colorDefinition.getAffectingInputs(tx, [outIndex], _this.blockchain, function(error, inputs) {
-        if (error === null)
-          runProcesses(tx, inputs, 0)
-        else
-          cb(error)
-      })
-    })
-
-    function runProcesses(tx, inputs, index) {
-      if (index === inputs.length) {
-        _this.scanTx(tx, null, colorDefinition, cb)
-        return
-      }
- 
-      var txId = Array.prototype.reverse.call(new Buffer(inputs[index].hash)).toString('hex')
- 
-      processOne(txId, inputs[index].index, function(error) {
-        if (error === null)
-          runProcesses(tx, inputs, index + 1)
-        else
-          cb(error)
-      })
+      return Q.ninvoke(self.blockchain, 'getTx', txId).then(processTx)
     }
-  }
 
-  processOne(txId, outIndex, function(error) {
-    if (error === null)
-      cb(null, _this.fetchColorValue(txId, outIndex, colorDefinition))
-    else
-      cb(error)
-  })
+    return Q.fcall(processOne, txId, outIndex)
+
+  }).then(function() {
+    return self.fetchColorValue(txId, outIndex, colorDefinition)
+
+  }).done(function(colorValue) { cb(null, colorValue) }, function(error) { cb(error) })
 }
 
 

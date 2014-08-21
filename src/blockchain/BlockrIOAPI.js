@@ -28,21 +28,17 @@ function isHexString(s) {
  *
  * @param {Object} opts
  * @param {boolean} opts.testnet
+ * @param {number} [opts.requestTimeout=5*1000]
  * @param {number} [opts.maxCacheSize=500]
  * @param {number} [opts.maxCacheAge=10*1000] Cache live in ms
  */
 function BlockrIOAPI(opts) {
-  opts = _.isUndefined(opts) ? {} : opts
-  assert(_.isObject(opts), 'Expected Object opts, got ' + opts)
-
-  opts.testnet = _.isUndefined(opts.testnet) ? false : opts.testnet
-  assert(_.isBoolean(opts.testnet), 'Expected boolean opts.testnet, got ' + opts.testnet)
-
-  opts.maxCacheSize = _.isUndefined(opts.maxCacheSize) ? 500 : opts.maxCacheSize
-  assert(_.isNumber(opts.maxCacheSize), 'Expected number opts.maxCacheSize, got ' + opts.maxCacheSize)
-
-  opts.maxCacheAge = _.isUndefined(opts.maxCacheAge) ? 10*1000 : opts.maxCacheAge
-  assert(_.isNumber(opts.maxCacheAge), 'Expected number opts.maxCacheAge, got ' + opts.maxCacheAge)
+  opts = _.extend({
+    testnet: false,
+    requestTimeout: 5*100,
+    maxCacheSize: 500,
+    maxCacheAge: 10*100
+  }, opts)
 
 
   BlockchainStateBase.call(this)
@@ -54,12 +50,8 @@ function BlockrIOAPI(opts) {
     maxAge: opts.maxCacheAge
   })
 
-  this.requestPathCacheSize = 100
-  this.requestPathCacheMaxAge = 5*1000
-  this.requestPathCache = LRU({
-    max: this.requestPathCacheSize,
-    maxAge: this.requestPathCacheMaxAge
-  })
+  this.requestTimeout = opts.requestTimeout
+  this.requestPathCache = LRU({ maxAge: this.requestTimeout })
 }
 
 inherits(BlockrIOAPI, BlockchainStateBase)
@@ -78,109 +70,93 @@ inherits(BlockrIOAPI, BlockchainStateBase)
  * @param {BlockrIOAPI~request} cb
  */
 BlockrIOAPI.prototype.request = function(path, data, cb) {
-  assert(_.isString(path), 'Expected string path, got ' + path)
-  data = _.isUndefined(data) ? null : data
   if (_.isFunction(data) && _.isUndefined(cb)) {
     cb = data
     data = null
   }
-  assert(_.isObject(data) || _.isNull(data), 'Expected Object|null data, got ' + data)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  var _this = this
+  var self = this
 
-  /** check in cache */
-  var cachedValue = this.cache.get(path)
-  if (!_.isUndefined(cachedValue)) {
-    process.nextTick(function() { cb(null, cachedValue) })
-    return
-  }
-
-  /** check already requested */
-  cachedValue = this.requestPathCache.get(path)
-  if (!_.isUndefined(cachedValue)) {
-    setTimeout(function() { _this.request(path, cb) }, 100)
-    return
-  }
-
-  function done(error, result) {
-    if (!_.isUndefined(cb)) {
-      cb(error, result)
-      cb = undefined
+  function makeRequest(resolve, reject) {
+    self.requestPathCache.set(path, true)
+    var requestOpts = {
+      scheme: 'http',
+      host: self.isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io',
+      port: 80,
+      path: path,
+      method: data === null ? 'GET' : 'POST',
+      withCredentials: false
     }
+    var request = http.request(requestOpts)
+
+    request.on('response', function(response) {
+      var buf = ''
+
+      response.on('data', function(data) {
+        buf += data
+      })
+
+      response.on('end', function() {
+        var result
+        var error = null
+
+        try {
+          result = JSON.parse(buf)
+          if (result.status !== 'success') {
+            if (result.message)
+              throw new Error(result.message)
+            throw new Error('Bad data')
+          }
+
+        } catch (error) {
+          reject(error)
+
+        }
+
+        resolve(result.data)
+      })
+
+      response.on('error', reject)
+    })
+
+    request.on('error', reject)
+
+    Q.delay(self.requestTimeout).then(function() {
+      /*
+       * See: https://github.com/substack/http-browserify/issues/49
+       *
+       * https://github.com/substack/http-browserify/blob/master/lib/request.js##L95
+       * In http-browserify instead request.abort() must be called request.destroy() ?
+       */
+      if (request.abort)
+        request.abort()
+      else
+        request.destroy
+
+      reject(new Error('Request timeout'))
+    })
+
+    if (data !== null)
+      request.write(querystring.encode(data))
+
+    request.end()
   }
 
-  /** request */
-  this.requestPathCache.set(path, true)
-  var requestOpts = {
-    scheme: 'http',
-    host: this.isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io',
-    port: 80,
-    path: path,
-    method: data === null ? 'GET' : 'POST',
-    withCredentials: false
+  function checkCache() {
+    /** check in cache */
+    var cachedValue = self.cache.get(path)
+    if (!_.isUndefined(cachedValue))
+      return cachedValue
+
+    /** check already requested */
+    if (!_.isUndefined(self.requestPathCache.get(path)))
+      return Q.delay(100).then(checkCache)
+
+    return Q.Promise(makeRequest)
   }
-  var request = http.request(requestOpts)
 
-  request.on('response', function(res) {
-    var buf = ''
-
-    res.on('data', function(data) {
-      buf += data
-    })
-
-    res.on('end', function() {
-      var result
-      var error = null
-
-      try {
-        result = JSON.parse(buf)
-        if (result.status !== 'success')
-          error = result.message || new Error('Bad data')
-
-      } catch (newError) {
-        error = newError
-
-      }
-
-      if (error === null)
-        _this.cache.set(path, result.data)
-
-      done(error, error === null ? result.data : undefined)
-    })
-
-    res.on('error', function(error) {
-      done(error)
-    })
-  })
-
-/*
- * See: https://github.com/substack/http-browserify/issues/49
- *
- * https://github.com/substack/http-browserify/blob/master/lib/request.js#L87
- * In http-browserify instead request.abort() myst be called request.destroy() ?
- */
-//  request.setTimeout(this.requestPathCacheMaxAge, function() {
-//    request.abort()
-//  })
-
-  setTimeout(function() {
-    if (request.abort)
-      request.abort()
-    else
-      request.destroy()
-
-    done(new Error('Request timeout'))
-  }, this.requestPathCacheMaxAge)
-
-  request.on('error', function(error) {
-    done(error)
-  })
-
-  if (data !== null)
-    request.write(querystring.encode(data))
-
-  request.end()
+  Q.fcall(checkCache)
+  .done(function(response) { cb(null, response) }, function(error) { cb(error) })
 }
 
 /**
@@ -195,14 +171,18 @@ BlockrIOAPI.prototype.request = function(path, data, cb) {
  * @param {BlockrIOAPI~getBlockCount} cb
  */
 BlockrIOAPI.prototype.getBlockCount = function(cb) {
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  this.request('/api/v1/block/info/last', function(error, response) {
-    if (error === null && !_.isNumber(response.nb))
-      error = new Error('Expected number nb, got ' + response.nb)
+  Q.fcall(function() {
+    return Q.ninvoke(self, 'request', '/api/v1/block/info/last')
 
-    cb(error, error === null ? response.nb : undefined)
-  })
+  }).then(function(response) {
+    if (!_.isNumber(response.nb))
+      throw new Error('Expected number nb, got ' + response.nb)
+
+    return response.nb
+
+  }).done(function(blockCount) { cb(null, blockCount) }, function(error) { cb(error) })
 }
 
 /**
@@ -218,21 +198,15 @@ BlockrIOAPI.prototype.getBlockCount = function(cb) {
  * @param {BlockrIOAPI~getTx} cb
  */
 BlockrIOAPI.prototype.getTx = function(txId, cb) {
-  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  this.request('/api/v1/tx/raw/' + txId, function(error, response) {
-    if (error === null) {
-      try {
-        response = Transaction.fromHex(response.tx.hex)
+  Q.fcall(function() {
+    return Q.ninvoke(self, 'request', '/api/v1/tx/raw/' + txId)
 
-      } catch (newError) {
-        error = newError
-      }
-    }
+  }).then(function(response) {
+    return Transaction.fromHex(response.tx.hex)
 
-    cb(error, error === null ? response : undefined)
-  })
+  }).done(function(tx) { cb(null, tx) }, function(error) { cb(error) })
 }
 
 /**
@@ -248,10 +222,12 @@ BlockrIOAPI.prototype.getTx = function(txId, cb) {
  * @param {BlockrIOAPI~sendTx} cb
  */
 BlockrIOAPI.prototype.sendTx = function(tx, cb) {
-  assert(tx instanceof Transaction, 'Expected tx instance of Transaction, got ' + tx)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  this.request('/api/v1/tx/push', { 'hex': tx.toHex() }, cb)
+  Q.fcall(function() {
+    return Q.ninvoke(self, 'request', '/api/v1/tx/push', { 'hex': tx.toHex() })
+
+  }).done(function(txId) { cb(null, txId) }, function(error) { cb(error) })
 }
 
 /**
@@ -287,43 +263,40 @@ function parseAmount(amount) {
  * @param {BlockrIOAPI~getUTXO} cb
  */
 BlockrIOAPI.prototype.getUTXO = function(address, cb) {
-  assert(_.isString(address), 'Expected Address address, got ' + address)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  var self = this
 
-  this.request('/api/v1/address/unspent/' + address + '?unconfirmed=1', function(error, response) {
-    var utxo
+  Q.fcall(function() {
+    return Q.ninvoke(self, 'request', '/api/v1/address/unspent/' + address + '?unconfirmed=1')
 
-    if (error === null && response.address !== address)
-      error = new Error('response address not matched')
+  }).then(function(response) {
+    if (response.address !== address)
+      throw new Error('response address not matched')
 
-    if (error === null) {
-      try {
-        utxo = response.unspent.map(function(txOut) {
-          assert(isHexString(txOut.tx), 'Expected hex string tx, got ' + txOut.tx)
-          assert(_.isNumber(txOut.n), 'Expected number n, got ' + txOut.n)
-          assert(_.isString(txOut.amount), 'Expected string amount, got ' + txOut.amount)
-          assert(_.isNumber(txOut.confirmations), 'Expected number confirmations, got ' + txOut.confirmations)
+    return response.unspent
 
-          var value = parseAmount(txOut.amount)
-          if (isNaN(value))
-            throw new TypeError('bad txOut value')
+  }).then(function(coins) {
+    var utxo = coins.map(function(coin) {
+      assert(isHexString(coin.tx), 'Expected hex string tx, got ' + coin.tx)
+      assert(_.isNumber(coin.n), 'Expected number n, got ' + coin.n)
+      assert(_.isString(coin.amount), 'Expected string amount, got ' + coin.amount)
+      assert(_.isNumber(coin.confirmations), 'Expected number confirmations, got ' + coin.confirmations)
 
-          return {
-            address: address,
-            txId: txOut.tx,
-            outIndex: txOut.n,
-            value: value,
-            confirmations: txOut.confirmations
-          }
-        })
+      var value = parseAmount(coin.amount)
+      if (isNaN(value))
+        throw new TypeError('bad coin value')
 
-      } catch (newError) {
-        error = newError
+      return {
+        address: address,
+        txId: coin.tx,
+        outIndex: coin.n,
+        value: value,
+        confirmations: coin.confirmations
       }
-    }
+    })
 
-    cb(error, error === null ? utxo : undefined)
-  })
+    return utxo
+
+  }).done(function(utxo) { cb(null, utxo) }, function(error) { cb(error) })
 }
 
 /**
@@ -346,9 +319,6 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
  * @param {BlockrIOAPI~getHistory} cb
  */
 BlockrIOAPI.prototype.getHistory = function(address, cb) {
-  assert(_.isString(address), 'Expected Address address, got ' + address)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
-
   var self = this
 
   Q.fcall(function() {
@@ -358,8 +328,11 @@ BlockrIOAPI.prototype.getHistory = function(address, cb) {
     if (response.address !== address)
       throw new Error('response address not matched')
 
-    var records = response.txs.map(function(record) {
-      return { txId: record.tx, confirmations: record.confirmations }
+    return response.txs
+
+  }).then(function(txs) {
+    var records = txs.map(function(tx) {
+      return { txId: tx.tx, confirmations: tx.confirmations }
     })
 
     records.sort(function(r1, r2) {
