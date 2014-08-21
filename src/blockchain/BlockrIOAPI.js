@@ -368,13 +368,7 @@ BlockrIOAPI.prototype.getHistory = function(address, cb) {
 
     return records
 
-  }).then(function(records) {
-    cb(null, records)
-
-  }).catch(function(error) {
-    cb(error)
-
-  }).done()
+  }).done(function(records) { cb(null, records) }, function(error) { cb(error) })
 }
 
 

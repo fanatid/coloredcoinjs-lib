@@ -87,13 +87,7 @@ UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
         value: change.getValue()
       })
 
-  }).then(function() {
-    cb(null, composedTx)
-
-  }).fail(function(error) {
-    cb(error)
-
-  }).done()
+  }).done(function() { cb(null, composedTx) }, function(error) { cb(error) })
 }
 
 

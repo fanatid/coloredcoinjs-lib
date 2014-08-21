@@ -62,13 +62,7 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
 
     return processOne(0)
 
-  }).then(function(tx) {
-    cb(null, tx)
-
-  }).catch(function(error) {
-    cb(error)
-
-  }).done()
+  }).done(function(tx) { cb(null, tx) }, function(error) { cb(error) })
 }
 
 /**

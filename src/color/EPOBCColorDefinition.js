@@ -428,13 +428,7 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
         return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
       })
 
-  }).then(function(result) {
-    cb(null, result)
-
-  }).fail(function(error) {
-    cb(error)
-
-  })
+  }).done(function(result) { cb(null, result) }, function(error) { cb(error) })
 }
 
 /**
@@ -554,13 +548,7 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
 
     composedTx.txIns[0].sequence = tag.toSequence()
 
-  }).then(function() {
-    cb(null, composedTx)
-
-  }).fail(function(error) {
-    cb(error)
-
-  }).done()
+  }).done(function() { cb(null, composedTx) }, function(error) { cb(error) })
 }
 
 

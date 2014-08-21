@@ -182,13 +182,7 @@ CoinQuery.prototype.getCoins = function(cb) {
 
     return filterUTXO(0)
 
-  }).then(function(coins) {
-    cb(null, new CoinList(coins))
-
-  }).fail(function(error) {
-    cb(error)
-
-  }).done()
+  }).done(function(coins) { cb(null, new CoinList(coins)) }, function(error) { cb(error) })
 }
 
 //Todo

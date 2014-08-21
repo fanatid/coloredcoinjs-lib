@@ -186,10 +186,10 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
     it('list from mainnet', function(done) {
       bs.getHistory('1BjQwkBPE1cbpQCY4u2nt7D6cFvJscwPJg', function(error, response) {
         expect(error).to.be.null
-        expect(response).to.deep.equal([
-          { txId: '77e491c32ec4cd877a26a2d445f28eaa34df51c9c45c1f27c2aea6e7544ec01e', confirmations: 238058 },
-          { txId: '2e251defb56108a6c7def2fc6937d113435e7d39e1d518ca0a4ab66fa38d098b', confirmations: 237739 }
-        ])
+        expect(response[0].txId).to.equal('77e491c32ec4cd877a26a2d445f28eaa34df51c9c45c1f27c2aea6e7544ec01e')
+        expect(response[0].confirmations).to.be.at.least(0)
+        expect(response[1].txId).to.equal('2e251defb56108a6c7def2fc6937d113435e7d39e1d518ca0a4ab66fa38d098b')
+        expect(response[1].confirmations).to.be.at.least(0)
         done()
       })
     })
