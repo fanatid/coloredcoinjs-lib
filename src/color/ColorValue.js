@@ -1,6 +1,3 @@
-var UncoloredColorDefinition = require('./UncoloredColorDefinition')
-
-
 /**
  * @class ColorValue
  *
@@ -30,8 +27,7 @@ ColorValue.prototype.getColorId = function() {
  * @return {boolean}
  */
 ColorValue.prototype.isUncolored = function() {
-  var uncoloredColorId = new UncoloredColorDefinition().getColorId()
-  return this.getColorId() === uncoloredColorId
+  return this.getColorDefinition().getColorType() === 'uncolored'
 }
 
 /**

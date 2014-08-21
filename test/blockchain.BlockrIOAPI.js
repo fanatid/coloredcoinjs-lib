@@ -19,14 +19,6 @@ describe('blockchain.BlockrIOAPI', function() {
   })
 
   describe('request', function() {
-    it('request timeout', function(done) {
-      bs.requestPathCacheMaxAge = 1
-      bs.getBlockCount(function(error, response) {
-        expect(error).to.be.instanceof(Error)
-        expect(response).to.be.undefined
-        done()
-      })
-    })
   })
 
   describe('getBlockCount', function() {
@@ -39,7 +31,7 @@ describe('blockchain.BlockrIOAPI', function() {
       })
     })
 
-    it('blockCount is not number', function(done) {
+    it('blockCount in response not number', function(done) {
       bs.request = function(_, cb) { cb(null, {}) }
       bs.getBlockCount(function(error, response) {
         expect(error).to.be.instanceof(Error)
@@ -48,7 +40,7 @@ describe('blockchain.BlockrIOAPI', function() {
       })
     })
 
-    it('return blockCount', function(done) {
+    it('good number', function(done) {
       bs.getBlockCount(function(error, response) {
         expect(error).to.be.null
         expect(response).to.be.a('number')
@@ -113,7 +105,7 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
         expect(error).to.be.null
         expect(response).to.be.instanceof(Array).with.to.have.length.least(1)
         var totalValue = response.reduce(function(a, b) { return { value: a.value+b.value } }).value
-        expect(totalValue).to.be.at.least(15500)
+        expect(totalValue).to.be.at.least(10000)
 
         // send totalValue minus 0.1 mBTC to mhW9PYb5jsjpsS5x6dcLrZj7gPvw9mMb9c
         var tx = new cclib.tx.Transaction()
@@ -170,12 +162,34 @@ fff0e0420e7494d017f062f503253482fffffffff0100f2052a010000002321021aeaf2f8638a12\
       })
     })
 
-    it('utxo', function(done) {
+    it('right amount from mainnet', function(done) {
       bs.getUTXO(address0, function(error, response) {
         expect(error).to.be.null
         var values = response.map(function(utxo) { return utxo.value })
         var totalValue = values.reduce(function(acc, current) { return acc + current }, 0)
         expect(totalValue).to.equal(800000032346)
+        done()
+      })
+    })
+  })
+
+  describe('getHistory', function() {
+    it('address not matched', function(done) {
+      bs.request = function(_, cb) { cb(null, {}) }
+      bs.getHistory('1BjQwkBPE1cbpQCY4u2nt7D6cFvJscwPJg', function(error, response) {
+        expect(error).to.be.instanceof(Error)
+        expect(response).to.be.undefined
+        done()
+      })
+    })
+
+    it('list from mainnet', function(done) {
+      bs.getHistory('1BjQwkBPE1cbpQCY4u2nt7D6cFvJscwPJg', function(error, response) {
+        expect(error).to.be.null
+        expect(response).to.deep.equal([
+          { txId: '77e491c32ec4cd877a26a2d445f28eaa34df51c9c45c1f27c2aea6e7544ec01e', confirmations: 238058 },
+          { txId: '2e251defb56108a6c7def2fc6937d113435e7d39e1d518ca0a4ab66fa38d098b', confirmations: 237739 }
+        ])
         done()
       })
     })

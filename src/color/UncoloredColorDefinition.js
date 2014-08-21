@@ -3,6 +3,7 @@ var inherits = require('util').inherits
 var Q = require('q')
 
 var ColorDefinition = require('./ColorDefinition')
+var ColorTarget = require('./ColorTarget')
 
 
 var UncoloredColorId = 0
@@ -67,7 +68,7 @@ UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
 
   Q.fcall(function() {
     targets = operationalTx.getTargets()
-    targetsTotalValue = require('./ColorTarget').sum(targets) // require loop
+    targetsTotalValue = ColorTarget.sum(targets)
 
     composedTx = operationalTx.makeComposedTx()
     composedTx.addTxOuts(targets)

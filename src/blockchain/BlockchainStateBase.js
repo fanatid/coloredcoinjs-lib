@@ -1,6 +1,7 @@
 var assert = require('assert')
 
 var _ = require('lodash')
+var Q = require('q')
 
 var Transaction = require('../tx').Transaction
 
@@ -12,7 +13,7 @@ function BlockchainStateBase() {}
 
 /**
  * @callback BlockchainStateBase~ensureInputValues
- * @param {Error|null} error
+ * @param {?Error} error
  * @param {Transaction} tx
  */
 
@@ -27,47 +28,47 @@ BlockchainStateBase.prototype.ensureInputValues = function(tx, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
-  tx = tx.clone()
+  var self = this
 
-  if (tx.ensured === true) {
-    process.nextTick(function() { cb(null, tx) })
-    return
-  }
+  Q.fcall(function() {
+    tx = tx.clone()
+    if (tx.ensured === true)
+      return tx
 
-  var _this = this
+    function processOne(index) {
+      if (index === tx.ins.length) {
+        tx.ensured = true
+        return tx
+      }
 
-  function processOne(index) {
-    if (index === tx.ins.length) {
-      tx.ensured = true
-      cb(null, tx)
-      return
-    }
+      var isCoinbase = (
+        tx.ins[index].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
+        tx.ins[index].index === 4294967295)
 
-    var isCoinbase = (
-      tx.ins[index].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
-      tx.ins[index].index === 4294967295)
+      if (isCoinbase) {
+        tx.ins[index].value = 0
+        return processOne(index+1)
+      }
 
-    if (isCoinbase) {
-      tx.ins[index].value = 0
-      processOne(index+1)
-
-    } else {
       var txId = Array.prototype.reverse.call(new Buffer(tx.ins[index].hash)).toString('hex')
 
-      _this.getTx(txId, function(error, prevTx) {
-        if (error === null) {
+      return Q.ninvoke(self, 'getTx', txId)
+        .then(function(prevTx) {
           tx.ins[index].prevTx = prevTx
           tx.ins[index].value = prevTx.outs[tx.ins[index].index].value
-          processOne(index+1)
-
-        } else {
-          cb(error, null)
-        }
-      })
+          return processOne(index+1)
+        })
     }
-  }
 
-  process.nextTick(function() { processOne(0) })
+    return processOne(0)
+
+  }).then(function(tx) {
+    cb(null, tx)
+
+  }).catch(function(error) {
+    cb(error)
+
+  }).done()
 }
 
 /**
@@ -136,9 +137,32 @@ BlockchainStateBase.prototype.sendTx = function() {
  * Get UTXO for given address
  * @abstract
  * @param {string} address
- * @param {function} cb
+ * @param {BlockchainStateBase~getUTXO} cb
  */
 BlockchainStateBase.prototype.getUTXO = function() {
+  throw new Error('getUTXO not implemented')
+}
+
+/**
+ * @typedef HistoryObject
+ * @type {Object}
+ * @property {string} txId
+ * @property {number} confirmations
+ */
+
+/**
+ * @callback BlockchainStateBase~getHistory
+ * @param {?Error} error
+ * @param {HistoryObject} records
+ */
+
+/**
+ * Get transaction Ids for given address
+ * @abstract
+ * @param {string} address
+ * @param {BlockchainStateBase~getHistory} cb
+ */
+BlockchainStateBase.prototype.getHistory = function() {
   throw new Error('getUTXO not implemented')
 }
 

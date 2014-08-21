@@ -3,6 +3,7 @@ var http = require('http')
 var inherits = require('util').inherits
 
 var _ = require('lodash')
+var Q = require('q')
 var LRU = require('lru-cache')
 var querystring = require('querystring')
 
@@ -65,7 +66,7 @@ inherits(BlockrIOAPI, BlockchainStateBase)
 
 /**
  * @callback BlockrIOAPI~request
- * @param {Error|null} error
+ * @param {?Error} error
  * @param {string} response
  */
 
@@ -184,7 +185,7 @@ BlockrIOAPI.prototype.request = function(path, data, cb) {
 
 /**
  * @callback BlockrIOAPI~getBlockCount
- * @param {Error|null} error
+ * @param {?Error} error
  * @param {number} blockCount
  */
 
@@ -206,7 +207,7 @@ BlockrIOAPI.prototype.getBlockCount = function(cb) {
 
 /**
  * @callback BlockrIOAPI~getTx
- * @param {Error|null} error
+ * @param {?Error} error
  * @param {Transaction} tx
  */
 
@@ -265,15 +266,25 @@ function parseAmount(amount) {
 }
 
 /**
- * @callback BlockrIOAPI~getUTXO
- * @param {Error|null} error
- * @param {Array} utxo Array of Objects { txId: string, outIndex: number, value: number, confrimations: number }
+ * @typedef UTXO
+ * @type {Object}
+ * @property {string} txId Transaction id
+ * @property {number} outIndex Output index
+ * @property {number} value Coin value in satoshi
+ * @property {number} confrimations Number of transaction confirmation
  */
 
 /**
- *
+ * @callback BlockrIOAPI~getUTXO
+ * @param {?Error} error
+ * @param {UTXO[]} utxo
+ */
+
+/**
+ * Get UTXO for given address
+ * @abstract
  * @param {string} address
- * @param {function} cb
+ * @param {BlockrIOAPI~getUTXO} cb
  */
 BlockrIOAPI.prototype.getUTXO = function(address, cb) {
   assert(_.isString(address), 'Expected Address address, got ' + address)
@@ -313,6 +324,57 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
 
     cb(error, error === null ? utxo : undefined)
   })
+}
+
+/**
+ * @typedef HistoryObject
+ * @type {Object}
+ * @property {string} txId
+ * @property {number} confirmations
+ */
+
+/**
+ * @callback BlockrIOAPI~getHistory
+ * @param {?Error} error
+ * @param {HistoryObject} records
+ */
+
+/**
+ * Get transaction Ids for given address
+ * @abstract
+ * @param {string} address
+ * @param {BlockrIOAPI~getHistory} cb
+ */
+BlockrIOAPI.prototype.getHistory = function(address, cb) {
+  assert(_.isString(address), 'Expected Address address, got ' + address)
+  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+
+  var self = this
+
+  Q.fcall(function() {
+    return Q.ninvoke(self, 'request', '/api/v1/address/txs/' + address)
+
+  }).then(function(response) {
+    if (response.address !== address)
+      throw new Error('response address not matched')
+
+    var records = response.txs.map(function(record) {
+      return { txId: record.tx, confirmations: record.confirmations }
+    })
+
+    records.sort(function(r1, r2) {
+      return r2.confirmations - r1.confirmations
+    })
+
+    return records
+
+  }).then(function(records) {
+    cb(null, records)
+
+  }).catch(function(error) {
+    cb(error)
+
+  }).done()
 }
 
 

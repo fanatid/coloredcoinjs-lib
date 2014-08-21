@@ -39,7 +39,7 @@ describe('blockchain.BlockchainStateBase', function() {
       bs.getTx = stubs.getTxStub([])
       bs.ensureInputValues(tx1, function(error, newTx) {
         expect(error).to.equal('notFoundTx')
-        expect(newTx).to.be.null
+        expect(newTx).to.be.undefined
         done()
       })
     })
@@ -73,5 +73,9 @@ describe('blockchain.BlockchainStateBase', function() {
 
   it('getUTXO', function() {
     expect(bs.getUTXO).to.throw(Error)
+  })
+
+  it('getHistory', function() {
+    expect(bs.getHistory).to.throw(Error)
   })
 })
