@@ -10,33 +10,26 @@ var Transaction = require('../tx').Transaction
 /**
  * @class Coin
  *
- * @param {Object} params
- * @param {ColorData} params.colorData
- * @param {ColorDefinitionManager} params.colorDefinitionManager
- * @param {string} params.address
- * @param {string} params.txId
- * @param {number} params.outIndex
- * @param {number} params.value
- * @param {number} params.confirmations
+ * @param {Object} data
+ * @param {ColorData} data.colorData
+ * @param {ColorDefinitionManager} data.colorDefinitionManager
+ * @param {string} data.txId
+ * @param {number} data.outIndex
+ * @param {number} data.value
+ * @param {string} data.script
+ * @param {string} data.address
+ * @param {boolean} data.confirmed
  */
-function Coin(params) {
-  assert(_.isObject(params), 'Expected Object params, got ' + params)
-  assert(params.colorData instanceof color.ColorData,
-    'Expected params.colorData instanceof ColorData, got ' + params.colorData)
-  assert(params.colorDefinitionManager instanceof color.ColorDefinitionManager,
-    'Expected params.colorDefinitionManager instanceof ColorDefinitionManager, got ' + params.colorDefinitionManager)
-  assert(Transaction.isTxId(params.txId), 'Expected transaction id params.txId, got ' + params.txId)
-  assert(_.isNumber(params.outIndex), 'Expected number params.outIndex, got ' + params.outIndex)
-  assert(_.isNumber(params.value), 'Expected number params.value, got ' + params.value)
-  assert(_.isNumber(params.confirmations), 'Expected number params.confirmations, got ' + params.confirmations)
+function Coin(data) {
+  this.cdManager = data.colorDefinitionManager
+  this.cData = data.colorData
 
-  this.cdManager = params.colorDefinitionManager
-  this.cData = params.colorData
-  this.address = params.address
-  this.txId = params.txId
-  this.outIndex = params.outIndex
-  this.value = params.value
-  this.confirmations = params.confirmations
+  this.txId = data.txId
+  this.outIndex = data.outIndex
+  this.value = data.value
+  this.script = data.script
+  this.address = data.address
+  this.confirmed = data.confirmed
 }
 
 /**
@@ -45,7 +38,7 @@ function Coin(params) {
  * @return {boolean}
  */
 Coin.prototype.isConfirmed = function() {
-  return this.confirmations > 0
+  return this.confirmed
 }
 
 /**
@@ -105,7 +98,7 @@ Coin.prototype.getMainColorValue = function (cb) {
 
   })
   .then(function(coinColorValue) {
-    if (coinColorValue == null)
+    if (coinColorValue === null)
       coinColorValue = new color.ColorValue(self.cdManager.getUncolored(), self.value)
 
     return coinColorValue

@@ -8,17 +8,17 @@ var CoinList = require('./CoinList')
 /**
  * @class CoinQuery
  *
- * @param {Object} opts
- * @param {BlockchainStateBase} opts.blockchain
- * @param {ColorData} opts.colorData
- * @param {ColorDefinitionManager} opts.colorDefinitionManager
- * @param {string[]} opts.addresses
+ * @param {Object} data
+ * @param {BlockchainStateBase} data.blockchain
+ * @param {ColorData} data.colorData
+ * @param {ColorDefinitionManager} data.colorDefinitionManager
+ * @param {string[]} data.addresses
  */
-function CoinQuery(opts) {
-  this.blockchain = opts.blockchain
-  this.colorData = opts.colorData
-  this.cdManager = opts.colorDefinitionManager
-  this.addresses = opts.addresses
+function CoinQuery(data) {
+  this.blockchain = data.blockchain
+  this.colorData = data.colorData
+  this.cdManager = data.colorDefinitionManager
+  this.addresses = data.addresses
 
   this.query = {
     onlyColoredAs: null,
@@ -125,35 +125,28 @@ CoinQuery.prototype.getCoins = function(cb) {
   Q.fcall(function() {
     var utxo = []
 
-    function getUTXO(index) {
-      if (addresses.length === index)
-        return utxo
+    var promises = []
+    addresses.forEach(function(address) {
+      promises.push( Q.ninvoke(self.blockchain, 'getUTXO', address).then(utxo.push.bind(utxo)) )
+    })
 
-      return Q.ninvoke(self.blockchain, 'getUTXO', addresses[index])
-        .then(function(addressUTXO) {
-          utxo = utxo.concat(addressUTXO)
-          return getUTXO(index + 1)
-        })
-    }
-
-    return getUTXO(0)
+    return Q.all(promises).then(function() { return _.flatten(utxo) })
 
   }).then(function(utxo) {
     var coins = []
 
-    function filterUTXO(index) {
-      if (utxo.length === index)
-        return coins
-
-      return Q.fcall(function() {
+    var promises = []
+    utxo.forEach(function(rawCoin) {
+      var promise = Q.fcall(function() {
         var coin = new Coin({
           colorData: self.colorData,
           colorDefinitionManager: self.cdManager,
-          address: utxo[index].address,
-          txId: utxo[index].txId,
-          outIndex: utxo[index].outIndex,
-          value: utxo[index].value,
-          confirmations: utxo[index].confirmations
+          txId: rawCoin.txId,
+          outIndex: rawCoin.outIndex,
+          value: rawCoin.value,
+          script: rawCoin.script,
+          address: rawCoin.address,
+          confirmed: rawCoin.confirmed
         })
 
         if (self.query.onlyConfirmed && !coin.isConfirmed())
@@ -171,16 +164,13 @@ CoinQuery.prototype.getCoins = function(cb) {
           .then(function(colorValue) {
             if (self.query.onlyColoredAs.indexOf(colorValue.getColorId()) !== -1)
               coins.push(coin)
-
           })
-
-      }).then(function() {
-        return filterUTXO(index + 1)
-
       })
-    }
 
-    return filterUTXO(0)
+      promises.push(promise)
+    })
+
+    return Q.all(promises).then(function() { return coins })
 
   }).done(function(coins) { cb(null, new CoinList(coins)) }, function(error) { cb(error) })
 }

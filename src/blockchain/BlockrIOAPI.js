@@ -19,6 +19,7 @@ function isHexString(s) {
           s.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
 }
 
+// Todo: rename to Blockr
 /**
  * BlockchainState that uses [Blockr.io API]{@link http://btc.blockr.io/documentation/api}
  *
@@ -98,7 +99,6 @@ BlockrIOAPI.prototype.request = function(path, data, cb) {
 
       response.on('end', function() {
         var result
-        var error = null
 
         try {
           result = JSON.parse(buf)
@@ -132,7 +132,7 @@ BlockrIOAPI.prototype.request = function(path, data, cb) {
       if (request.abort)
         request.abort()
       else
-        request.destroy
+        request.destroy()
 
       reject(new Error('Request timeout'))
     })
@@ -232,7 +232,7 @@ BlockrIOAPI.prototype.sendTx = function(tx, cb) {
 }
 
 /**
- * Parse bitcoin amount (BlockrIO give us btc value not satoshi)
+ * Parse bitcoin amount (BlockrIO give us btc value not in satoshi)
  *
  * @param {string} amount
  * @return {number}
@@ -243,18 +243,21 @@ function parseAmount(amount) {
 }
 
 /**
- * @typedef UTXO
+ * @typedef CoinObject
  * @type {Object}
- * @property {string} txId Transaction id
- * @property {number} outIndex Output index
+ * @property {string} txId
+ * @property {number} outIndex
  * @property {number} value Coin value in satoshi
- * @property {number} confrimations Number of transaction confirmation
+ * @property {string} script
+ * @property {string} address
+ * @property {boolean} confirmed
+ * @property {number} confrimations
  */
 
 /**
  * @callback BlockrIOAPI~getUTXO
  * @param {?Error} error
- * @param {UTXO[]} utxo
+ * @param {CoinObject[]} utxo
  */
 
 /**
@@ -287,10 +290,12 @@ BlockrIOAPI.prototype.getUTXO = function(address, cb) {
         throw new TypeError('bad coin value')
 
       return {
-        address: address,
         txId: coin.tx,
         outIndex: coin.n,
         value: value,
+        script: coin.script,
+        address: address,
+        confirmed: coin.confirmations > 0,
         confirmations: coin.confirmations
       }
     })

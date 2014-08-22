@@ -113,18 +113,20 @@ BlockchainStateBase.prototype.sendTx = function() {
 }
 
 /**
- * @typedef UTXO
+ * @typedef CoinObject
  * @type {Object}
- * @property {string} txId Transaction id
- * @property {number} outIndex Output index
+ * @property {string} txId
+ * @property {number} outIndex
  * @property {number} value Coin value in satoshi
- * @property {number} confrimations Number of transaction confirmation
+ * @property {string} script
+ * @property {string} address
+ * @property {boolean} confirmed
  */
 
 /**
  * @callback BlockchainStateBase~getUTXO
  * @param {?Error} error
- * @param {UTXO[]} utxo
+ * @param {CoinObject[]} utxo
  */
 
 /**

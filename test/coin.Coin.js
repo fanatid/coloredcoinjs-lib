@@ -29,7 +29,7 @@ describe('coin.Coin', function() {
         txId: 'e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc',
         outIndex: 0,
         value: 1,
-        confirmations: 1
+        confirmed: true
       })
       expect(coin.isConfirmed()).to.be.true
     })
@@ -41,7 +41,7 @@ describe('coin.Coin', function() {
         txId: 'e28907304807b7b01c09c23dc09b76968d66c3c7f75359c1c37e90e0015f1dbc',
         outIndex: 0,
         value: 1,
-        confirmations: 0
+        confirmed: false
       })
       expect(coin.isConfirmed()).to.be.false
     })

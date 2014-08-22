@@ -7,8 +7,8 @@ var SyncStorage = require('./SyncStorage')
 
 /**
  * @typedef {Object} ColorDefinitionRecord
- * @param {number} id
- * @param {string} schemes
+ * @property {number} id
+ * @property {string} schemes
  */
 
 /**
