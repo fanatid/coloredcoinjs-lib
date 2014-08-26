@@ -100,4 +100,5 @@ ColorDefinitionStorage.prototype.clear = function() {
   this.store.remove(this.colorDefinitionsDBKey)
 }
 
+
 module.exports = ColorDefinitionStorage

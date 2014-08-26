@@ -4,7 +4,7 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
-var Transaction = require('../tx').Transaction
+var Transaction = require('./Transaction')
 
 
 /**

@@ -47,20 +47,20 @@ module.exports = function(grunt) {
       coverage: {
         src: 'test',
         options: {
-          excludes: ['mocks.js', 'stubs.js'],
+          excludes: ['helpers.js', 'mocks.js', 'stubs.js'],
           mask: '*.js',
           reporter: 'spec',
-          timeout: 8000
+          timeout: 10000
         }
       },
       coveralls: {
         src: 'test',
         options: {
           coverage: true,
-          excludes: ['mocks.js', 'stubs.js'],
+          excludes: ['helpers.js', 'mocks.js', 'stubs.js'],
           mask: '*.js',
           reporter: 'spec',
-          timeout: 8000
+          timeout: 10000
         }
       }
     },
@@ -68,7 +68,7 @@ module.exports = function(grunt) {
       test: {
         options: {
           reporter: 'spec',
-          timeout: 8000
+          timeout: 10000
         },
         src: ['test/*.js']
       }

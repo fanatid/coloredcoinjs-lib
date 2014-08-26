@@ -1,18 +1,18 @@
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
-var ColorDefinition = cclib.color.ColorDefinition
-var EPOBCColorDefinition = cclib.color.EPOBCColorDefinition
+var ColorDefinition = cclib.ColorDefinition
+var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 
 
-describe('color.ColorDefinitionManager', function() {
+describe('ColorDefinitionManager', function() {
   var cdManager, cdStorage
   var epobcScheme1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
   var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function() {
-    cdStorage = new cclib.storage.ColorDefinitionStorage()
-    cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
+    cdStorage = new cclib.ColorDefinitionStorage()
+    cdManager = new cclib.ColorDefinitionManager(cdStorage)
   })
 
   afterEach(function() {

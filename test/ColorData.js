@@ -6,17 +6,16 @@ var mocks = require('./mocks')
 var stubs = require('./stubs')
 
 
-describe('color.ColorData', function() {
-  var cdStorage, bs, epobc, tx1, tx2, cData
+describe('ColorData', function() {
+  var cdStorage, epobc, tx1, tx2, cData
 
   beforeEach(function() {
-    cdStorage = new cclib.storage.ColorDataStorage()
-    bs = new cclib.blockchain.BlockchainStateBase()
-    epobc = new cclib.color.EPOBCColorDefinition(1,
+    cdStorage = new cclib.ColorDataStorage()
+    epobc = new cclib.EPOBCColorDefinition(1,
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
-    tx1 = new cclib.tx.Transaction()
-    tx2 = new cclib.tx.Transaction()
-    cData = new cclib.color.ColorData(cdStorage, bs)
+    tx1 = new cclib.Transaction()
+    tx2 = new cclib.Transaction()
+    cData = new cclib.ColorData(cdStorage)
   })
 
   afterEach(function() {
@@ -35,7 +34,7 @@ describe('color.ColorData', function() {
     it('return ColorValue instance', function() {
       cdStorage.add({ colorId: epobc.getColorId(), txId: txId, outIndex: 0, value: 10 })
       colorValue = cData.fetchColorValue(txId, 0, epobc)
-      expect(colorValue).to.be.instanceof(cclib.color.ColorValue)
+      expect(colorValue).to.be.instanceof(cclib.ColorValue)
       expect(colorValue.getValue()).to.equal(10)
     })
   })
@@ -49,7 +48,7 @@ describe('color.ColorData', function() {
         outIndex: 1,
         value: 1
       })
-      cData.scanTx(tx1, [], epobc, function(error) {
+      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]), function(error) {
         expect(error).to.be.null
         done()
       })
@@ -58,7 +57,7 @@ describe('color.ColorData', function() {
     it('runKernel return error', function(done) {
       epobc.runKernel = function(_, _, _, cb) { cb('error.runKernel') }
       epobc.genesis.txId = tx1.getId()
-      cData.scanTx(tx1, [], epobc, function(error) {
+      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]), function(error) {
         expect(error).to.equal('error.runKernel')
         done()
       })
@@ -69,14 +68,13 @@ describe('color.ColorData', function() {
       tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
       tx2.addInput(tx1.getId(), 0, 51 | (2<<6))
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      bs.getTx = stubs.getTxStub([tx1])
       cdStorage.add({
         colorId: 1,
         txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
         outIndex: 0,
         value: 6
       })
-      cData.scanTx(tx2, [], epobc, function(error) {
+      cData.scanTx(tx2, [], epobc, stubs.getTxStub([tx1]), function(error) {
         expect(error).to.be.null
         done()
       })
@@ -87,10 +85,9 @@ describe('color.ColorData', function() {
       tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
       tx2.addInput(tx1.getId(), 0, 51 | (2<<6))
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      bs.getTx = stubs.getTxStub([tx1])
       cdStorage.add({ colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6 })
       cdStorage.add = function() { throw new Error('error.scanTx') }
-      cData.scanTx(tx2, [0], epobc, function(error) {
+      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]), function(error) {
         expect(error).to.be.instanceof(Error)
         expect(error.message).to.equal('error.scanTx')
         done()
@@ -102,9 +99,8 @@ describe('color.ColorData', function() {
       tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
       tx2.addInput(tx1.getId(), 0, 51 | (2<<6))
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      bs.getTx = stubs.getTxStub([tx1])
       cdStorage.add({ colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6 })
-      cData.scanTx(tx2, [0], epobc, function(error) {
+      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]), function(error) {
         expect(error).to.be.null
         var record = cdStorage.get({
           colorId: 1,
@@ -120,9 +116,8 @@ describe('color.ColorData', function() {
   describe('getColorValue', function() {
     it('blockchainState.getTx return error', function(done) {
       cData.fetchColorValue = function() { return null }
-      bs.getTx = stubs.getTxStub([])
-      cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
-        expect(error).to.equal('notFoundTx')
+      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([]), function(error, colorValue) {
+        expect(error).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
         expect(colorValue).to.be.undefined
         done()
       })
@@ -130,9 +125,8 @@ describe('color.ColorData', function() {
 
     it('colorDefinition.getAffectingInputs return error', function(done) {
       cData.fetchColorValue = function() { return null }
-      bs.getTx = stubs.getTxStub([tx1])
       epobc.getAffectingInputs = function(_, _, _, cb) { cb('error.getAffectingInputs') }
-      cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
+      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([tx1]), function(error, colorValue) {
         expect(error).to.equal('error.getAffectingInputs')
         expect(colorValue).to.be.undefined
         done()
@@ -142,10 +136,9 @@ describe('color.ColorData', function() {
     it('this.scanTx return error', function(done) {
       tx1.addInput(tx2.getId(), 0, 37)
       cData.fetchColorValue = function() { return null }
-      bs.getTx = stubs.getTxStub([tx1, tx2])
       epobc.getAffectingInputs = function(_, _, _, cb) { cb(null, [tx1.ins[0]]) }
-      cData.scanTx = function(_, _, _, cb) { cb('error.scanTx') }
-      cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
+      cData.scanTx = function(_, _, _, _, cb) { cb('error.scanTx') }
+      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([tx1, tx2]), function(error, colorValue) {
         expect(error).to.equal('error.scanTx')
         expect(colorValue).to.be.undefined
         done()
@@ -154,8 +147,8 @@ describe('color.ColorData', function() {
 
     it('already in store', function(done) {
       cdStorage.add({ colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15 })
-      cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
-        expect(colorValue).to.be.instanceof(cclib.color.ColorValue)
+      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([]), function(error, colorValue) {
+        expect(colorValue).to.be.instanceof(cclib.ColorValue)
         expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
         expect(colorValue.getValue()).to.be.equal(15)
         done()
@@ -174,7 +167,7 @@ describe('color.ColorData', function() {
 
       cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
         expect(error).to.be.null
-        expect(colorValue).to.be.instanceof(cclib.color.ColorValue)
+        expect(colorValue).to.be.instanceof(cclib.ColorValue)
         expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
         expect(colorValue.getValue()).to.be.equal(1)
         done()

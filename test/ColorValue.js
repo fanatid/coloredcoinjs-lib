@@ -1,13 +1,13 @@
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
-var ColorDefinition = cclib.color.ColorDefinition
-var ColorValue = cclib.color.ColorValue
+var ColorDefinition = cclib.ColorDefinition
+var ColorValue = cclib.ColorValue
 
 
-describe('color.ColorValue', function() {
-  var cdStorage = new cclib.storage.ColorDefinitionStorage() // not need clear, cdManager use only uncolored
-  var cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
+describe('ColorValue', function() {
+  var cdStorage = new cclib.ColorDefinitionStorage() // not need clear, cdManager use only uncolored
+  var cdManager = new cclib.ColorDefinitionManager(cdStorage)
   var uncoloredColorDefinition = cdManager.getUncolored()
   var cv1, cv2
 

@@ -8,8 +8,7 @@ var ColorDefinition = require('./ColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorValue = require('./ColorValue')
 var ColorTarget = require('./ColorTarget')
-var blockchain = require('../blockchain')
-var Transaction = require('../tx').Transaction
+var Transaction = require('./Transaction')
 var groupTargetsByColor = require('./util').groupTargetsByColor
 
 
@@ -308,25 +307,23 @@ EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
  *
  * @param {Transaction} tx
  * @param {?ColorValue[]} colorValueSet
- * @param {coloredcoinlib.blockchain.BlockchainState} bs
+ * @param {function} getTxFn
  * @param {EPOBCColorDefinition~runKernel} cb
  */
-EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
+EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
   assert(_.isArray(colorValueSet), 'Expected Array colorValueSet, got ' + colorValueSet)
   assert(colorValueSet.every(function(cv) { return (cv === null || cv instanceof ColorValue) }),
     'Expected colorValueSet Array colorValues|null, got ' + colorValueSet)
-  assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   var self = this
 
   Q.fcall(function() {
-    var outColorValues = []
     var tag = getTag(tx)
 
     if (tag === null || tag.isGenesis) {
-      outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
+      var outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
 
       if (tag !== null && self.isSpecialTx(tx)) {
         var valueWop = tx.outs[0].value - tag.getPadding()
@@ -338,42 +335,34 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
       return outColorValues
     }
 
-    function scanOutTx(tx, outIndex) {
-      if (outIndex === tx.outs.length)
-        return outColorValues
+    var padding = tag.getPadding()
 
-      var padding = tag.getPadding()
-      var outValueWop = tx.outs[outIndex].value - padding
+    return Q.ninvoke(tx, 'ensureInputValues', getTxFn).then(function(tx) {
+      var promises = tx.outs.map(function(output, outIndex) {
+        var outValueWop = output.value - padding
 
-      if (outValueWop <= 0) {
-        outColorValues.push(null)
-        return scanOutTx(tx, outIndex+1)
-      }
+        if (outValueWop <= 0)
+          return null
 
-      var affectingInputs = getXferAffectingInputs(tx, padding, outIndex)
-      var allColored = affectingInputs.every(function(ai) {
-        return (colorValueSet[ai] !== null && !_.isUndefined(colorValueSet[ai]))
+        var affectingInputs = getXferAffectingInputs(tx, padding, outIndex)
+        var allColored = affectingInputs.every(function(ai) {
+          return (colorValueSet[ai] !== null && !_.isUndefined(colorValueSet[ai]))
+        })
+
+        if (!allColored)
+          return null
+
+        var colorValues = [new ColorValue(self, 0 )]
+        colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
+
+        var totalColorValue = ColorValue.sum(colorValues)
+        if (totalColorValue.getValue() < outValueWop)
+          return null
+
+        return new ColorValue(self, outValueWop)
       })
 
-      if (!allColored) {
-        outColorValues.push(null)
-        return scanOutTx(tx, outIndex+1)
-      }
-
-      var colorValues = [new ColorValue(self, 0 )]
-      colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
-
-      var totalColorValue = ColorValue.sum(colorValues)
-      if (totalColorValue.getValue() >= outValueWop)
-        outColorValues.push(new ColorValue(self, outValueWop))
-      else
-        outColorValues.push(null)
-
-      return scanOutTx(tx, outIndex+1)
-    }
-
-    return Q.ninvoke(bs, 'ensureInputValues', tx).then(function(tx) {
-      return scanOutTx(tx, 0)
+      return Q.all(promises)
     })
 
   }).done(function(colorValues) { cb(null, colorValues) }, function(error) { cb(error) })
@@ -391,15 +380,14 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, bs, cb) {
  *
  * @param {Transaction} tx
  * @param {number[]} outputSet
- * @param {BlockchainStateBase} bs
+ * @param {function} getTxFn
  * @param {function} cb
  */
-EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, cb) {
+EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, getTxFn, cb) {
   assert(tx instanceof Transaction, 'Expected tx instance of Transaction, got ' + tx)
   assert(_.isArray(outputSet), 'Expected Array outputSet, got ' + outputSet)
   assert(outputSet.every(function(oi) { return _.isNumber(oi) }),
     'Expected outputSet Array numbers, got ' + outputSet)
-  assert(bs instanceof blockchain.BlockchainStateBase, 'Expected BlockchainState bs, got ' + bs)
   assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
 
   Q.fcall(function() {
@@ -408,18 +396,17 @@ EPOBCColorDefinition.prototype.getAffectingInputs = function(tx, outputSet, bs, 
       return []
 
     var padding = tag.getPadding()
-    return Q.ninvoke(bs, 'ensureInputValues', tx)
-      .then(function(tx) {
-        var aii = {}
+    return Q.ninvoke(tx, 'ensureInputValues', getTxFn).then(function(tx) {
+      var aii = {}
 
-        outputSet.forEach(function(outIndex) {
-          getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-            aii[ai] = 1
-          })
+      outputSet.forEach(function(outIndex) {
+        getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
+          aii[ai] = 1
         })
-
-        return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
       })
+
+      return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
+    })
 
   }).done(function(result) { cb(null, result) }, function(error) { cb(error) })
 }

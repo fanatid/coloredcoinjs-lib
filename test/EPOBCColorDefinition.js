@@ -1,28 +1,26 @@
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
-var EPOBCColorDefinition = cclib.color.EPOBCColorDefinition
+var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 var mocks = require('./mocks')
 var stubs = require('./stubs')
 
 var fixtures = require('./fixtures/color.EPOBCColorDefinition')
 
 
-describe('color.EPOBCColorDefinition', function() {
-  var bs
+describe('EPOBCColorDefinition', function() {
   var epobc
   var tx1, tx2
 
   beforeEach(function() {
-    bs = new cclib.blockchain.BlockchainStateBase()
     epobc = new EPOBCColorDefinition({ colorId: 1 },
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
-    tx1 = new cclib.tx.Transaction()
-    tx2 = new cclib.tx.Transaction()
+    tx1 = new cclib.Transaction()
+    tx2 = new cclib.Transaction()
   })
 
   it('inherits ColorDefinition', function() {
-    expect(epobc).to.be.instanceof(cclib.color.ColorDefinition)
+    expect(epobc).to.be.instanceof(cclib.ColorDefinition)
     expect(epobc).to.be.instanceof(EPOBCColorDefinition)
   })
 
@@ -33,8 +31,8 @@ describe('color.EPOBCColorDefinition', function() {
     })
 
     it('create new EPOBCColorDefinition', function() {
-      epobc = EPOBCColorDefinition.fromScheme(epobc.getColorId(), epobc.getScheme())
-      expect(epobc).to.deep.equal(epobc)
+      var epobc2 = EPOBCColorDefinition.fromScheme(epobc.getColorId(), epobc.getScheme())
+      expect(epobc2).to.deep.equal(epobc)
     })
   })
 
@@ -167,9 +165,8 @@ describe('color.EPOBCColorDefinition', function() {
   describe('runKernel', function() {
     it('ensureInputValues return error', function(done) {
       tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      bs.getTx = stubs.getTxStub([])
-      epobc.runKernel(tx1, [], bs, function(error, result) {
-        expect(error).to.equal('notFoundTx')
+      epobc.runKernel(tx1, [], stubs.getTxStub([]), function(error, result) {
+        expect(error).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
         expect(result).to.be.undefined
         done()
       })
@@ -184,11 +181,11 @@ describe('color.EPOBCColorDefinition', function() {
 
         var colorValueSet = f.inColorValues.map(function(cv) {
           if (cv !== null)
-            cv = new cclib.color.ColorValue(epobc, cv)
+            cv = new cclib.ColorValue(epobc, cv)
           return cv
         })
 
-        epobc.runKernel(tx1, colorValueSet, bs, function(error, result) {
+        epobc.runKernel(tx1, colorValueSet, stubs.getTxStub([]), function(error, result) {
           expect(error).to.be.null
           expect(result).to.be.instanceof(Array)
 
@@ -204,7 +201,7 @@ describe('color.EPOBCColorDefinition', function() {
   describe('getAffectingInputs', function() {
     it('tag is null', function(done) {
       tx1.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      epobc.getAffectingInputs(tx1, [], bs, function(error, inputs) {
+      epobc.getAffectingInputs(tx1, [], stubs.getTxStub([]), function(error, inputs) {
         expect(error).to.be.null
         expect(inputs).to.deep.equal([])
         done()
@@ -213,7 +210,7 @@ describe('color.EPOBCColorDefinition', function() {
 
     it('tag.isGenesis is true', function(done) {
       tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
-      epobc.getAffectingInputs(tx1, [], bs, function(error, inputs) {
+      epobc.getAffectingInputs(tx1, [], stubs.getTxStub([]), function(error, inputs) {
         expect(error).to.be.null
         expect(inputs).to.deep.equal([])
         done()
@@ -222,9 +219,8 @@ describe('color.EPOBCColorDefinition', function() {
 
     it('ensureInputValues return error', function(done) {
       tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      bs.getTx = stubs.getTxStub([])
-      epobc.getAffectingInputs(tx1, [], bs, function(error, inputs) {
-        expect(error).to.equal('notFoundTx')
+      epobc.getAffectingInputs(tx1, [], stubs.getTxStub([]), function(error, inputs) {
+        expect(error).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
         expect(inputs).to.be.undefined
         done()
       })
@@ -235,8 +231,7 @@ describe('color.EPOBCColorDefinition', function() {
       tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
       tx2.addInput(tx1.getId(), 0, 51 | (2<<6))
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      bs.getTx = stubs.getTxStub([tx1])
-      epobc.getAffectingInputs(tx2, [0, 0], bs, function(error, inputs) {
+      epobc.getAffectingInputs(tx2, [0, 0], stubs.getTxStub([tx1]), function(error, inputs) {
         expect(error).to.be.null
         tx2.ins[0].prevTx = tx1
         tx2.ins[0].value = 11

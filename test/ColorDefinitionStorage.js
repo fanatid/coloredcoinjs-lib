@@ -3,13 +3,13 @@ var expect = require('chai').expect
 var cclib = require('../src/index')
 
 
-describe('storage.ColorDefinitionStorage', function() {
+describe('ColorDefinitionStorage', function() {
   var cdStore
   var epobcScheme1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
   var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function() {
-    cdStore = new cclib.storage.ColorDefinitionStorage()
+    cdStore = new cclib.ColorDefinitionStorage()
   })
 
   afterEach(function() {
@@ -17,8 +17,8 @@ describe('storage.ColorDefinitionStorage', function() {
   })
 
   it('inherits SyncStorage', function() {
-    expect(cdStore).to.be.instanceof(cclib.storage.SyncStorage)
-    expect(cdStore).to.be.instanceof(cclib.storage.ColorDefinitionStorage)
+    expect(cdStore).to.be.instanceof(cclib.SyncStorage)
+    expect(cdStore).to.be.instanceof(cclib.ColorDefinitionStorage)
   })
 
   it('add/add/get/get', function() {

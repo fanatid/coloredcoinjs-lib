@@ -1,16 +1,16 @@
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
-var ColorSet = cclib.color.ColorSet
+var ColorSet = cclib.ColorSet
 
 
-describe('color.ColorSet', function() {
+describe('ColorSet', function() {
   var cdStorage, cdManager
   var colorSet
 
   beforeEach(function() {
-    cdStorage = new cclib.storage.ColorDefinitionStorage()
-    cdManager = new cclib.color.ColorDefinitionManager(cdStorage)
+    cdStorage = new cclib.ColorDefinitionStorage()
+    cdManager = new cclib.ColorDefinitionManager(cdStorage)
   })
 
   afterEach(function() {

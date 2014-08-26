@@ -3,29 +3,22 @@ var assert = require('assert')
 var _ = require('lodash')
 var Q = require('q')
 
-var BlockchainStateBase = require('../blockchain').BlockchainStateBase
 var ColorDefinition = require('./ColorDefinition')
 var ColorValue = require('./ColorValue')
-var ColorDataStorage = require('../storage').ColorDataStorage
-var Transaction = require('../tx').Transaction
+var ColorDataStorage = require('./ColorDataStorage')
+var Transaction = require('./Transaction')
 
 
 /**
  * @class ColorData
  *
- * Color data which needs access to the blockchain state up to the genesis of color
- *
  * @param {ColorDataStorage} storage
- * @param {blockchain.BlockchainStateBase} blockchain
  */
-function ColorData(storage, blockchain) {
+function ColorData(storage) {
   assert(storage instanceof ColorDataStorage,
     'Expected storage instance of ColorDataStorage, got ' + storage)
-  assert(blockchain instanceof BlockchainStateBase,
-    'Expected blockchain instance of BlockchainStateBase, got ' + blockchain)
 
   this.storage = storage
-  this.blockchain = blockchain
 }
 
 /**
@@ -66,9 +59,10 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
  * @param {Transaction} tx
  * @param {?number[]} outputIndices
  * @param {ColorDefinition} colorDefinition
+ * @param {function} getTxFn
  * @param {ColorData~scanTx} cb Called on finished with params (error)
  */
-ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
+ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxFn, cb) {
   assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
   assert(_.isArray(outputIndices) || _.isNull(outputIndices), 'Expected Array|null outputIndices, got ' + outputIndices)
   if (_.isArray(outputIndices))
@@ -102,20 +96,19 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
     if (empty && !colorDefinition.isSpecialTx(tx))
       return
 
-    return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, self.blockchain)
-      .then(function(outColorValues) {
-        outColorValues.forEach(function(colorValue, index) {
-          var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
+    return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn).then(function(outColorValues) {
+      outColorValues.forEach(function(colorValue, index) {
+        var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
 
-          if (!skipAdd)
-            self.storage.add({
-              colorId: colorDefinition.getColorId(),
-              txId: tx.getId(),
-              outIndex: index,
-              value: colorValue.getValue()
-            })
-        })
+        if (!skipAdd)
+          self.storage.add({
+            colorId: colorDefinition.getColorId(),
+            txId: tx.getId(),
+            outIndex: index,
+            value: colorValue.getValue()
+          })
       })
+    })
 
   }).done(function(){ cb(null) }, function(error) { cb(error) })
 }
@@ -133,9 +126,10 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, cb) {
  * @param {string} txId
  * @param {number} outIndex
  * @param {ColorDefinition} colorDefinition
+ * @param {function} getTxFn
  * @param {ColorData~getColorValue} cb
  */
-ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb) {
+ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, getTxFn, cb) {
   assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
   assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
   assert(colorDefinition instanceof ColorDefinition,
@@ -158,7 +152,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb
         return
 
       function processTx(tx) {
-        return Q.ninvoke(colorDefinition, 'getAffectingInputs', tx, [outIndex], self.blockchain)
+        return Q.ninvoke(colorDefinition, 'getAffectingInputs', tx, [outIndex], getTxFn)
           .then(function(inputs) {
             var promise = Q()
 
@@ -170,7 +164,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb
             })
 
             promise = promise.then(function() {
-              return Q.ninvoke(self, 'scanTx', tx, null, colorDefinition)
+              return Q.ninvoke(self, 'scanTx', tx, null, colorDefinition, getTxFn)
 
             })
 
@@ -178,7 +172,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, cb
           })
       }
 
-      return Q.ninvoke(self.blockchain, 'getTx', txId).then(processTx)
+      return Q.nfcall(getTxFn, txId).then(processTx)
     }
 
     return Q.fcall(processOne, txId, outIndex)

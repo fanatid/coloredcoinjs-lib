@@ -4,7 +4,7 @@ var _ = require('lodash')
 
 var EPOBCColorDefinition = require('./EPOBCColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
-var ColorDefinitionStorage = require('../storage').ColorDefinitionStorage
+var ColorDefinitionStorage = require('./ColorDefinitionStorage')
 
 
 /**

@@ -1,6 +1,7 @@
 var inherits = require('util').inherits
 
 var _ = require('lodash')
+var Q = require('q')
 
 var bitcoin = require('bitcoinjs-lib')
 
@@ -87,6 +88,48 @@ Transaction.prototype.clone = function() {
   })
 
   return newTx
+}
+
+/**
+ * @callback Transaction~ensureInputValues
+ * @param {?Error} error
+ * @param {Transaction} tx
+ */
+
+/**
+ * Get previous transaction for all inputs and
+ *  return new transaction via callback cb
+ *
+ * @param {function} getTxFn
+ * @param {Transaction~ensureInputValues} cb
+ */
+Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
+  tx = this.clone()
+
+  Q.fcall(function() {
+    if (tx.ensured === true)
+      return tx
+
+    var promises = tx.ins.map(function(input, index) {
+      var isCoinbase = (
+        input.hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
+        input.index === 4294967295)
+
+      if (isCoinbase) {
+        input.value = 0
+        return
+      }
+
+      var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
+      return Q.nfcall(getTxFn, txId).then(function(prevTx) {
+        input.prevTx = prevTx
+        input.value = prevTx.outs[input.index].value
+      })
+    })
+
+    return Q.all(promises).then(function() { tx.ensured = true })
+
+  }).done(function() { cb(null, tx) }, function(error) { cb(error) })
 }
 
 
