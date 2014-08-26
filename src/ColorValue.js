@@ -69,10 +69,7 @@ ColorValue.prototype.checkCompatibility = function(other) {
 ColorValue.prototype.plus = function(other) {
   this.checkCompatibility(other)
 
-  var newColorValue = this.clone()
-  newColorValue.value += other.value
-
-  return newColorValue
+  return new ColorValue(this.getColorDefinition(), this.getValue() + other.getValue())
 }
 
 /**
@@ -81,10 +78,7 @@ ColorValue.prototype.plus = function(other) {
  * @return {ColorValue}
  */
 ColorValue.prototype.neg = function() {
-  var newColorValue = this.clone()
-  newColorValue.value = -newColorValue.value
-
-  return newColorValue
+  return new ColorValue(this.getColorDefinition(), -this.getValue())
 }
 
 /**
@@ -102,13 +96,13 @@ ColorValue.prototype.minus = function(other) {
  * Sum values of colorValues
  *
  * @param {ColorValue[]} colorValues
- * @throws {TypeError} If colorValues not incompatible
+ * @throws {(Error|TypeError)} If colorValues.length equal zero or colorValues not incompatible
  */
 ColorValue.sum = function(colorValues) {
-  // Todo add RangeError
-  var totalColorValue = colorValues.reduce(function(a, b) { return a.plus(b) })
+  if (colorValues.length === 0)
+    throw new Error('colorValues length must be least 1')
 
-  return totalColorValue
+  return colorValues.reduce(function(a, b) { return a.plus(b) })
 }
 
 

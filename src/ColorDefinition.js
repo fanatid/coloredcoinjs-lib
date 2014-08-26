@@ -44,7 +44,7 @@ ColorDefinition.prototype.getScheme = function() {
  * @param {string} scheme
  * @return {ColorDefinition}
  */
-ColorDefinition.fromScheme = function() {
+ColorDefinition.prototype.fromScheme = function() {
   throw new Error('ColorDefinition.fromScheme not implemented')
 }
 
@@ -60,7 +60,7 @@ ColorDefinition.fromScheme = function() {
  * @param {OperationalTx} operationalTx
  * @param {ColorDefinition~makeComposedTx} cb
  */
-ColorDefinition.makeComposedTx = function() {
+ColorDefinition.prototype.makeComposedTx = function() {
   throw new Error('ColorDefinition.makeComposedTx not implemented')
 }
 

@@ -22,6 +22,16 @@ describe('ColorSet', function() {
     expect(colorSet.getColorHash()).to.equal('6xgXQgnviwX5Lk')
   })
 
+  it('getColorSchemes', function() {
+    colorSet = new ColorSet(cdManager, [''])
+    expect(colorSet.getColorSchemes()).to.deep.equal([''])
+  })
+
+  it('getColorDefinitions', function() {
+    colorSet = new ColorSet(cdManager, [''])
+    expect(colorSet.getColorDefinitions()).to.deep.equal([cdManager.getUncolored()])
+  })
+
   it('getColorIds', function() {
     colorSet = new ColorSet(cdManager, [''])
     expect(colorSet.getColorIds()).to.deep.equal([0])
