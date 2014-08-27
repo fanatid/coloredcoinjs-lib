@@ -42,8 +42,7 @@
   },
   "testling": {
     "harness": "mocha-bdd",
-    "html": "test/index.html",
-    "preprocess": "grunt compile_test",
+    "files": "test/*.js",
     "browsers": [
       "chrome/20..latest",
       "firefox/21..latest",
