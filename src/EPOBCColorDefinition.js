@@ -585,11 +585,11 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
  * @param {OperationalTx} operationalTx
  * @param {EPOBCColorDefinition~composeGenesisTx} cb
  */
-EPOBCColorDefinition.prototype.composeGenesisTx = function(operationalTx, cb) {
+EPOBCColorDefinition.composeGenesisTx = function(operationalTx, cb) {
   var composedTx, uncoloredNeeded, tag
 
   Q.fcall(function() {
-    if (operationalTx.getTargets.length !== 1)
+    if (operationalTx.getTargets().length !== 1)
       throw new Error('genesis transaction need exactly one target')
 
     var gTarget = operationalTx.getTargets()[0]
@@ -600,7 +600,7 @@ EPOBCColorDefinition.prototype.composeGenesisTx = function(operationalTx, cb) {
     var paddingNeeded = operationalTx.getDustThreshold().getValue() - gValue
     tag = new Tag(Tag.closestPaddingCode(paddingNeeded), true)
 
-    var composedTx = operationalTx.makeComposedTx()
+    composedTx = operationalTx.makeComposedTx()
     composedTx.addTxOut({ address: gTarget.getAddress(), value: tag.getPadding() + gValue })
 
     uncoloredNeeded = new ColorValue(new UncoloredColorDefinition(), tag.getPadding() + gValue)
