@@ -3,6 +3,7 @@ module.exports = {
 
   /** Color Defintions */
   ColorDefinition: require('./ColorDefinition'),
+  GenesisColorDefinition: require('./GenesisColorDefinition'),
   UncoloredColorDefinition: require('./UncoloredColorDefinition'),
   EPOBCColorDefinition: require('./EPOBCColorDefinition'),
   ColorDefinitionStorage: require('./ColorDefinitionStorage'),

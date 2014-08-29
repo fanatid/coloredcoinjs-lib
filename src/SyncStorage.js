@@ -13,19 +13,15 @@ var store = require('store')
  * @param {string} [opts.globalPrefix=cc_]
  */
 function SyncStorage(opts) {
-  opts = _.isUndefined(opts) ? {} : opts
+  opts = _.extend({
+    globalPrefix: 'cc_'
+  }, opts)
 
-  assert(_.isObject(opts), 'Expected Object opts, got ' + opts)
-  assert(_.isUndefined(opts.globalPrefix) || _.isString(opts.globalPrefix),
-    'Expected string opts.globalPrefix, got ' + opts.globalPrefix)
+  this.globalPrefix = opts.globalPrefix
 
-  this.globalPrefix = 'cc_'
-  if (_.isString(opts.globalPrefix))
-    this.globalPrefix = opts.globalPrefix
-
-
-  if (store.disabled)
-    throw new Error('localStorage is not supported!')
+  // If localStorage not available, data will be saved into memory
+  //if (store.disabled)
+  //  throw new Error('localStorage is not supported!')
   this.store = store
 }
 

@@ -104,13 +104,13 @@ Transaction.prototype.clone = function() {
  * @param {Transaction~ensureInputValues} cb
  */
 Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
-  tx = this.clone()
+  var tx = this.clone()
 
   Q.fcall(function() {
     if (tx.ensured === true)
       return tx
 
-    var promises = tx.ins.map(function(input, index) {
+    var promises = tx.ins.map(function(input) {
       var isCoinbase = (
         input.hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
         input.index === 4294967295)

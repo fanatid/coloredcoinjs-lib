@@ -69,10 +69,6 @@ ComposedTx.prototype.addTxOut = function(data) {
  * @param {ColorTarget[]} colorTargets
  */
 ComposedTx.prototype.addTxOuts = function(colorTargets) {
-  colorTargets = colorTargets.map(function(target) {
-    return { target: target }
-  })
-
   colorTargets.forEach(this.addTxOut.bind(this))
 }
 
@@ -92,10 +88,11 @@ ComposedTx.prototype.getTxOuts = function() {
  * @param {number} [extra.bytes=0]
  */
 ComposedTx.prototype.estimateSize = function(extra) {
-  extra = _.isUndefined(extra) ? {} : extra
-  extra.txIns  = _.isUndefined(extra.txIns)  ? 0 : extra.txIns
-  extra.txOuts = _.isUndefined(extra.txOuts) ? 0 : extra.txOuts
-  extra.bytes  = _.isUndefined(extra.bytes)  ? 0 : extra.bytes
+  extra = _.extend({
+    txIns:  0,
+    txOuts: 0,
+    bytes:  0
+  }, extra)
 
   var size = (181 * (this.txIns.length + extra.txIns) +
               34 * (this.txOuts.length + extra.txOuts) + 
@@ -113,8 +110,11 @@ ComposedTx.prototype.estimateSize = function(extra) {
  * @param {number} [extra.bytes=0]
  */
 ComposedTx.prototype.estimateRequiredFee = function(extra) {
-  extra = _.isUndefined(extra) ? {} : extra
-  extra.txOuts = _.isUndefined(extra.txOuts) ? 1 : extra.txOuts
+  extra = _.extend({
+    txIns:  0,
+    txOuts: 1,
+    bytes:  0
+  }, extra)
 
   var size = this.estimateSize(extra)
   var fee = this.operationalTx.getRequiredFee(size)

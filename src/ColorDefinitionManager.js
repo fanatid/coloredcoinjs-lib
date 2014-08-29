@@ -2,8 +2,9 @@ var assert = require('assert')
 
 var _ = require('lodash')
 
-var EPOBCColorDefinition = require('./EPOBCColorDefinition')
+var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
+var EPOBCColorDefinition = require('./EPOBCColorDefinition')
 var ColorDefinitionStorage = require('./ColorDefinitionStorage')
 
 
@@ -44,10 +45,33 @@ function ColorDefinitionManager(storage) {
 /**
  * Get uncolored ColorDefinition
  *
- * @return {ColorDefinition}
+ * @return {UncoloredColorDefinition}
  */
 ColorDefinitionManager.prototype.getUncolored = function() {
   return new UncoloredColorDefinition()
+}
+
+/**
+ * Get genesis ColorDefinition for issue coins
+ *
+ * @return {GenesisColorDefinition}
+ */
+ColorDefinitionManager.prototype.getGenesis = function() {
+  return new GenesisColorDefinition()
+}
+
+/**
+ * @param {string} type
+ * @return {?(EPOBCColorDefinition)}
+ */
+ColorDefinitionManager.prototype.getColorDefenitionClsForType = function(type) {
+  switch (type) {
+    case 'epobc':
+      return EPOBCColorDefinition
+
+    default:
+      return null
+  }
 }
 
 /**

@@ -71,7 +71,7 @@ UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
     targetsTotalValue = ColorTarget.sum(targets)
 
     composedTx = operationalTx.makeComposedTx()
-    composedTx.addTxOuts(targets)
+    composedTx.addTxOuts(targets.map(function(target) { return {target: target} }))
 
     return Q.ninvoke(operationalTx, 'selectCoins', targetsTotalValue, composedTx)
 

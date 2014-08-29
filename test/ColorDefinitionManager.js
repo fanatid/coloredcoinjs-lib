@@ -1,7 +1,6 @@
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
-var ColorDefinition = cclib.ColorDefinition
 var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 
 
@@ -20,12 +19,32 @@ describe('ColorDefinitionManager', function() {
   })
 
   describe('getUncolored', function() {
-    it('is ColorDefinition', function() {
-      expect(cdManager.getUncolored()).to.be.instanceof(ColorDefinition)
+    it('is UncoloredColorDefinition', function() {
+      expect(cdManager.getUncolored()).to.be.instanceof(cclib.UncoloredColorDefinition)
     })
 
     it('colorId is 0', function() {
       expect(cdManager.getUncolored().getColorId()).to.equal(0)
+    })
+  })
+
+  describe('getGenesis', function() {
+    it('is GenesisColorDefinition', function() {
+      expect(cdManager.getGenesis()).to.be.instanceof(cclib.GenesisColorDefinition)
+    })
+
+    it('colorId is -1', function() {
+      expect(cdManager.getGenesis().getColorId()).to.equal(-1)
+    })
+  })
+
+  describe('getColorDefenitionClsForType', function() {
+    it('return null', function() {
+      expect(cdManager.getColorDefenitionClsForType('aaa')).to.be.null
+    })
+
+    it('return EPOBCColorDefinition constructor', function() {
+      expect(cdManager.getColorDefenitionClsForType('epobc')).to.equal(EPOBCColorDefinition)
     })
   })
 

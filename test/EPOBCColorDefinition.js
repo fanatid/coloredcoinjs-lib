@@ -64,16 +64,6 @@ describe('EPOBCColorDefinition', function() {
   describe('Tag', function() {
     var tag
 
-    it('getPadding return 0', function() {
-      tag = new EPOBCColorDefinition._Tag(0, true)
-      expect(tag.getPadding()).to.equal(0)
-    })
-
-    it('getPadding return pow of 2', function() {
-      tag = new EPOBCColorDefinition._Tag(2, true)
-      expect(tag.getPadding()).to.equal(4)
-    })
-
     it('number2bitArray', function() {
       var bits = EPOBCColorDefinition._Tag.number2bitArray(54648432)
       expect(bits).to.deep.equal([0,0,0,0,1,1,1,0,0,1,1,1,1,0,1,1,1,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0])
@@ -102,6 +92,41 @@ describe('EPOBCColorDefinition', function() {
       expect(tag).to.be.instanceof(EPOBCColorDefinition._Tag)
       expect(tag.isGenesis).to.equal(true)
       expect(tag.getPadding()).to.equal(2)
+    })
+
+    it('closestPaddingCode throw Error', function() {
+      var fn = function() { EPOBCColorDefinition._Tag.closestPaddingCode(Math.pow(2,64)) }
+      expect(fn).to.throw(Error)
+    })
+
+    it('closestPaddingCode return zero', function() {
+      var result = EPOBCColorDefinition._Tag.closestPaddingCode(0)
+      expect(result).to.equal(0)
+    })
+
+    it('closestPaddingCode return two', function() {
+      var result = EPOBCColorDefinition._Tag.closestPaddingCode(7)
+      expect(result).to.equal(3)
+    })
+
+    it('toSequence genesis', function() {
+      tag = new EPOBCColorDefinition._Tag(10, true)
+      expect(tag.toSequence()).to.equal(677)
+    })
+
+    it('toSequence xfer', function() {
+      tag = new EPOBCColorDefinition._Tag(10, false)
+      expect(tag.toSequence()).to.equal(691)
+    })
+
+    it('getPadding return 0', function() {
+      tag = new EPOBCColorDefinition._Tag(0, true)
+      expect(tag.getPadding()).to.equal(0)
+    })
+
+    it('getPadding return pow of 2', function() {
+      tag = new EPOBCColorDefinition._Tag(2, true)
+      expect(tag.getPadding()).to.equal(4)
     })
   })
 
