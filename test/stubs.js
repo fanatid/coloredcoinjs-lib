@@ -2,7 +2,7 @@ var assert = require('assert')
 var _ = require('lodash')
 
 var coloredcoinlib = require('../src/index')
-var Transaction = coloredcoinlib.tx.Transaction
+var Transaction = coloredcoinlib.Transaction
 
 
 /**
@@ -24,7 +24,7 @@ function getTxStub(transactions) {
 
   function getTx(txId, cb) {
     if (_.isUndefined(txMap[txId]))
-      cb('notFoundTx')
+      cb(new Error('notFoundTx'))
     else
       cb(null, txMap[txId].clone())
   }
