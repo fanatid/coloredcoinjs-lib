@@ -447,37 +447,6 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
     minPadding = 0
 
     // get inputs, create change targets, compute min padding
-/*
-    function step1(index) {
-      if (targetsColorIds.length === index)
-        return
-
-      var targets = targetsByColor[targetsColorIds[index]]
-      var neededSum = ColorTarget.sum(targets)
-
-      return Q.ninvoke(operationalTx, 'selectCoins', neededSum, null)
-        .spread(function(coins, coinsValue) {
-          coinsByColor[targetsColorIds[index]] = coins
-
-          var change = coinsValue.minus(neededSum)
-          if (change.getValue() > 0)
-            targets.push(new ColorTarget(
-              operationalTx.getChangeAddress(change.getColorDefinition()),
-              change
-            ))
-
-          targets.forEach(function(target) {
-            var paddingNeeded = dustThreshold.getValue() - target.getValue()
-            if (paddingNeeded > minPadding)
-              minPadding = paddingNeeded
-          })
-
-          return step1(index+1)
-        })
-    }
-
-    return step1(0)
-*/
     var promise = Q()
     targetsColorIds.forEach(function(targetColorId) {
       promise = promise.then(function() {
@@ -510,29 +479,6 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
     tag = new Tag(Tag.closestPaddingCode(minPadding), false)
 
     // create txins & txouts, compute uncolored requirements
-/*
-    function step2(index) {
-      if (targetsColorIds.length === index)
-        return
-
-      coinsByColor[targetsColorIds[index]].forEach(function(coin) {
-        var coinValue = new ColorValue(new UncoloredColorDefinition(), coin.value)
-        uncoloredNeeded = uncoloredNeeded.minus(coinValue)
-        composedTx.addTxIn(coin)
-      })
-
-      targetsByColor[targetsColorIds[index]].forEach(function(target) {
-        var targetValue = target.getValue() + tag.getPadding()
-        var uncoloredValue = new ColorValue(new UncoloredColorDefinition(), targetValue)
-        uncoloredNeeded = uncoloredNeeded.plus(uncoloredValue)
-        composedTx.addTxOut({ address: target.getAddress(), value: targetValue })
-      })
-
-      return step2(index+1)
-    }
-
-    return step2(0)
-*/
     targetsColorIds.forEach(function(targetColorId) {
       coinsByColor[targetColorId].forEach(function(coin) {
         var coinValue = new ColorValue(new UncoloredColorDefinition(), coin.value)
