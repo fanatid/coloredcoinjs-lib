@@ -12,8 +12,9 @@ var ColorValue = require('./ColorValue')
  * @param {ColorValue} colorValue
  */
 function ColorTarget(address, colorValue) {
-  assert(_.isString(address), 'Expected string address, got ' + address)
-  assert(colorValue instanceof ColorValue, 'Expected colorValue isntance of ColorValue, got ' + colorValue)
+  // Todo: change address to script
+  //assert(_.isString(address), 'Expected string address, got ' + address)
+  //assert(colorValue instanceof ColorValue, 'Expected colorValue isntance of ColorValue, got ' + colorValue)
 
   this.address = address
   this.colorValue = colorValue
