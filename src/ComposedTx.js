@@ -56,8 +56,9 @@ ComposedTx.prototype.addTxOut = function(data) {
     data.value = data.target.getValue()
   }
 
-  assert(_.isString(data.address), 'Expected string data.address, got ' + data.address)
-  assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
+  // Todo: check address is string or address, transform to script
+  //assert(_.isString(data.address), 'Expected string data.address, got ' + data.address)
+  //assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
 
   this.txOuts.push({
     address: data.address,
