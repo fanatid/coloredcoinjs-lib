@@ -32,7 +32,7 @@ describe('ComposedTx', function() {
     tx.addTxOut({
       target: {
         isUncolored: function() { return true },
-        getAddress: function() { return '1' },
+        getScript: function() { return '1' },
         getValue: function() { return 2 }
       }
     })

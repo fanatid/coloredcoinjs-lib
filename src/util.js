@@ -1,9 +1,44 @@
 var assert = require('assert')
 
+var bitcoin = require('bitcoinjs-lib')
 var _ = require('lodash')
 
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 
+
+/**
+ * @param {number} n
+ * @param {number} [bits=32]
+ * @return {number[]}
+ */
+function number2bitArray(n, bits) {
+  if (_.isUndefined(bits))
+    bits = 32
+
+  var result = []
+  for (var i = 0; i < bits; ++i)
+    result.push((n >> i) & 1)
+
+  return result
+}
+
+/**
+ * @param {number[]} bits
+ * @return {number}
+ */
+function bitArray2number(bits) {
+  var n = 0
+  var factor = 1
+
+  for (var i in bits) {
+    if (bits[i] === 1)
+      n += factor
+
+    factor = factor * 2
+  }
+
+  return n
+}
 
 /**
  * @typedef {Object} AbstractTarget
@@ -55,7 +90,21 @@ function groupTargetsByColor(targets, targetCls) {
   return targetsByColor
 }
 
+/**
+ * @param {string} address
+ * @return {Buffer}
+ */
+function address2script(address) {
+  var script = bitcoin.Address.fromBase58Check(address).toOutputScript()
+  return script.toBuffer()
+}
+
 
 module.exports = {
-  groupTargetsByColor: groupTargetsByColor
+  number2bitArray: number2bitArray,
+  bitArray2number: bitArray2number,
+
+  groupTargetsByColor: groupTargetsByColor,
+
+  address2script: address2script
 }

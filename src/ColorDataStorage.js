@@ -9,8 +9,7 @@ var Transaction = require('./Transaction')
 
 /**
  * @class ColorDataStorage
- *
- * Inherits SyncStorage
+ * @extends SyncStorage
  */
 function ColorDataStorage() {
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))

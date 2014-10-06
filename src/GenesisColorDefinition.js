@@ -8,8 +8,7 @@ var GenesisColorId = -1
 
 /**
  * @class GenesisColorDefinition
- *
- * Inherits ColorDefinition
+ * @extends ColorDefinition
  */
 function GenesisColorDefinition() {
   ColorDefinition.call(this, GenesisColorId)

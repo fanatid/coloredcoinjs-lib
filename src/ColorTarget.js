@@ -1,30 +1,19 @@
-var assert = require('assert')
-
-var _ = require('lodash')
-
-var ColorValue = require('./ColorValue')
-
-
 /**
  * @class ColorTarget
  *
- * @param {string} address
+ * @param {Buffer} script
  * @param {ColorValue} colorValue
  */
-function ColorTarget(address, colorValue) {
-  // Todo: change address to script
-  //assert(_.isString(address), 'Expected string address, got ' + address)
-  //assert(colorValue instanceof ColorValue, 'Expected colorValue isntance of ColorValue, got ' + colorValue)
-
-  this.address = address
+function ColorTarget(script, colorValue) {
+  this.script = script
   this.colorValue = colorValue
 }
 
 /**
- * @return {string}
+ * @return {Buffer}
  */
-ColorTarget.prototype.getAddress = function() {
-  return this.address
+ColorTarget.prototype.getScript = function() {
+  return this.script
 }
 
 /**

@@ -8,13 +8,12 @@ var SyncStorage = require('./SyncStorage')
 /**
  * @typedef {Object} ColorDefinitionRecord
  * @property {number} id
- * @property {string} schemes
+ * @property {string} descs
  */
 
 /**
  * @class ColorDefinitionStorage
- *
- * Inherits SyncStorage
+ * @extends SyncStorage
  */
 function ColorDefinitionStorage() {
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
@@ -28,23 +27,23 @@ function ColorDefinitionStorage() {
 inherits(ColorDefinitionStorage, SyncStorage)
 
 /**
- * @param {string} scheme
+ * @param {string} desc
  * @return {ColorDefinitionRecord}
- * @throws {Error} If scheme aready uses
+ * @throws {Error} If desc aready uses
  */
-ColorDefinitionStorage.prototype.add = function(scheme) {
+ColorDefinitionStorage.prototype.add = function(desc) {
   var newColorId = 1
   var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
 
   colorDefinitions.forEach(function(record) {
-    if (record.scheme === scheme)
+    if (record.desc === desc)
       throw new Error('UniqueConstraint')
 
     if (record.colorId >= newColorId)
       newColorId = record.colorId + 1
   })
 
-  var record = { colorId: newColorId, scheme: scheme }
+  var record = { colorId: newColorId, desc: desc }
   colorDefinitions.push(record)
   this.store.set(this.colorDefinitionsDBKey, colorDefinitions)
 
@@ -69,14 +68,14 @@ ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
 }
 
 /**
- * Get record by scheme
+ * Get record by desc
  *
- * @param {string} scheme
+ * @param {string} desc
  * @return {?ColorDefinitionRecord}
  */
-ColorDefinitionStorage.prototype.getByScheme = function(scheme) {
+ColorDefinitionStorage.prototype.getByDesc = function(desc) {
   var records = this.getAll().filter(function(record) {
-    return record.scheme === scheme
+    return record.desc === desc
   })
 
   if (records.length === 0)

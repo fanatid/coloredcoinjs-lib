@@ -18,12 +18,12 @@ describe('ColorDefinition', function() {
     expect(colordef.getColorType).to.throw(Error)
   })
 
-  it('getScheme', function() {
-    expect(colordef.getScheme).to.throw(Error)
+  it('getDesc', function() {
+    expect(colordef.getDesc).to.throw(Error)
   })
 
-  it('fromScheme', function() {
-    expect(colordef.fromScheme).to.throw(Error)
+  it('fromDesc', function() {
+    expect(colordef.fromDesc).to.throw(Error)
   })
 
   it('makeComposedTx', function() {

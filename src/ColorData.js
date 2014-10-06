@@ -152,7 +152,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
         return
 
       function processTx(tx) {
-        return Q.ninvoke(colorDefinition, 'getAffectingInputs', tx, [outIndex], getTxFn)
+        return Q.nfcall(colorDefinition.constructor.getAffectingInputs, tx, [outIndex], getTxFn)
           .then(function(inputs) {
             var promise = Q()
 

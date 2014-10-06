@@ -20,19 +20,19 @@ describe('UncoloredColorDefinition', function() {
     expect(colordef.getColorType()).to.equal('uncolored')
   })
 
-  describe('fromScheme', function() {
-    it('throw error (wrong colorId)', function(){
-      function fn() { UncoloredColorDefinition.fromScheme(1, '') }
+  describe('fromDesc', function() {
+    it('throw error (wrong colorId)', function() {
+      function fn() { UncoloredColorDefinition.fromDesc(1, '') }
       expect(fn).to.throw(Error)
     })
 
-    it('throw error (bad scheme)', function(){
-      function fn() { UncoloredColorDefinition.fromScheme(0, '1') }
+    it('throw error (bad desc)', function() {
+      function fn() { UncoloredColorDefinition.fromDesc(0, '1') }
       expect(fn).to.throw(Error)
     })
 
     it('create new UncoloredColorDefinition', function() {
-      var colordef2 = UncoloredColorDefinition.fromScheme(colordef.getColorId(), '')
+      var colordef2 = UncoloredColorDefinition.fromDesc(colordef.getColorId(), '')
       expect(colordef2).to.deep.equal(colordef)
     })
   })

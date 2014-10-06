@@ -13,19 +13,12 @@ var ColorDefinitionManager = require('./ColorDefinitionManager')
  * A set of colors which belong to certain a asset.
  *
  * @param {ColorDefinitionManager} cdManager
- * @param {Array} colorSchemes
+ * @param {Array} colorDescs
  */
-function ColorSet(cdManager, colorSchemes) {
-  assert(cdManager instanceof ColorDefinitionManager,
-    'Expected ColorDefinitionManager cdManager, got ' + cdManager)
-  assert(_.isArray(colorSchemes), 'Expected Array colorSchemes, got ' + colorSchemes)
-  colorSchemes.forEach(function(colorScheme) {
-    assert(_.isString(colorScheme), 'Expected Array strings colorSchemes, got ' + colorSchemes)
-  })
-
-  this.colorSchemes = colorSchemes
-  this.colorDefinitions = this.colorSchemes.map(function(colorScheme) {
-    return cdManager.resolveByScheme(colorScheme)
+function ColorSet(cdManager, colorDescs) {
+  this.colorDescs = colorDescs
+  this.colorDefinitions = this.colorDescs.map(function(colorDesc) {
+    return cdManager.resolveByDesc(colorDesc)
   })
   this.colorIds = this.colorDefinitions.map(function(colordef) { return colordef.getColorId() })
 }
@@ -35,7 +28,7 @@ function ColorSet(cdManager, colorSchemes) {
  */
 ColorSet.prototype.getColorHash = function() {
   // for compact replace ', ' to ',' as in ngcccbase
-  var json = JSON.stringify(this.colorSchemes.slice(0).sort()).replace(', ', ',')
+  var json = JSON.stringify(this.colorDescs.slice(0).sort()).replace(', ', ',')
   var hash = crypto.createHash('sha256').update(json).digest().slice(0, 10)
   return base58.encode(hash)
 }
@@ -43,8 +36,8 @@ ColorSet.prototype.getColorHash = function() {
 /**
  * @return {string[]}
  */
-ColorSet.prototype.getColorSchemes = function() {
-  return this.colorSchemes
+ColorSet.prototype.getColorDescs = function() {
+  return this.colorDescs
 }
 
 /**

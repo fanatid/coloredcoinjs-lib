@@ -42,8 +42,8 @@ ComposedTx.prototype.getTxIns = function() {
 
 /**
  * @param {Object} data
- * @param {ColorTarget} [data.target] If data.target is not undefined, address and value will be extracted from target
- * @param {string} [data.address]
+ * @param {ColorTarget} [data.target] If data.target is not undefined, script and value will be extracted from target
+ * @param {Buffer} [data.script]
  * @param {number} [data.value]
  * @throws {Error} If target is colored
  */
@@ -52,18 +52,11 @@ ComposedTx.prototype.addTxOut = function(data) {
     if (!data.target.isUncolored())
       throw new Error('target is colored')
 
-    data.address = data.target.getAddress()
+    data.script = data.target.getScript()
     data.value = data.target.getValue()
   }
 
-  // Todo: check address is string or address, transform to script
-  //assert(_.isString(data.address), 'Expected string data.address, got ' + data.address)
-  //assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
-
-  this.txOuts.push({
-    address: data.address,
-    value: data.value
-  })
+  this.txOuts.push({ script: data.script, value: data.value })
 }
 
 /**

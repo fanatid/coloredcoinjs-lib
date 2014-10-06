@@ -6,8 +6,8 @@ var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 
 describe('ColorDefinitionManager', function() {
   var cdManager, cdStorage
-  var epobcScheme1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
-  var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
+  var epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
+  var epobcDesc2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function() {
     cdStorage = new cclib.ColorDefinitionStorage()
@@ -60,32 +60,32 @@ describe('ColorDefinitionManager', function() {
     })
 
     it('return ColorDefinition', function() {
-      cdStorage.add(epobcScheme1)
+      cdStorage.add(epobcDesc1)
       var result = cdManager.getByColorId(1)
-      expect(result).to.deep.equal(EPOBCColorDefinition.fromScheme(1, epobcScheme1))
+      expect(result).to.deep.equal(EPOBCColorDefinition.fromDesc(1, epobcDesc1))
     })
   })
 
-  describe('resolveByScheme', function() {
+  describe('resolveByDesc', function() {
     it('record is not null', function() {
-      cdStorage.add(epobcScheme1)
-      var result = cdManager.resolveByScheme(epobcScheme1)
-      expect(result).to.deep.equal(EPOBCColorDefinition.fromScheme(1, epobcScheme1))
+      cdStorage.add(epobcDesc1)
+      var result = cdManager.resolveByDesc(epobcDesc1)
+      expect(result).to.deep.equal(EPOBCColorDefinition.fromDesc(1, epobcDesc1))
     })
 
     it('record is null, autoAdd is false', function() {
-      var result = cdManager.resolveByScheme(epobcScheme1, false)
+      var result = cdManager.resolveByDesc(epobcDesc1, false)
       expect(result).to.be.null
     })
 
     it('return uncolored', function() {
-      var result = cdManager.resolveByScheme('')
+      var result = cdManager.resolveByDesc('')
       expect(result).to.deep.equal(cdManager.getUncolored())
     })
 
     it('add new record', function() {
-      var result = cdManager.resolveByScheme(epobcScheme1)
-      expect(result).to.deep.equal(EPOBCColorDefinition.fromScheme(1, epobcScheme1))
+      var result = cdManager.resolveByDesc(epobcDesc1)
+      expect(result).to.deep.equal(EPOBCColorDefinition.fromDesc(1, epobcDesc1))
     })
   })
 
@@ -96,8 +96,8 @@ describe('ColorDefinitionManager', function() {
     })
 
     it('return 2 items', function() {
-      var record1 = cdManager.resolveByScheme(epobcScheme1)
-      var record2 = cdManager.resolveByScheme(epobcScheme2)
+      var record1 = cdManager.resolveByDesc(epobcDesc1)
+      var record2 = cdManager.resolveByDesc(epobcDesc2)
       var result = cdManager.getAllColorDefinitions()
       expect(result).to.deep.equal([record1, record2])
     })

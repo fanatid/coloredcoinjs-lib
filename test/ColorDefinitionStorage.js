@@ -5,8 +5,8 @@ var cclib = require('../src/index')
 
 describe('ColorDefinitionStorage', function() {
   var cdStore
-  var epobcScheme1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
-  var epobcScheme2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
+  var epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
+  var epobcDesc2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function() {
     cdStore = new cclib.ColorDefinitionStorage()
@@ -22,31 +22,31 @@ describe('ColorDefinitionStorage', function() {
   })
 
   it('add/add/get/get', function() {
-    var record = cdStore.add(epobcScheme1)
-    expect(record).to.deep.equal({ colorId: 1, scheme: epobcScheme1 })
+    var record = cdStore.add(epobcDesc1)
+    expect(record).to.deep.equal({ colorId: 1, desc: epobcDesc1 })
 
-    record = cdStore.add(epobcScheme2)
-    expect(record).to.deep.equal({ colorId: 2, scheme: epobcScheme2 })
+    record = cdStore.add(epobcDesc2)
+    expect(record).to.deep.equal({ colorId: 2, desc: epobcDesc2 })
 
-    record = cdStore.getByScheme(epobcScheme2)
-    expect(record).to.deep.equal({ colorId: 2, scheme: epobcScheme2 })
+    record = cdStore.getByDesc(epobcDesc2)
+    expect(record).to.deep.equal({ colorId: 2, desc: epobcDesc2 })
 
     record = cdStore.getByColorId(2)
-    expect(record).to.deep.equal({ colorId: 2, scheme: epobcScheme2 })
+    expect(record).to.deep.equal({ colorId: 2, desc: epobcDesc2 })
   })
 
   it('add, throw error uniqueConstraint', function() {
-    var fn = function() { cdStore.add(epobcScheme1) }
+    var fn = function() { cdStore.add(epobcDesc1) }
     fn()
     expect(fn).to.throw(Error)
   })
 
   it('getAll', function() {
-    cdStore.add(epobcScheme1)
-    cdStore.add(epobcScheme2)
+    cdStore.add(epobcDesc1)
+    cdStore.add(epobcDesc2)
     expect(cdStore.getAll()).to.deep.equal([
-      { colorId: 1, scheme: epobcScheme1 },
-      { colorId: 2, scheme: epobcScheme2 }
+      { colorId: 1, desc: epobcDesc1 },
+      { colorId: 2, desc: epobcDesc2 }
     ])
   })
 })

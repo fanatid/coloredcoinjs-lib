@@ -4,6 +4,7 @@ var Q = require('q')
 
 var ColorDefinition = require('./ColorDefinition')
 var ColorTarget = require('./ColorTarget')
+var util = require('./util')
 
 
 var UncoloredColorId = 0
@@ -11,8 +12,7 @@ var UncoloredColorId = 0
 
 /**
  * @class UncoloredColorDefinition
- *
- * Inherits ColorDefinition
+ * @extends ColorDefinition
  */
 function UncoloredColorDefinition() {
   ColorDefinition.call(this, UncoloredColorId)
@@ -30,22 +30,22 @@ UncoloredColorDefinition.prototype.getColorType = function() {
 /**
  * @return {string}
  */
-UncoloredColorDefinition.prototype.getScheme = function() {
+UncoloredColorDefinition.prototype.getDesc = function() {
   return ''
 }
 
 /**
  * @param {number} colorId
- * @param {string} sceme
+ * @param {string} desc
  * @return {UncoloredColorDefinition}
- * @throws {Error} If colorId not equal UncoloredColorDefinition.colorId or scheme not equal ''
+ * @throws {Error} If colorId not equal UncoloredColorDefinition.colorId or desc not equal ''
  */
-UncoloredColorDefinition.fromScheme = function(colorId, scheme) {
+UncoloredColorDefinition.fromDesc = function(colorId, desc) {
   if (colorId !== UncoloredColorId)
     throw new Error('wrong colorId')
 
-  if (scheme !== '')
-    throw new Error('bad scheme')
+  if (desc !== '')
+    throw new Error('bad desc')
 
   return new UncoloredColorDefinition()
 }
@@ -81,11 +81,13 @@ UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
     var fee = composedTx.estimateRequiredFee()
     var change = coinsValue.minus(targetsTotalValue).minus(fee)
 
-    if (change.getValue() > operationalTx.getDustThreshold().getValue())
+    if (change.getValue() > operationalTx.getDustThreshold().getValue()) {
+      var changeAddress = operationalTx.getChangeAddress(new UncoloredColorDefinition())
       composedTx.addTxOut({
-        address: operationalTx.getChangeAddress(new UncoloredColorDefinition()),
+        script: util.address2script(changeAddress),
         value: change.getValue()
       })
+    }
 
   }).done(function() { cb(null, composedTx) }, function(error) { cb(error) })
 }

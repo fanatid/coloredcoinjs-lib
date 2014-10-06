@@ -14,15 +14,15 @@ describe('ColorTarget', function() {
     cdManager = new cclib.ColorDefinitionManager(cdStorage)
     uncolored = cdManager.getUncolored()
     cv1 = new cclib.ColorValue(uncolored, 10)
-    ct1 = new ColorTarget('mfaPBHDK2jUaf9K78tQQjCmEdDumRccnTG', cv1)
+    ct1 = new ColorTarget(new Buffer('0102', 'hex'), cv1)
   })
 
   afterEach(function() {
     cdStorage.clear()
   })
 
-  it('getAddress', function() {
-    expect(ct1.getAddress()).to.equal('mfaPBHDK2jUaf9K78tQQjCmEdDumRccnTG')
+  it('getScript', function() {
+    expect(ct1.getScript().toString('hex')).to.equal('0102')
   })
 
   it('getColorValue', function() {
@@ -47,7 +47,7 @@ describe('ColorTarget', function() {
 
   it('sum', function() {
     cv2 = new cclib.ColorValue(uncolored, 15)
-    ct2 = new ColorTarget('mpZktZkTggrV5XPReXpzt8Dr9v9NKdGvQa', cv2)
+    ct2 = new ColorTarget(new Buffer(0), cv2)
     var tcv = new cclib.ColorValue(uncolored, 25)
     expect(ColorTarget.sum([ct1, ct2])).to.deep.equal(tcv)
   })

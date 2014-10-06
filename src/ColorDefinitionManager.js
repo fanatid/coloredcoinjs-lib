@@ -9,7 +9,7 @@ var ColorDefinitionStorage = require('./ColorDefinitionStorage')
 
 
 /**
- * Convert record to ColorDefinition instance
+ * Convert record to ColorDefinition
  *
  * @param {ColorDefinitionRecord} record
  * @return {ColorDefinition}
@@ -20,7 +20,7 @@ function record2ColorDefinition(record) {
   var engineClss = [UncoloredColorDefinition, EPOBCColorDefinition]
   engineClss.some(function(engineCls) {
     try {
-      colorDefinition = engineCls.fromScheme(record.colorId, record.scheme)
+      colorDefinition = engineCls.fromDesc(record.colorId, record.desc)
     } catch (e) {}
 
     return colorDefinition !== null
@@ -36,9 +36,6 @@ function record2ColorDefinition(record) {
  * @param {ColorDefinitionStorage} storage
  */
 function ColorDefinitionManager(storage) {
-  assert(storage instanceof ColorDefinitionStorage,
-    'Expected storage instance of ColorDefinitionStorage, got ' + storage)
-
   this.storage = storage
 }
 
@@ -94,32 +91,32 @@ ColorDefinitionManager.prototype.getByColorId = function(colorId) {
 }
 
 /**
- * Return ColorDefinition instance if scheme in store.
+ * Return ColorDefinition instance if desc in store.
  *  Otherwise if autoAdd is true creates new ColorDefinition, add to store and return it
  *
- * @param {string} scheme
+ * @param {string} desc
  * @param {boolean} [autoAdd=true]
  * @return {?ColorDefinition}
  */
-ColorDefinitionManager.prototype.resolveByScheme = function(scheme, autoAdd) {
+ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
   var uncolored = this.getUncolored()
-  if (uncolored.getScheme() === scheme)
+  if (uncolored.getDesc() === desc)
     return uncolored
 
-  autoAdd = _.isUndefined(autoAdd) ? true : autoAdd
+  if (_.isUndefined(autoAdd))
+    autoAdd = true
 
-  var record = this.storage.getByScheme(scheme)
-
+  var record = this.storage.getByDesc(desc)
   if (record !== null)
     return record2ColorDefinition(record)
 
   if (autoAdd === false)
     return null
 
-  var colordef = record2ColorDefinition({ colorId: -1, scheme: scheme })
-  assert(colordef !== null, 'Bad sceme: ' + scheme)
+  var colordef = record2ColorDefinition({ colorId: -1, desc: desc })
+  assert(colordef !== null, 'Bad desc: ' + desc)
 
-  record = this.storage.add(scheme)
+  record = this.storage.add(desc)
   return record2ColorDefinition(record)
 }
 

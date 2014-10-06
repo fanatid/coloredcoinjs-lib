@@ -10,8 +10,7 @@ var bitcoin = require('bitcoinjs-lib')
 
 /**
  * @class Transaction
- *
- * Inherits bitcoinjs-lib.Transaction
+ * @extends bitcoinjs-lib.Transaction
  */
 function Transaction() {
   bitcoin.Transaction.call(this)

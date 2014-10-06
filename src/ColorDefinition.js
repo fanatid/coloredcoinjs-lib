@@ -1,9 +1,8 @@
 /**
- * Represents a color definition scheme. This means how color exists and
+ * Represents a color definition desc. This means how color exists and
  *  is transferred in the blockchain
  *
  * @class ColorDefinition
- *
  * @param {number} colorId
  */
 function ColorDefinition(colorId) {
@@ -11,8 +10,6 @@ function ColorDefinition(colorId) {
 }
 
 /**
- * Return colorId
- *
  * @return {number}
  */
 ColorDefinition.prototype.getColorId = function() {
@@ -20,7 +17,6 @@ ColorDefinition.prototype.getColorId = function() {
 }
 
 /**
- * Return ColorDefinition type
  * @abstract
  * @return {string}
  */
@@ -29,23 +25,23 @@ ColorDefinition.prototype.getColorType = function() {
 }
 
 /**
- * Return scheme of current ColorDefinition
  * @abstract
  * @return {string}
  */
-ColorDefinition.prototype.getScheme = function() {
-  throw new Error('ColorDefinition.getScheme not implemented')
+ColorDefinition.prototype.getDesc = function() {
+  throw new Error('ColorDefinition.getDesc not implemented')
 }
 
 /**
- * Create new ColorDefinition from scheme or throw error
+ * Create new ColorDefinition from desc or throw error
+ *
  * @abstract
  * @param {number} colorId
- * @param {string} scheme
+ * @param {string} desc
  * @return {ColorDefinition}
  */
-ColorDefinition.prototype.fromScheme = function() {
-  throw new Error('ColorDefinition.fromScheme not implemented')
+ColorDefinition.prototype.fromDesc = function() {
+  throw new Error('ColorDefinition.fromDesc not implemented')
 }
 
 /**
@@ -56,6 +52,7 @@ ColorDefinition.prototype.fromScheme = function() {
 
 /**
  * Create ComposedTx from OperationalTx
+ *
  * @abstract
  * @param {OperationalTx} operationalTx
  * @param {ColorDefinition~makeComposedTx} cb
