@@ -123,16 +123,6 @@ describe('ColorData', function() {
       })
     })
 
-    it('colorDefinition.getAffectingInputs return error', function(done) {
-      cData.fetchColorValue = function() { return null }
-      epobc.getAffectingInputs = function(_, _, _, cb) { cb('error.getAffectingInputs') }
-      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([tx1]), function(error, colorValue) {
-        expect(error).to.equal('error.getAffectingInputs')
-        expect(colorValue).to.be.undefined
-        done()
-      })
-    })
-
     it('this.scanTx return error', function(done) {
       tx1.addInput(tx2.getId(), 0, 37)
       cData.fetchColorValue = function() { return null }

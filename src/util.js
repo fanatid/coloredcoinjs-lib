@@ -3,8 +3,6 @@ var assert = require('assert')
 var bitcoin = require('bitcoinjs-lib')
 var _ = require('lodash')
 
-var UncoloredColorDefinition = require('./UncoloredColorDefinition')
-
 
 /**
  * @param {number} n
@@ -70,6 +68,7 @@ function groupTargetsByColor(targets, targetCls) {
   targets.forEach(function(target) {
     var colorDefinition = target.getColorDefinition()
 
+    var UncoloredColorDefinition = require('./UncoloredColorDefinition')
     var isUncoloredCls = colorDefinition instanceof UncoloredColorDefinition
     var isTargetCls = colorDefinition instanceof targetCls
 
