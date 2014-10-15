@@ -6,25 +6,13 @@ var Q = require('q')
 var bitcoin = require('bitcoinjs-lib')
 
 
-// Todo: not make inherits, add methods to bitcoin.Transaction and return it
-
-/**
- * @class Transaction
- * @extends bitcoinjs-lib.Transaction
- */
-function Transaction() {
-  bitcoin.Transaction.call(this)
-}
-
-inherits(Transaction, bitcoin.Transaction)
-
 /**
  * Check txId is 32 bytes hex string
  *
  * @param {string} txId
  * @return {boolean}
  */
-Transaction.isTxId = function(txId) {
+bitcoin.Transaction.isTxId = function(txId) {
   var set = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
 
   return (_.isString(txId) &&
@@ -32,67 +20,35 @@ Transaction.isTxId = function(txId) {
           txId.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
 }
 
+var transactionClone = bitcoin.Transaction.prototype.clone
+/**
+ * @return {bitcoinjs-lib.Transaction}
+ */
+bitcoin.Transaction.prototype.clone = function() {
+  var self = this
 
-// Copy from bitcoinjs-lib.Transaction
-Transaction.DEFAULT_SEQUENCE = bitcoin.Transaction.DEFAULT_SEQUENCE
-Transaction.SIGHASH_ALL = bitcoin.Transaction.SIGHASH_ALL
-Transaction.SIGHASH_NONE = bitcoin.Transaction.SIGHASH_NONE
-Transaction.SIGHASH_SINGLE = bitcoin.Transaction.SIGHASH_SINGLE
-Transaction.SIGHASH_ANYONECANPAY = bitcoin.Transaction.SIGHASH_ANYONECANPAY
+  var tx = transactionClone.apply(self, Array.prototype.slice.call(arguments))
 
-Transaction.fromBuffer = function(buffer) {
-  var tx = bitcoin.Transaction.fromBuffer(buffer)
+  if (!_.isUndefined(self.ensured))
+    tx.ensured = self.ensured
 
-  var newTx = new Transaction()
-  newTx.version = tx.version
-  newTx.locktime = tx.locktime
-  newTx.ins = tx.ins
-  newTx.outs = tx.outs
+  tx.ins = tx.ins.map(function(input, index) {
+    if (!_.isUndefined(self.ins[index].value))
+      input.value = self.ins[index].value
 
-  return newTx
-}
-
-Transaction.fromHex = function(hex) {
-  return Transaction.fromBuffer(new Buffer(hex, 'hex'))
-}
-
-Transaction.prototype.clone = function() {
-  var newTx = new Transaction()
-  newTx.version = this.version
-  newTx.locktime = this.locktime
-  if (!_.isUndefined(this.ensured))
-    newTx.ensured = this.ensured
-
-  newTx.ins = this.ins.map(function(txin) {
-    var input = {
-      hash: txin.hash,
-      index: txin.index,
-      script: txin.script,
-      sequence: txin.sequence
-    }
-
-    if (!_.isUndefined(txin.value))
-      input.value = txin.value
-    if (!_.isUndefined(txin.prevTx))
-      input.prevTx = txin.prevTx
+    if (!_.isUndefined(self.ins[index].prevTx))
+      input.prevTx = self.ins[index].prevTx
 
     return input
   })
 
-  newTx.outs = this.outs.map(function(txout) {
-    return {
-      script: txout.script,
-      value: txout.value
-    }
-  })
-
-  return newTx
+  return tx
 }
 
 /**
  * @callback Transaction~ensureInputValues
  * @param {?Error} error
- * @param {Transaction} tx
+ * @param {bitcoinjs-lib.Transaction} tx
  */
 
 /**
@@ -102,7 +58,7 @@ Transaction.prototype.clone = function() {
  * @param {function} getTxFn
  * @param {Transaction~ensureInputValues} cb
  */
-Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
+bitcoin.Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
   var tx = this.clone()
 
   Q.fcall(function() {
@@ -132,4 +88,4 @@ Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
 }
 
 
-module.exports = Transaction
+module.exports = bitcoin.Transaction

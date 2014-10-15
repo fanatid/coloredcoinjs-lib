@@ -1,4 +1,8 @@
 module.exports = {
+  /** bitcoinjs-lib with changed Transaction */
+  bitcoin: require('bitcoinjs-lib'),
+
+  /** Storage */
   SyncStorage: require('./SyncStorage'),
 
   /** Color Defintions */
