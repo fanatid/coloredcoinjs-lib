@@ -6,7 +6,7 @@ module.exports = function(grunt) {
         src: ['src/index.js'],
         dest: 'coloredcoinlib.js',
         options: {
-          bundleOptions: {
+          browserifyOptions: {
             standalone: 'coloredcoinlib'
           }
         }
