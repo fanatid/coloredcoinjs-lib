@@ -48,6 +48,21 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
   return colorValue
 }
 
+ColorData.prototype.getColorValuesRaw = function (tx, colorDefinition, getTxFn, cb) {
+    var inColorValuesQ = Q.all(
+        tx.ins.map(function (input) {
+            var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex');
+            return Q.ninvoke(self, txId, 'getColorValue', 
+                             input.index, colorDefinition, getTxFn);
+            }));
+
+    inColorvaluesQ.then(function (inColorValues) {
+        return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn);
+    }).done(function(outColorValues) { cb(null, outColorValues); }, 
+            function(error) { cb(error); });
+};
+
+
 /**
  * @callback ColorData~scanTx
  * @param {?Error} error
