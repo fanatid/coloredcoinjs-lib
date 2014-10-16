@@ -184,7 +184,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
 }
 
 /**
- * @callback ColorData~getColorValuesRaw
+ * @callback ColorData~getColorValuesForTx
  * @param {?Error} error
  * @param {[]?ColorValue} colorValues
  */
@@ -193,9 +193,9 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
  * @param {bitcoinjs-lib.Transaction} tx
  * @param {ColorDefinition} colorDefinition
  * @param {function} getTxFn
- * @param {ColorData~getColorValuesRaw} cb
+ * @param {ColorData~getColorValuesForTx} cb
  */
-ColorData.prototype.getColorValuesRaw = function(tx, colorDefinition, getTxFn, cb) {
+ColorData.prototype.getColorValuesForTx = function(tx, colorDefinition, getTxFn, cb) {
   var self = this
 
   var inColorValuesPromises = tx.ins.map(function(input) {
