@@ -48,21 +48,6 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
   return colorValue
 }
 
-ColorData.prototype.getColorValuesRaw = function (tx, colorDefinition, getTxFn, cb) {
-    var inColorValuesQ = Q.all(
-        tx.ins.map(function (input) {
-            var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex');
-            return Q.ninvoke(self, txId, 'getColorValue', 
-                             input.index, colorDefinition, getTxFn);
-            }));
-
-    inColorvaluesQ.then(function (inColorValues) {
-        return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn);
-    }).done(function(outColorValues) { cb(null, outColorValues); }, 
-            function(error) { cb(error); });
-};
-
-
 /**
  * @callback ColorData~scanTx
  * @param {?Error} error
@@ -196,6 +181,32 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
     return self.fetchColorValue(txId, outIndex, colorDefinition)
 
   }).done(function(colorValue) { cb(null, colorValue) }, function(error) { cb(error) })
+}
+
+/**
+ * @callback ColorData~getColorValuesRaw
+ * @param {?Error} error
+ * @param {[]?ColorValue} colorValues
+ */
+
+/**
+ * @param {bitcoinjs-lib.Transaction} tx
+ * @param {ColorDefinition} colorDefinition
+ * @param {function} getTxFn
+ * @param {ColorData~getColorValuesRaw} cb
+ */
+ColorData.prototype.getColorValuesRaw = function(tx, colorDefinition, getTxFn, cb) {
+  var self = this
+
+  var inColorValuesPromises = tx.ins.map(function(input) {
+    var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
+    return Q.ninvoke(self, 'getColorValue', txId, input.index, colorDefinition, getTxFn)
+  })
+
+  Q.all(inColorValuesPromises).then(function(inColorValues) {
+    return Q.ninvoke(colorDefinition, 'runKernel', tx, getTxFn)
+
+  }).done(function(outColorValues) { cb(null, outColorValues) }, function(error) { cb(error) })
 }
 
 
