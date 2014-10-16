@@ -9,7 +9,7 @@ var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorValue = require('./ColorValue')
 var ColorTarget = require('./ColorTarget')
-var Transaction = require('./Transaction')
+var Transaction = require('./bitcoin').Transaction
 var util = require('./util')
 
 

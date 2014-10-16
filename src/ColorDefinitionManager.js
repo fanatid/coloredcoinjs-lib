@@ -5,7 +5,6 @@ var _ = require('lodash')
 var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var EPOBCColorDefinition = require('./EPOBCColorDefinition')
-var ColorDefinitionStorage = require('./ColorDefinitionStorage')
 
 
 /**

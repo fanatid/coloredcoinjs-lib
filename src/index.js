@@ -1,6 +1,6 @@
 module.exports = {
-  /** bitcoinjs-lib with changed Transaction */
-  bitcoin: require('bitcoinjs-lib'),
+  /** extended bitcoinjs-lib */
+  bitcoin: require('./bitcoin'),
 
   /** Storage */
   SyncStorage: require('./SyncStorage'),
@@ -23,7 +23,6 @@ module.exports = {
   ColorTarget: require('./ColorTarget'),
 
   /** Transactions */
-  Transaction: require('./Transaction'),
   OperationalTx: require('./OperationalTx'),
   ComposedTx: require('./ComposedTx')
 }

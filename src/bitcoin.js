@@ -1,9 +1,44 @@
-var inherits = require('util').inherits
-
 var _ = require('lodash')
 var Q = require('q')
 
 var bitcoin = require('bitcoinjs-lib')
+
+
+/**
+ * @param {bitcoinjs-lib.Script} script
+ * @param {Object} network
+ * @param {number} network.pubKeyHash
+ * @param {number} network.scriptHash
+ * @return {string[]}
+ */
+bitcoin.getAddressesFromOutputScript = function(script, network) {
+  var addresses = []
+
+  switch (bitcoin.scripts.classifyOutput(script)) {
+    case 'pubkeyhash':
+      addresses = [new bitcoin.Address(script.chunks[2], network.pubKeyHash)]
+      break
+
+    case 'pubkey':
+      addresses = [bitcoin.ECPubKey.fromBuffer(script.chunks[0]).getAddress(network)]
+      break
+
+    case 'multisig':
+      addresses = script.chunks.slice(1, -2).map(function(pubKey) {
+        return bitcoin.ECPubKey.fromBuffer(pubKey).getAddress(network)
+      })
+      break
+
+    case 'scripthash':
+      addresses = [new bitcoin.Address(script.chunks[1], network.scriptHash)]
+      break
+
+    default:
+      break
+  }
+
+  return addresses.map(function(addr) { return addr.toBase58Check() })
+}
 
 
 /**
@@ -88,4 +123,4 @@ bitcoin.Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
 }
 
 
-module.exports = bitcoin.Transaction
+module.exports = bitcoin

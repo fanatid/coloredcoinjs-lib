@@ -19,6 +19,7 @@ function ComposedTx(operationalTx) {
   this.txOuts = []
 }
 
+// Todo: change coin to object
 /**
  * @param {Coin} txIn
  */

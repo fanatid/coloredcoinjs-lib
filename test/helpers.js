@@ -1,7 +1,7 @@
 var Q = require('q')
 var request = require('request')
 
-var Transaction = require('../src/index').Transaction
+var Transaction = require('../src/index').bitcoin.Transaction
 
 
 /**

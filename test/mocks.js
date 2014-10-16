@@ -1,8 +1,8 @@
 var assert = require('assert')
 var _ = require('lodash')
 
-var coloredcoinlib = require('../src/index')
-var Transaction = coloredcoinlib.Transaction
+var cclib = require('../src/index')
+var Transaction = cclib.bitcoin.Transaction
 
 
 /**

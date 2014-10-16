@@ -1,10 +1,6 @@
-var assert = require('assert')
 var crypto = require('crypto')
 
 var base58 = require('bs58')
-var _ = require('lodash')
-
-var ColorDefinitionManager = require('./ColorDefinitionManager')
 
 
 /**

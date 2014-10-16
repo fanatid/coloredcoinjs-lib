@@ -6,7 +6,7 @@ var Q = require('q')
 var ColorDefinition = require('./ColorDefinition')
 var ColorValue = require('./ColorValue')
 var ColorDataStorage = require('./ColorDataStorage')
-var Transaction = require('./Transaction')
+var Transaction = require('./bitcoin').Transaction
 
 
 /**

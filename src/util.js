@@ -1,7 +1,8 @@
 var assert = require('assert')
 
-var bitcoin = require('bitcoinjs-lib')
 var _ = require('lodash')
+
+var bitcoin = require('./bitcoin')
 
 
 /**

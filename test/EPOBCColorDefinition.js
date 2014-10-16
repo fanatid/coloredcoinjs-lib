@@ -15,8 +15,8 @@ describe('EPOBCColorDefinition', function() {
   beforeEach(function() {
     epobc = new EPOBCColorDefinition({ colorId: 1 },
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
-    tx1 = new cclib.Transaction()
-    tx2 = new cclib.Transaction()
+    tx1 = new cclib.bitcoin.Transaction()
+    tx2 = new cclib.bitcoin.Transaction()
   })
 
   it('inherits ColorDefinition', function() {
