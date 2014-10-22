@@ -1,20 +1,17 @@
-var assert = require('assert')
 var _ = require('lodash')
 
-var cclib = require('../src/index')
-var Transaction = cclib.bitcoin.Transaction
+var verify = require('../src/index').verify
 
 
 /**
  * Stub for blockchain.BlockchainStateBase.getTx
  *
- * @param {Array} transactions Array of bitcoinjs-lib.Transaction
+ * @param {bitcoinjs-lib.Transaction[]} transactions
  * @return {function}
  */
 function getTxStub(transactions) {
-  assert(_.isArray(transactions), 'Expected transactions Array, got ' + transactions)
-  assert(transactions.every(function(tx) { return (tx instanceof Transaction) }),
-    'Expected transactions Array of bitcoinjs-lib.Transaction, got ' + transactions)
+  verify.array(transactions)
+  transactions.forEach(verify.Transaction)
 
   var txMap = {}
 

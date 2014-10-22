@@ -1,8 +1,7 @@
-var assert = require('assert')
-
 var _ = require('lodash')
 
 var bitcoin = require('./bitcoin')
+var verify = require('./verify')
 
 
 /**
@@ -13,6 +12,9 @@ var bitcoin = require('./bitcoin')
 function number2bitArray(n, bits) {
   if (_.isUndefined(bits))
     bits = 32
+
+  verify.number(n)
+  verify.number(bits)
 
   var result = []
   for (var i = 0; i < bits; ++i)
@@ -26,6 +28,9 @@ function number2bitArray(n, bits) {
  * @return {number}
  */
 function bitArray2number(bits) {
+  verify.array(bits)
+  bits.forEach(verify.number)
+
   var n = 0
   var factor = 1
 
@@ -62,8 +67,8 @@ function bitArray2number(bits) {
  * @throws {Error} If ColorDefinition not Uncolored and not targetCls
  */
 function groupTargetsByColor(targets, targetCls) {
-  assert(_.isArray(targets), 'Expected Array targets, got ' + targets)
-  assert(_.isFunction(targetCls), 'Expected function targetCls, got ' + targetCls)
+  verify.array(targets)
+  verify.function(targetCls)
 
   var targetsByColor = {}
   targets.forEach(function(target) {
@@ -95,6 +100,8 @@ function groupTargetsByColor(targets, targetCls) {
  * @return {bitcoinjs-lib.Script}
  */
 function address2script(address) {
+  verify.string(address)
+
   return bitcoin.Address.fromBase58Check(address).toOutputScript()
 }
 

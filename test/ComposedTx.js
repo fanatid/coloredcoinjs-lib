@@ -32,12 +32,12 @@ describe('ComposedTx', function() {
     tx.addTxOut({
       target: {
         isUncolored: function() { return true },
-        getScript: function() { return '1' },
+        getScript: function() { return '00' },
         getValue: function() { return 2 }
       }
     })
-    tx.addTxOuts([{ address: '3', value: 4 }])
-    tx.getTxOuts([{ address: '1', value: 2 }, { address: '3', value: 4 }])
+    tx.addTxOuts([{ script: '11', value: 4 }])
+    tx.getTxOuts([{ script: '00', value: 2 }, { script: '11', value: 4 }])
   })
 
   it('estimateSize', function() {

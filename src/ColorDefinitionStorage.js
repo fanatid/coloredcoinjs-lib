@@ -3,6 +3,7 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
+var verify = require('./verify')
 
 
 /**
@@ -32,6 +33,8 @@ inherits(ColorDefinitionStorage, SyncStorage)
  * @throws {Error} If desc aready uses
  */
 ColorDefinitionStorage.prototype.add = function(desc) {
+  verify.string(desc)
+
   var newColorId = 1
   var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
 
@@ -57,6 +60,8 @@ ColorDefinitionStorage.prototype.add = function(desc) {
  * @return {?ColorDefinitionRecord}
  */
 ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
+  verify.number(colorId)
+
   var records = this.getAll().filter(function(record) {
     return record.colorId === colorId
   })
@@ -74,6 +79,8 @@ ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
  * @return {?ColorDefinitionRecord}
  */
 ColorDefinitionStorage.prototype.getByDesc = function(desc) {
+  verify.string(desc)
+
   var records = this.getAll().filter(function(record) {
     return record.desc === desc
   })

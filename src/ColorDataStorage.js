@@ -1,10 +1,9 @@
-var assert = require('assert')
 var inherits = require('util').inherits
 
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
-var Transaction = require('./bitcoin').Transaction
+var verify = require('./verify')
 
 
 /**
@@ -23,6 +22,7 @@ function ColorDataStorage() {
 inherits(ColorDataStorage, SyncStorage)
 
 /**
+ * Todo: throw if exists
  * Add colorId txOutput to store and return true if data was added
  *
  * @param {Object} data
@@ -33,11 +33,11 @@ inherits(ColorDataStorage, SyncStorage)
  * @return {boolean}
  */
 ColorDataStorage.prototype.add = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
-  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
-  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
-  assert(_.isNumber(data.value), 'Expected number data.value, got ' + data.value)
+  verify.object(data)
+  verify.number(data.colorId)
+  verify.txId(data.txId)
+  verify.number(data.outIndex)
+  verify.number(data.value)
 
   var colorTxs = this.store.get(this.colorTxsDBKey) || []
 
@@ -64,13 +64,14 @@ ColorDataStorage.prototype.add = function(data) {
  * @param {number} data.colorId
  * @param {string} data.txId
  * @param {number} data.outIndex
- * @return {Object|null}
+ * @return {?Object}
  */
+// Todo: describe return object
 ColorDataStorage.prototype.get = function(data) {
-  assert(_.isObject(data), 'Expected Object data, got ' + data)
-  assert(_.isNumber(data.colorId), 'Expected number data.colorId, got ' + data.colorId)
-  assert(Transaction.isTxId(data.txId), 'Expected transaction id data.txId, got ' + data.txId)
-  assert(_.isNumber(data.outIndex), 'Expected number data.outIndex, got ' + data.outIndex)
+  verify.object(data)
+  verify.number(data.colorId)
+  verify.txId(data.txId)
+  verify.number(data.outIndex)
 
   var result = null
   var colorTxs = this.store.get(this.colorTxsDBKey) || []

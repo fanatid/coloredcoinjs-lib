@@ -1,4 +1,3 @@
-var assert = require('assert')
 var inherits = require('util').inherits
 
 var _ = require('lodash')
@@ -9,8 +8,8 @@ var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorValue = require('./ColorValue')
 var ColorTarget = require('./ColorTarget')
-var Transaction = require('./bitcoin').Transaction
 var util = require('./util')
+var verify = require('./verify')
 
 
 /**
@@ -19,8 +18,8 @@ var util = require('./util')
  * @param {boolean} isGenesis
  */
 function Tag(paddingCode, isGenesis) {
-  assert(_.isNumber(paddingCode), 'Expected number paddingCode, got ' + paddingCode)
-  assert(_.isBoolean(isGenesis), 'Expected boolean isGenesis, got ' + isGenesis)
+  verify.number(paddingCode)
+  verify.boolean(isGenesis)
 
   this.paddingCode = paddingCode
   this.isGenesis = isGenesis
@@ -37,7 +36,7 @@ Tag.genesisTagBits = [1, 0, 1, 0, 0, 1]
  * @throws {Error} If paddingCode greater that 63
  */
 Tag.closestPaddingCode = function(minPadding) {
-  assert(_.isNumber(minPadding), 'Expected number minPadding, got ' + minPadding)
+  verify.number(minPadding)
 
   if (minPadding <= 0)
     return 0
@@ -58,7 +57,7 @@ Tag.closestPaddingCode = function(minPadding) {
  * @return {?Tag} Tag instance if tx is genesis or xfer and not coinbase
  */
 Tag.fromTx = function(tx) {
-  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
+  verify.Transaction(tx)
 
   var isCoinbase = (
     tx.ins[0].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
@@ -75,6 +74,8 @@ Tag.fromTx = function(tx) {
  * @return {?Tag}
  */
 Tag.fromSequence = function(sequence) {
+  verify.number(sequence)
+
   var bits = util.number2bitArray(sequence)
   var tagBits = bits.slice(0, 6)
 
@@ -123,9 +124,9 @@ Tag.prototype.getPadding = function() {
  * @return {number[]}
  */
 function getXferAffectingInputs(tx, padding, outIndex) {
-  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
-  assert(_.isNumber(padding), 'Expected padding number, got ' + padding)
-  assert(_.isNumber(outIndex), 'Expected outIndex number, got ' + outIndex)
+  verify.Transaction(tx)
+  verify.number(padding)
+  verify.number(outIndex)
 
   var valueWop
   var outValueWop
@@ -186,10 +187,10 @@ function getXferAffectingInputs(tx, padding, outIndex) {
 function EPOBCColorDefinition(colorId, genesis) {
   ColorDefinition.call(this, colorId)
 
-  assert(_.isObject(genesis), 'Expected object genesis, got ' + genesis)
-  assert(Transaction.isTxId(genesis.txId), 'Expected transaction id txId, got ' + genesis.txId)
-  assert(_.isNumber(genesis.outIndex), 'Expected number outIndex, got ' + genesis.outIndex)
-  assert(_.isNumber(genesis.height), 'Expected number height, got ' + genesis.height)
+  verify.object(genesis)
+  verify.txId(genesis.txId)
+  verify.number(genesis.outIndex)
+  verify.number(genesis.height)
 
   this.genesis = genesis
 }
@@ -212,6 +213,9 @@ EPOBCColorDefinition.prototype.getColorType = function() {
  * @throws {Error} On wrong desc
  */
 EPOBCColorDefinition.fromDesc = function(colorId, desc) {
+  verify.number(colorId)
+  verify.string(desc)
+
   var items = desc.split(':')
   if (items[0] !== 'epobc')
     throw new Error('Wrong desc')
@@ -240,6 +244,8 @@ EPOBCColorDefinition.prototype.getDesc = function() {
  * @return {boolean}
  */
 EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
+  verify.Transaction(tx)
+
   return tx.getId() === this.genesis.txId
 }
 
@@ -254,16 +260,15 @@ EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
  *  return the colorValues of the tx.outs in a Array via callback cb
  *
  * @param {Transaction} tx
- * @param {?ColorValue[]} colorValueSet
+ * @param {(?ColorValue)[]} colorValueSet
  * @param {function} getTxFn
  * @param {EPOBCColorDefinition~runKernel} cb
  */
 EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, cb) {
-  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
-  assert(_.isArray(colorValueSet), 'Expected Array colorValueSet, got ' + colorValueSet)
-  assert(colorValueSet.every(function(cv) { return (cv === null || cv instanceof ColorValue) }),
-    'Expected colorValueSet ?ColorValue[], got ' + colorValueSet)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  verify.Transaction(tx)
+  verify.array(colorValueSet)
+  colorValueSet.filter(function(cv) { return cv !== null }).forEach(verify.ColorValue)
+  verify.function(cb)
 
   var self = this
 
@@ -332,11 +337,11 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, 
  * @param {function} cb
  */
 EPOBCColorDefinition.getAffectingInputs = function(tx, outputSet, getTxFn, cb) {
-  assert(tx instanceof Transaction, 'Expected tx instance of Transaction, got ' + tx)
-  assert(_.isArray(outputSet), 'Expected Array outputSet, got ' + outputSet)
-  assert(outputSet.every(function(oi) { return _.isNumber(oi) }),
-    'Expected outputSet Array numbers, got ' + outputSet)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  verify.Transaction(tx)
+  verify.array(outputSet)
+  outputSet.forEach(verify.number)
+  verify.function(getTxFn)
+  verify.function(cb)
 
   Q.fcall(function() {
     var tag = Tag.fromTx(tx)
@@ -372,6 +377,9 @@ EPOBCColorDefinition.getAffectingInputs = function(tx, outputSet, getTxFn, cb) {
  * @param {EPOBCColorDefinition~makeComposedTx} cb
  */
 EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
+  verify.OperationalTx(operationalTx)
+  verify.function(cb)
+
   var targetsByColor, targetsColorIds
   var uncoloredTargets, uncoloredNeeded
   var dustThreshold, coinsByColor, minPadding
@@ -458,7 +466,10 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
   }).then(function(uncoloredChange) {
     if (uncoloredChange.getValue() > dustThreshold.getValue()) {
       var uncoloredAddress = operationalTx.getChangeAddress(new UncoloredColorDefinition())
-      composedTx.addTxOut({ script: util.address2script(uncoloredAddress), value: uncoloredChange.getValue() })
+      composedTx.addTxOut({
+        script: util.address2script(uncoloredAddress).toHex(),
+        value: uncoloredChange.getValue()
+      })
     }
 
     composedTx.txIns[0].sequence = tag.toSequence()
@@ -477,6 +488,9 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
  * @param {EPOBCColorDefinition~composeGenesisTx} cb
  */
 EPOBCColorDefinition.composeGenesisTx = function(operationalTx, cb) {
+  verify.OperationalTx(operationalTx)
+  verify.function(cb)
+
   var composedTx, uncoloredNeeded, tag
 
   Q.fcall(function() {
@@ -505,7 +519,10 @@ EPOBCColorDefinition.composeGenesisTx = function(operationalTx, cb) {
     var uncoloredChange = coinsValue.minus(uncoloredNeeded).minus(fee)
     if (uncoloredChange.getValue() > operationalTx.getDustThreshold().getValue()) {
       var uncoloredAddress = operationalTx.getChangeAddress(new UncoloredColorDefinition())
-      composedTx.addTxOut({ script: util.address2script(uncoloredAddress), value: uncoloredChange.getValue() })
+      composedTx.addTxOut({
+        script: util.address2script(uncoloredAddress).toHex(),
+        value: uncoloredChange.getValue()
+      })
     }
 
     composedTx.txIns[0].sequence = tag.toSequence()

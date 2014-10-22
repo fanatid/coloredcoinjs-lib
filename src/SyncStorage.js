@@ -3,6 +3,8 @@ var _ = require('lodash')
 global.localStorage = require('localStorage')
 var store = require('store')
 
+var verify = require('./verify')
+
 
 /**
  * @class SyncStorage
@@ -14,6 +16,9 @@ function SyncStorage(opts) {
   opts = _.extend({
     globalPrefix: 'cc_'
   }, opts)
+
+  verify.object(opts)
+  verify.string(opts.globalPrefix)
 
   this.globalPrefix = opts.globalPrefix
 

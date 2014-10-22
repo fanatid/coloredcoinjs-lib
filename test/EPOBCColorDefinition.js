@@ -5,7 +5,7 @@ var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 var mocks = require('./mocks')
 var stubs = require('./stubs')
 
-var fixtures = require('./fixtures/color.EPOBCColorDefinition')
+var fixtures = require('./fixtures/EPOBCColorDefinition')
 
 
 describe('EPOBCColorDefinition', function() {
@@ -13,7 +13,7 @@ describe('EPOBCColorDefinition', function() {
   var tx1, tx2
 
   beforeEach(function() {
-    epobc = new EPOBCColorDefinition({ colorId: 1 },
+    epobc = new EPOBCColorDefinition(1,
       { txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0 })
     tx1 = new cclib.bitcoin.Transaction()
     tx2 = new cclib.bitcoin.Transaction()
@@ -42,7 +42,7 @@ describe('EPOBCColorDefinition', function() {
     })
 
     it('#2', function() {
-      epobc = new EPOBCColorDefinition({ colorId: 1 },
+      epobc = new EPOBCColorDefinition(1,
         { txId: '000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1', outIndex: 2, height: 312975 })
       expect(epobc.getDesc()).to.equal('epobc:000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1:2:312975')
     })
@@ -50,13 +50,13 @@ describe('EPOBCColorDefinition', function() {
 
   describe('isSpecialTx', function() {
     it('return true', function() {
-      epobc = new EPOBCColorDefinition({ colorId: 1 }, { txId: tx1.getId(), outIndex: 0, height: 0 })
+      epobc = new EPOBCColorDefinition(1, { txId: tx1.getId(), outIndex: 0, height: 0 })
       expect(epobc.isSpecialTx(tx1)).to.be.true
     })
 
     it('return false', function() {
       tx1.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      epobc = new EPOBCColorDefinition({ colorId: 1 }, { txId: tx1.getId(), outIndex: 0, height: 0 })
+      epobc = new EPOBCColorDefinition(1, { txId: tx1.getId(), outIndex: 0, height: 0 })
       expect(epobc.isSpecialTx(tx2)).to.be.false
     })
   })

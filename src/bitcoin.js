@@ -3,6 +3,8 @@ var Q = require('q')
 
 var bitcoin = require('bitcoinjs-lib')
 
+var verify = require('./verify')
+
 
 /**
  * @param {bitcoinjs-lib.Script} script
@@ -38,21 +40,6 @@ bitcoin.getAddressesFromOutputScript = function(script, network) {
   }
 
   return addresses.map(function(addr) { return addr.toBase58Check() })
-}
-
-
-/**
- * Check txId is 32 bytes hex string
- *
- * @param {string} txId
- * @return {boolean}
- */
-bitcoin.Transaction.isTxId = function(txId) {
-  var set = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
-
-  return (_.isString(txId) &&
-          txId.length === 64 &&
-          txId.toLowerCase().split('').every(function(x) { return set.indexOf(x) !== -1 }))
 }
 
 var transactionClone = bitcoin.Transaction.prototype.clone
@@ -94,6 +81,9 @@ bitcoin.Transaction.prototype.clone = function() {
  * @param {Transaction~ensureInputValues} cb
  */
 bitcoin.Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
+  verify.function(getTxFn)
+  verify.function(cb)
+
   var tx = this.clone()
 
   Q.fcall(function() {

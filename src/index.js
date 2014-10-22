@@ -1,4 +1,7 @@
 module.exports = {
+  /** types checker */
+  verify: require('./verify'),
+
   /** extended bitcoinjs-lib */
   bitcoin: require('./bitcoin'),
 

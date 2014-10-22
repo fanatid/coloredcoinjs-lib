@@ -5,6 +5,7 @@ var Q = require('q')
 var ColorDefinition = require('./ColorDefinition')
 var ColorTarget = require('./ColorTarget')
 var util = require('./util')
+var verify = require('./verify')
 
 
 var UncoloredColorId = 0
@@ -41,6 +42,9 @@ UncoloredColorDefinition.prototype.getDesc = function() {
  * @throws {Error} If colorId not equal UncoloredColorDefinition.colorId or desc not equal ''
  */
 UncoloredColorDefinition.fromDesc = function(colorId, desc) {
+  verify.number(colorId)
+  verify.string(desc)
+
   if (colorId !== UncoloredColorId)
     throw new Error('wrong colorId')
 
@@ -63,6 +67,9 @@ UncoloredColorDefinition.fromDesc = function(colorId, desc) {
  * @param {UncoloredColorDefinition~makeComposedTx} cb
  */
 UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
+  verify.OperationalTx(operationalTx)
+  verify.function(cb)
+
   var composedTx
   var targets, targetsTotalValue
 
@@ -84,7 +91,7 @@ UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
     if (change.getValue() > operationalTx.getDustThreshold().getValue()) {
       var changeAddress = operationalTx.getChangeAddress(new UncoloredColorDefinition())
       composedTx.addTxOut({
-        script: util.address2script(changeAddress),
+        script: util.address2script(changeAddress).toHex(),
         value: change.getValue()
       })
     }

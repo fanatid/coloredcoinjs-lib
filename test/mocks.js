@@ -1,30 +1,25 @@
-var assert = require('assert')
-var _ = require('lodash')
-
 var cclib = require('../src/index')
 var Transaction = cclib.bitcoin.Transaction
+var verify = cclib.verify
 
 
 /**
  * Mock for transaction.Transaction
  *
  * @param {string} txId
- * @param {Array} inputs
- * @param {Array} outputs
- * @param {Array} inputSequenceIndices
+ * @param {number[]} inputs
+ * @param {number[]} outputs
+ * @param {number[]} inputSequenceIndices
  * @return {transaction.Transaction}
  */
 function createTx(txId, inputs, outputs, inputSequenceIndices) {
-  assert(Transaction.isTxId(txId), 'Expected transaction id txId, got ' + txId)
-  assert(_.isArray(inputs), 'Expected inputs Array, got ' + inputs)
-  assert(inputs.every(function(x) { return _.isNumber(x)}),
-    'Expected inputs Array of numbers, got ' + inputs)
-  assert(_.isArray(outputs), 'Expected outputs Array, got ' + outputs)
-  assert(outputs.every(function(x) { return _.isNumber(x)}),
-    'Expected outputs Array of numbers, got ' + outputs)
-  assert(_.isArray(inputSequenceIndices), 'Expected inputSequenceIndices Array, got ' + inputSequenceIndices)
-  assert(inputSequenceIndices.every(function(x) { return _.isNumber(x)}),
-    'Expected inputSequenceIndices Array of numbers, got ' + inputSequenceIndices)
+  verify.txId(txId)
+  verify.array(inputs)
+  inputs.forEach(verify.number)
+  verify.array(outputs)
+  outputs.forEach(verify.number)
+  verify.array(inputSequenceIndices)
+  inputSequenceIndices.forEach(verify.number)
 
   var tx = new Transaction()
 

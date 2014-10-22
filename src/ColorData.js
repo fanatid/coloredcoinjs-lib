@@ -1,13 +1,7 @@
-var assert = require('assert')
-
-var _ = require('lodash')
 var Q = require('q')
 
-var ColorDefinition = require('./ColorDefinition')
 var ColorValue = require('./ColorValue')
-var ColorDataStorage = require('./ColorDataStorage')
-var Transaction = require('./bitcoin').Transaction
-
+var verify = require('./verify')
 
 /**
  * @class ColorData
@@ -15,8 +9,7 @@ var Transaction = require('./bitcoin').Transaction
  * @param {ColorDataStorage} storage
  */
 function ColorData(storage) {
-  assert(storage instanceof ColorDataStorage,
-    'Expected storage instance of ColorDataStorage, got ' + storage)
+  verify.ColorDataStorage(storage)
 
   this.storage = storage
 }
@@ -30,22 +23,19 @@ function ColorData(storage) {
  * @return {?ColorValue}
  */
 ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
-  assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
-  assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(colorDefinition instanceof ColorDefinition,
-    'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
-
-  var colorValue = null
+  verify.txId(txId)
+  verify.number(outIndex)
+  verify.ColorDefinition(colorDefinition)
 
   var colorData = this.storage.get({
     colorId: colorDefinition.getColorId(),
     txId: txId,
     outIndex: outIndex
   })
-  if (colorData !== null)
-    colorValue = new ColorValue(colorDefinition, colorData.value)
+  if (colorData === null)
+    return null
 
-  return colorValue
+  return new ColorValue(colorDefinition, colorData.value)
 }
 
 /**
@@ -63,14 +53,13 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
  * @param {ColorData~scanTx} cb Called on finished with params (error)
  */
 ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxFn, cb) {
-  assert(tx instanceof Transaction, 'Expected Transaction tx, got ' + tx)
-  assert(_.isArray(outputIndices) || _.isNull(outputIndices), 'Expected Array|null outputIndices, got ' + outputIndices)
-  if (_.isArray(outputIndices))
-    assert(outputIndices.every(function(oi) { return _.isNumber(oi) }),
-      'Expected outputIndices Array numbers, got ' + outputIndices)
-  assert(colorDefinition instanceof ColorDefinition,
-    'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  verify.Transaction(tx)
+  if (outputIndices !== null) {
+    verify.array(outputIndices)
+    outputIndices.forEach(verify.number)
+  }
+  verify.ColorDefinition(colorDefinition)
+  verify.function(cb)
 
   var self = this
 
@@ -130,11 +119,11 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxF
  * @param {ColorData~getColorValue} cb
  */
 ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, getTxFn, cb) {
-  assert(Transaction.isTxId(txId), 'Expected transactionId txId, got ' + txId)
-  assert(_.isNumber(outIndex), 'Expected number outIndex, got ' + outIndex)
-  assert(colorDefinition instanceof ColorDefinition,
-    'Expected ColorDefinition colorDefinition, got ' + colorDefinition)
-  assert(_.isFunction(cb), 'Expected function cb, got ' + cb)
+  verify.txId(txId)
+  verify.number(outIndex)
+  verify.ColorDefinition(colorDefinition)
+  verify.function(getTxFn)
+  verify.function(cb)
 
   var self = this
 
@@ -196,6 +185,11 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
  * @param {ColorData~getColorValuesForTx} cb
  */
 ColorData.prototype.getColorValuesForTx = function(tx, colorDefinition, getTxFn, cb) {
+  verify.Transaction(tx)
+  verify.ColorDefinition(colorDefinition)
+  verify.function(getTxFn)
+  verify.function(cb)
+
   var self = this
 
   var inColorValuesPromises = tx.ins.map(function(input) {
@@ -204,7 +198,7 @@ ColorData.prototype.getColorValuesForTx = function(tx, colorDefinition, getTxFn,
   })
 
   Q.all(inColorValuesPromises).then(function(inColorValues) {
-    return Q.ninvoke(colorDefinition, 'runKernel', tx, getTxFn)
+    return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn)
 
   }).done(function(outColorValues) { cb(null, outColorValues) }, function(error) { cb(error) })
 }

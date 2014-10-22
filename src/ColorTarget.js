@@ -1,3 +1,6 @@
+var verify = require('./verify')
+
+
 /**
  * @class ColorTarget
  *
@@ -5,6 +8,9 @@
  * @param {ColorValue} colorValue
  */
 function ColorTarget(script, colorValue) {
+  verify.hexString(script)
+  verify.ColorValue(colorValue)
+
   this.script = script
   this.colorValue = colorValue
 }

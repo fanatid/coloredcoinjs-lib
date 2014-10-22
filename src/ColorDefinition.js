@@ -1,3 +1,6 @@
+var verify = require('./verify')
+
+
 /**
  * Represents a color definition desc. This means how color exists and
  *  is transferred in the blockchain
@@ -6,6 +9,8 @@
  * @param {number} colorId
  */
 function ColorDefinition(colorId) {
+  verify.number(colorId)
+
   this.colorId = colorId
 }
 

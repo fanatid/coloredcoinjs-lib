@@ -1,3 +1,6 @@
+var verify = require('./verify')
+
+
 /**
  * @class ColorValue
  *
@@ -5,6 +8,9 @@
  * @param {number} value
  */
 function ColorValue(colordef, value) {
+  verify.ColorDefinition(colordef)
+  verify.number(value)
+
   this.colordef = colordef
   this.value = value
 }

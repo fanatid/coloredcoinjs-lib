@@ -1,10 +1,9 @@
-var assert = require('assert')
-
 var _ = require('lodash')
 
 var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var EPOBCColorDefinition = require('./EPOBCColorDefinition')
+var verify = require('./verify')
 
 
 /**
@@ -31,10 +30,11 @@ function record2ColorDefinition(record) {
 
 /**
  * @class ColorDefinitionManager
- *
  * @param {ColorDefinitionStorage} storage
  */
 function ColorDefinitionManager(storage) {
+  verify.ColorDefinitionStorage(storage)
+
   this.storage = storage
 }
 
@@ -61,6 +61,8 @@ ColorDefinitionManager.prototype.getGenesis = function() {
  * @return {?(EPOBCColorDefinition)}
  */
 ColorDefinitionManager.prototype.getColorDefenitionClsForType = function(type) {
+  verify.string(type)
+
   switch (type) {
     case 'epobc':
       return EPOBCColorDefinition
@@ -77,6 +79,8 @@ ColorDefinitionManager.prototype.getColorDefenitionClsForType = function(type) {
  * @return {?ColorDefinition}
  */
 ColorDefinitionManager.prototype.getByColorId = function(colorId) {
+  verify.number(colorId)
+
   var uncolored = this.getUncolored()
   if (uncolored.getColorId() === colorId)
     return uncolored
@@ -96,8 +100,12 @@ ColorDefinitionManager.prototype.getByColorId = function(colorId) {
  * @param {string} desc
  * @param {boolean} [autoAdd=true]
  * @return {?ColorDefinition}
+ * @throws {Error} If bad desc
  */
 ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
+  verify.string(desc)
+  if (autoAdd) verify.boolean(autoAdd)
+
   var uncolored = this.getUncolored()
   if (uncolored.getDesc() === desc)
     return uncolored
@@ -113,7 +121,8 @@ ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
     return null
 
   var colordef = record2ColorDefinition({ colorId: -1, desc: desc })
-  assert(colordef !== null, 'Bad desc: ' + desc)
+  if (colordef === null)
+    throw new Error('Bad desc: ' + desc)
 
   record = this.storage.add(desc)
   return record2ColorDefinition(record)

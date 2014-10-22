@@ -2,6 +2,8 @@ var crypto = require('crypto')
 
 var base58 = require('bs58')
 
+var verify = require('./verify')
+
 
 /**
  * @class ColorSet
@@ -9,9 +11,13 @@ var base58 = require('bs58')
  * A set of colors which belong to certain a asset.
  *
  * @param {ColorDefinitionManager} cdManager
- * @param {Array} colorDescs
+ * @param {string[]} colorDescs
  */
 function ColorSet(cdManager, colorDescs) {
+  verify.ColorDefinitionManager(cdManager)
+  verify.array(colorDescs)
+  colorDescs.forEach(verify.string)
+
   this.colorDescs = colorDescs
   this.colorDefinitions = this.colorDescs.map(function(colorDesc) {
     return cdManager.resolveByDesc(colorDesc)

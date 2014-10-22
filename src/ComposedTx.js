@@ -1,18 +1,14 @@
-var assert = require('assert')
-
 var _ = require('lodash')
 
-var OperationalTx = require('./OperationalTx')
+var verify = require('./verify')
 
 
 /**
  * @class ComposedTx
- *
  * @param {OperationalTx} operationalTx
  */
 function ComposedTx(operationalTx) {
-  assert(operationalTx instanceof OperationalTx,
-    'Expected operationalTx instance of OperationalTx, got ' + operationalTx)
+  verify.OperationalTx(operationalTx)
 
   this.operationalTx = operationalTx
   this.txIns = []
@@ -44,18 +40,23 @@ ComposedTx.prototype.getTxIns = function() {
 /**
  * @param {Object} data
  * @param {ColorTarget} [data.target] If data.target is not undefined, script and value will be extracted from target
- * @param {Buffer} [data.script]
+ * @param {string} [data.script]
  * @param {number} [data.value]
  * @throws {Error} If target is colored
  */
 ComposedTx.prototype.addTxOut = function(data) {
   if (!_.isUndefined(data.target)) {
+    verify.object(data.target)
+
     if (!data.target.isUncolored())
       throw new Error('target is colored')
 
     data.script = data.target.getScript()
     data.value = data.target.getValue()
   }
+
+  verify.hexString(data.script)
+  verify.number(data.value)
 
   this.txOuts.push({ script: data.script, value: data.value })
 }
@@ -89,6 +90,11 @@ ComposedTx.prototype.estimateSize = function(extra) {
     bytes:  0
   }, extra)
 
+  verify.object(extra)
+  verify.number(extra.txIns)
+  verify.number(extra.txOuts)
+  verify.number(extra.bytes)
+
   var size = (181 * (this.txIns.length + extra.txIns) +
               34 * (this.txOuts.length + extra.txOuts) + 
               10 + extra.bytes)
@@ -110,6 +116,11 @@ ComposedTx.prototype.estimateRequiredFee = function(extra) {
     txOuts: 1,
     bytes:  0
   }, extra)
+
+  verify.object(extra)
+  verify.number(extra.txIns)
+  verify.number(extra.txOuts)
+  verify.number(extra.bytes)
 
   var size = this.estimateSize(extra)
   var fee = this.operationalTx.getRequiredFee(size)
