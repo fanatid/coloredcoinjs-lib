@@ -92,11 +92,10 @@ function groupTargetsByColor(targets, targetCls) {
 
 /**
  * @param {string} address
- * @return {Buffer}
+ * @return {bitcoinjs-lib.Script}
  */
 function address2script(address) {
-  var script = bitcoin.Address.fromBase58Check(address).toOutputScript()
-  return script.toBuffer()
+  return bitcoin.Address.fromBase58Check(address).toOutputScript()
 }
 
 

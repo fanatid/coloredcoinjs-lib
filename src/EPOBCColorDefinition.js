@@ -406,7 +406,8 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
           var change = coinsValue.minus(neededSum)
           if (change.getValue() > 0) {
             var changeAddress = operationalTx.getChangeAddress(change.getColorDefinition())
-            var changeTarget = new ColorTarget(util.address2script(changeAddress), change)
+            var changeScript = util.address2script(changeAddress)
+            var changeTarget = new ColorTarget(changeScript.toHex(), change)
             targets.push(changeTarget)
           }
 

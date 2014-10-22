@@ -186,7 +186,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
 /**
  * @callback ColorData~getColorValuesForTx
  * @param {?Error} error
- * @param {[]?ColorValue} colorValues
+ * @param {?ColorValue[]} colorValues
  */
 
 /**

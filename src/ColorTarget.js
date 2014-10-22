@@ -1,7 +1,7 @@
 /**
  * @class ColorTarget
  *
- * @param {Buffer} script
+ * @param {string} script
  * @param {ColorValue} colorValue
  */
 function ColorTarget(script, colorValue) {
