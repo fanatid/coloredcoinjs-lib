@@ -9,13 +9,15 @@ function createInstanceCheck(importFn) {
   }
 }
 
-function isHexSymbol(sym) { return '0123456789abcdef'.indexOf(sym) !== -1 }
 function isHexString(thing) {
-  return (
-    _.isString(thing) &&
-    thing.length % 2 === 0 &&
-    thing.toLowerCase().split('').every(isHexSymbol)
-  )
+  if (!(_.isString(thing) && thing.length % 2 === 0))
+    return false
+
+  for (var i = 0; i < thing.length; ++i)
+    if ('0123456789abcdef'.indexOf(thing[i].toLowerCase()) === -1)
+      return false
+
+  return true
 }
 
 function isTxId(thing) {
@@ -78,8 +80,9 @@ var expected = {
 function extendVerify(verify, functions, expected) {
   Object.keys(functions).forEach(function(name) {
     verify[name] = function() {
-      if (functions[name].call(null, arguments[0]) === false)
-        throw new TypeError('Expected ' + expected[name] + ', got ' + arguments[0])
+      var args = Array.prototype.slice.call(arguments)
+      if (functions[name].apply(null, args) === false)
+        throw new TypeError('Expected ' + expected[name] + ', got ' + args)
     }
   })
 }

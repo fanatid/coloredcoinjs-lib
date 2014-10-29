@@ -103,15 +103,14 @@ ColorDefinitionManager.prototype.getByColorId = function(colorId) {
  * @throws {Error} If bad desc
  */
 ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
+  if (_.isUndefined(autoAdd)) autoAdd = true
+
   verify.string(desc)
-  if (autoAdd) verify.boolean(autoAdd)
+  verify.boolean(autoAdd)
 
   var uncolored = this.getUncolored()
   if (uncolored.getDesc() === desc)
     return uncolored
-
-  if (_.isUndefined(autoAdd))
-    autoAdd = true
 
   var record = this.storage.getByDesc(desc)
   if (record !== null)
