@@ -3,7 +3,7 @@ var expect = require('chai').expect
 var cclib = require('../src/index')
 
 
-describe.only('ColorDataStorage', function() {
+describe('ColorDataStorage', function() {
   var cdStore
   var txId1 = '0000000000000000000000000000000000000000000000000000000000000000'
   var txId2 = '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff'
