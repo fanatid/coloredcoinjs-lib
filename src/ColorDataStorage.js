@@ -7,6 +7,14 @@ var verify = require('./verify')
 
 
 /**
+ * @typedef {Object} ColorDataRecord
+ * @property {number} colorId
+ * @property {string} txId
+ * @property {number} outIndex
+ * @property {number} value
+ */
+
+/**
  * @class ColorDataStorage
  * @extends SyncStorage
  */
@@ -14,23 +22,28 @@ function ColorDataStorage() {
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 
   this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
-
-  if (!_.isArray(this.store.get(this.colorTxsDBKey)))
-    this.store.set(this.colorTxsDBKey, [])
 }
 
 inherits(ColorDataStorage, SyncStorage)
 
 /**
- * Todo: throw if exists
- * Add colorId txOutput to store and return true if data was added
- *
- * @param {Object} data
- * @param {number} data.colorId
- * @param {string} data.txId
- * @param {number} data.outIndex
- * @param {number} data.value
- * @return {boolean}
+ * @return {ColorDataRecord[]}
+ */
+ColorDataStorage.prototype._getCoinRecords = function() {
+  return this.store.get(this.colorTxsDBKey) || []
+}
+
+/**
+ * @param {ColorDataRecord[]}
+ */
+ColorDataStorage.prototype._saveCoinRecords = function(coins) {
+  this.store.set(this.colorTxsDBKey, coins)
+}
+
+/**
+ * @param {ColorDataRecord} data
+ * @return {ColorDataRecord}
+ * @throws {Error} If exists
  */
 ColorDataStorage.prototype.add = function(data) {
   verify.object(data)
@@ -39,53 +52,63 @@ ColorDataStorage.prototype.add = function(data) {
   verify.number(data.outIndex)
   verify.number(data.value)
 
-  var colorTxs = this.store.get(this.colorTxsDBKey) || []
+  if (this.get(data) !== null)
+    throw new Error('Same color data exists')
 
-  var exists = this.get(data) !== null
-
-  if (!exists) {
-    colorTxs.push({
-      colorId: data.colorId,
-      txId: data.txId,
-      outIndex: data.outIndex,
-      value: data.value
-    })
-
-    this.store.set(this.colorTxsDBKey, colorTxs)
+  var record = {
+    colorId: data.colorId,
+    txId: data.txId,
+    outIndex: data.outIndex,
+    value: data.value
   }
 
-  return !exists
+  var records = this._getCoinRecords()
+  records.push(record)
+  this._saveCoinRecords(records)
+
+  return record
 }
 
 /**
- * Get data from store or null if not found
- *
  * @param {Object} data
  * @param {number} data.colorId
  * @param {string} data.txId
  * @param {number} data.outIndex
- * @return {?Object}
+ * @return {?ColorDataRecord}
  */
-// Todo: describe return object
 ColorDataStorage.prototype.get = function(data) {
   verify.object(data)
   verify.number(data.colorId)
   verify.txId(data.txId)
   verify.number(data.outIndex)
 
-  var result = null
-  var colorTxs = this.store.get(this.colorTxsDBKey) || []
-
-  colorTxs.some(function(record) {
-    if (record.colorId === data.colorId && record.txId === data.txId && record.outIndex === data.outIndex) {
-      result = record
-      return true
-    }
-
-    return false
+  var record = _.find(this._getCoinRecords(), function(obj) {
+    return obj.colorId === data.colorId && obj.txId === data.txId && obj.outIndex === data.outIndex
   })
 
-  return result
+  return record || null
+}
+
+/**
+ * @param {number} [colorId]
+ * @param {string} [txId]
+ * @param {number} [outIndex]
+ */
+ColorDataStorage.prototype.remove = function(data) {
+  verify.object(data)
+  if (_.isUndefined(data.colorId) && _.isUndefined(data.txId) && _.isUndefined(data.outIndex))
+    throw new Error('Bad data')
+  if (!_.isUndefined(data.colorId)) verify.number(data.colorId)
+  if (!_.isUndefined(data.txId)) verify.txId(data.txId)
+  if (!_.isUndefined(data.outIndex)) verify.number(data.outIndex)
+
+  var records = this._getCoinRecords().filter(function(record) {
+    if (!_.isUndefined(data.colorId) && record.colorId !== data.colorId) return true
+    if (!_.isUndefined(data.txId) && record.txId !== data.txId) return true
+    if (!_.isUndefined(data.outIndex) && record.outIndex !== data.outIndex) return true
+    return false
+  })
+  this._saveCoinRecords(records)
 }
 
 /**

@@ -11,7 +11,7 @@ var verify = require('./verify')
 function ColorData(storage) {
   verify.ColorDataStorage(storage)
 
-  this.storage = storage
+  this._storage = storage
 }
 
 /**
@@ -27,7 +27,7 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
   verify.number(outIndex)
   verify.ColorDefinition(colorDefinition)
 
-  var colorData = this.storage.get({
+  var colorData = this._storage.get({
     colorId: colorDefinition.getColorId(),
     txId: txId,
     outIndex: outIndex
@@ -68,7 +68,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxF
     var empty = true
 
     tx.ins.forEach(function(input) {
-      var colorData = self.storage.get({
+      var colorData = self._storage.get({
         colorId: colorDefinition.getColorId(),
         txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
         outIndex: input.index
@@ -90,7 +90,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxF
         var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
 
         if (!skipAdd)
-          self.storage.add({
+          self._storage.add({
             colorId: colorDefinition.getColorId(),
             txId: tx.getId(),
             outIndex: index,
@@ -201,6 +201,17 @@ ColorData.prototype.getColorValuesForTx = function(tx, colorDefinition, getTxFn,
     return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn)
 
   }).done(function(outColorValues) { cb(null, outColorValues) }, function(error) { cb(error) })
+}
+
+/**
+ * @param {string} txId
+ * @param {number} outIndex
+ */
+ColorData.prototype.removeColorValues = function(txId, outIndex) {
+  verify.txId(txId)
+  verify.number(outIndex)
+
+  return this._storage.remove({ txId: txId, outIndex: outIndex })
 }
 
 

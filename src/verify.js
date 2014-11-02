@@ -14,7 +14,7 @@ function isHexString(thing) {
     return false
 
   for (var i = 0; i < thing.length; ++i)
-    if ('0123456789abcdef'.indexOf(thing[i].toLowerCase()) === -1)
+    if ('0123456789abcdefABCDEF'.indexOf(thing[i]) === -1)
       return false
 
   return true

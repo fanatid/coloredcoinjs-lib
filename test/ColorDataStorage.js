@@ -3,7 +3,7 @@ var expect = require('chai').expect
 var cclib = require('../src/index')
 
 
-describe('ColorDataStorage', function() {
+describe.only('ColorDataStorage', function() {
   var cdStore
   var txId1 = '0000000000000000000000000000000000000000000000000000000000000000'
   var txId2 = '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff'
@@ -27,15 +27,25 @@ describe('ColorDataStorage', function() {
     expect(result).to.deep.equal({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
   })
 
-  it('add return false', function() {
+  it('add throw error', function() {
     cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
-    var result = cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
-    expect(result).to.be.false
+    var fn = function() { cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 }) }
+    expect(fn).to.throw(Error)
   })
 
   it('get return null', function() {
     cdStore.add({ colorId: 2, txId: txId1, outIndex: 0, value: 1 })
     var result = cdStore.get({ colorId: 1, txId: txId1, outIndex: 0 })
+    expect(result).to.be.null
+  })
+
+  it('remove', function() {
+    cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+    var result = cdStore.get({ colorId: 1, txId: txId1, outIndex: 0 })
+    expect(result).to.deep.equal({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
+
+    cdStore.remove({ txId: txId1, outIndex: 0 })
+    result = cdStore.get({ colorId: 1, txId: txId1, outIndex: 0 })
     expect(result).to.be.null
   })
 })
