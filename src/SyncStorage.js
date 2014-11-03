@@ -8,7 +8,6 @@ var verify = require('./verify')
 
 /**
  * @class SyncStorage
- *
  * @param {Object} [opts]
  * @param {string} [opts.globalPrefix=cc_]
  */

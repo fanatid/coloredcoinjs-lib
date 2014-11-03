@@ -35,7 +35,7 @@ function record2ColorDefinition(record) {
 function ColorDefinitionManager(storage) {
   verify.ColorDefinitionStorage(storage)
 
-  this.storage = storage
+  this._storage = storage
 }
 
 /**
@@ -85,7 +85,7 @@ ColorDefinitionManager.prototype.getByColorId = function(colorId) {
   if (uncolored.getColorId() === colorId)
     return uncolored
 
-  var record = this.storage.getByColorId(colorId)
+  var record = this._storage.getByColorId(colorId)
 
   if (record !== null)
     return record2ColorDefinition(record)
@@ -112,7 +112,7 @@ ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
   if (uncolored.getDesc() === desc)
     return uncolored
 
-  var record = this.storage.getByDesc(desc)
+  var record = this._storage.getByDesc(desc)
   if (record !== null)
     return record2ColorDefinition(record)
 
@@ -123,7 +123,7 @@ ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
   if (colordef === null)
     throw new Error('Bad desc: ' + desc)
 
-  record = this.storage.add(desc)
+  record = this._storage.add(desc)
   return record2ColorDefinition(record)
 }
 
@@ -133,7 +133,7 @@ ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
  * @return {ColorDefinition[]}
  */
 ColorDefinitionManager.prototype.getAllColorDefinitions = function() {
-  return this.storage.getAll().map(record2ColorDefinition)
+  return this._storage.getAll().map(record2ColorDefinition)
 }
 
 

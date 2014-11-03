@@ -22,6 +22,10 @@ function ColorDataStorage() {
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 
   this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
+  this.colorTxRecords = this.store.get(this.colorTxsDBKey) || []
+
+  if (_.isUndefined(this.store.get(this.colorTxsDBKey + '_version')))
+    this.store.set(this.colorTxsDBKey + '_version', '1')
 }
 
 inherits(ColorDataStorage, SyncStorage)
@@ -29,15 +33,16 @@ inherits(ColorDataStorage, SyncStorage)
 /**
  * @return {ColorDataRecord[]}
  */
-ColorDataStorage.prototype._getCoinRecords = function() {
-  return this.store.get(this.colorTxsDBKey) || []
+ColorDataStorage.prototype._getRecords = function() {
+  return this.colorTxRecords
 }
 
 /**
  * @param {ColorDataRecord[]}
  */
-ColorDataStorage.prototype._saveCoinRecords = function(coins) {
-  this.store.set(this.colorTxsDBKey, coins)
+ColorDataStorage.prototype._saveRecords = function(records) {
+  this.colorTxRecords = records
+  this.store.set(this.colorTxsDBKey, records)
 }
 
 /**
@@ -62,9 +67,9 @@ ColorDataStorage.prototype.add = function(data) {
     value: data.value
   }
 
-  var records = this._getCoinRecords()
+  var records = this._getRecords()
   records.push(record)
-  this._saveCoinRecords(records)
+  this._saveRecords(records)
 
   return record
 }
@@ -82,7 +87,7 @@ ColorDataStorage.prototype.get = function(data) {
   verify.txId(data.txId)
   verify.number(data.outIndex)
 
-  var record = _.find(this._getCoinRecords(), function(obj) {
+  var record = _.find(this._getRecords(), function(obj) {
     return obj.colorId === data.colorId && obj.txId === data.txId && obj.outIndex === data.outIndex
   })
 
@@ -102,13 +107,13 @@ ColorDataStorage.prototype.remove = function(data) {
   if (!_.isUndefined(data.txId)) verify.txId(data.txId)
   if (!_.isUndefined(data.outIndex)) verify.number(data.outIndex)
 
-  var records = this._getCoinRecords().filter(function(record) {
+  var records = this._getRecords().filter(function(record) {
     if (!_.isUndefined(data.colorId) && record.colorId !== data.colorId) return true
     if (!_.isUndefined(data.txId) && record.txId !== data.txId) return true
     if (!_.isUndefined(data.outIndex) && record.outIndex !== data.outIndex) return true
     return false
   })
-  this._saveCoinRecords(records)
+  this._saveRecords(records)
 }
 
 /**
@@ -116,6 +121,7 @@ ColorDataStorage.prototype.remove = function(data) {
  */
 ColorDataStorage.prototype.clear = function() {
   this.store.remove(this.colorTxsDBKey)
+  this.store.remove(this.colorTxsDBKey + '_version')
 }
 
 

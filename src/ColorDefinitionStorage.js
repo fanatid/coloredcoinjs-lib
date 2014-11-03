@@ -9,7 +9,7 @@ var verify = require('./verify')
 /**
  * @typedef {Object} ColorDefinitionRecord
  * @property {number} id
- * @property {string} descs
+ * @property {string} desc
  */
 
 /**
@@ -20,12 +20,28 @@ function ColorDefinitionStorage() {
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 
   this.colorDefinitionsDBKey = this.globalPrefix + 'ColorDefinitions'
+  this.colorDefinitionsRecords = this.store.get(this.colorDefinitionsDBKey) || []
 
-  if (!_.isArray(this.store.get(this.colorDefinitionsDBKey)))
-    this.store.set(this.colorDefinitionsDBKey, [])
+  if (_.isUndefined(this.store.get(this.colorDefinitionsDBKey + '_version')))
+    this.store.set(this.colorDefinitionsDBKey + '_version', '1')
 }
 
 inherits(ColorDefinitionStorage, SyncStorage)
+
+/**
+ * @return {ColorDefinitionRecord[]}
+ */
+ColorDefinitionStorage.prototype._getRecords = function() {
+  return this.colorDefinitionsRecords
+}
+
+/**
+ * @param {ColorDefinitionRecord[]}
+ */
+ColorDefinitionStorage.prototype._saveRecords = function(records) {
+  this.colorDefinitionsRecords = records
+  this.store.set(this.colorDefinitionsDBKey, records)
+}
 
 /**
  * @param {string} desc
@@ -36,9 +52,9 @@ ColorDefinitionStorage.prototype.add = function(desc) {
   verify.string(desc)
 
   var newColorId = 1
-  var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
+  var records = this._getRecords()
 
-  colorDefinitions.forEach(function(record) {
+  records.forEach(function(record) {
     if (record.desc === desc)
       throw new Error('UniqueConstraint')
 
@@ -47,56 +63,45 @@ ColorDefinitionStorage.prototype.add = function(desc) {
   })
 
   var record = { colorId: newColorId, desc: desc }
-  colorDefinitions.push(record)
-  this.store.set(this.colorDefinitionsDBKey, colorDefinitions)
+  records.push(record)
+  this._saveRecords(records)
 
   return record
 }
 
 /**
- * Get record by colorId
- *
  * @param {number} colorId
  * @return {?ColorDefinitionRecord}
  */
 ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
   verify.number(colorId)
 
-  var records = this.getAll().filter(function(record) {
+  var record = _.find(this._getRecords(), function(record) {
     return record.colorId === colorId
   })
 
-  if (records.length === 0)
-    return null
-
-  return records[0]
+  return record || null
 }
 
 /**
- * Get record by desc
- *
  * @param {string} desc
  * @return {?ColorDefinitionRecord}
  */
 ColorDefinitionStorage.prototype.getByDesc = function(desc) {
   verify.string(desc)
 
-  var records = this.getAll().filter(function(record) {
+  var record = _.find(this._getRecords(), function(record) {
     return record.desc === desc
   })
 
-  if (records.length === 0)
-    return null
-
-  return records[0]
+  return record || null
 }
 
 /**
  * @return {ColorDefinitionRecord[]}
  */
 ColorDefinitionStorage.prototype.getAll = function() {
-  var colorDefinitions = this.store.get(this.colorDefinitionsDBKey) || []
-  return colorDefinitions
+  return this._getRecords()
 }
 
 /**
