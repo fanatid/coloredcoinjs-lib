@@ -29,7 +29,7 @@ describe('ColorDataStorage', function() {
 
   it('add throw error', function() {
     cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 })
-    var fn = function() { cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 1 }) }
+    var fn = function() { cdStore.add({ colorId: 1, txId: txId1, outIndex: 0, value: 2 }) }
     expect(fn).to.throw(Error)
   })
 
