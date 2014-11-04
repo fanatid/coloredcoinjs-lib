@@ -60,18 +60,16 @@ ColorDataStorage.prototype.add = function(data) {
   if (this.get(data) !== null)
     throw new Error('Same color data exists')
 
-  var record = {
+  var records = this._getRecords()
+  records.push({
     colorId: data.colorId,
     txId: data.txId,
     outIndex: data.outIndex,
     value: data.value
-  }
-
-  var records = this._getRecords()
-  records.push(record)
+  })
   this._saveRecords(records)
 
-  return record
+  return _.clone(_.last(records))
 }
 
 /**
@@ -91,7 +89,7 @@ ColorDataStorage.prototype.get = function(data) {
     return obj.colorId === data.colorId && obj.txId === data.txId && obj.outIndex === data.outIndex
   })
 
-  return record || null
+  return _.isUndefined(record) ? null : _.clone(record)
 }
 
 /**

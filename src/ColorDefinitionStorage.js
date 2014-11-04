@@ -62,11 +62,10 @@ ColorDefinitionStorage.prototype.add = function(desc) {
       newColorId = record.colorId + 1
   })
 
-  var record = { colorId: newColorId, desc: desc }
-  records.push(record)
+  records.push({ colorId: newColorId, desc: desc })
   this._saveRecords(records)
 
-  return record
+  return _.clone(_.last(records))
 }
 
 /**
@@ -80,7 +79,7 @@ ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
     return record.colorId === colorId
   })
 
-  return record || null
+  return _.isUndefined(record) ? null : _.clone(record)
 }
 
 /**
@@ -94,14 +93,14 @@ ColorDefinitionStorage.prototype.getByDesc = function(desc) {
     return record.desc === desc
   })
 
-  return record || null
+  return _.isUndefined(record) ? null : _.clone(record)
 }
 
 /**
  * @return {ColorDefinitionRecord[]}
  */
 ColorDefinitionStorage.prototype.getAll = function() {
-  return this._getRecords()
+  return _.cloneDeep(this._getRecords())
 }
 
 /**
