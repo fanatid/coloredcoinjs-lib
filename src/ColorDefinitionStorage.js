@@ -75,10 +75,7 @@ ColorDefinitionStorage.prototype.add = function(desc) {
 ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
   verify.number(colorId)
 
-  var record = _.find(this._getRecords(), function(record) {
-    return record.colorId === colorId
-  })
-
+  var record = _.find(this._getRecords(), { colorId: colorId })
   return _.isUndefined(record) ? null : _.clone(record)
 }
 
@@ -89,9 +86,7 @@ ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
 ColorDefinitionStorage.prototype.getByDesc = function(desc) {
   verify.string(desc)
 
-  var record = _.find(this._getRecords(), function(record) {
-    return record.desc === desc
-  })
+  var record = _.find(this._getRecords(), { desc: desc })
 
   return _.isUndefined(record) ? null : _.clone(record)
 }
