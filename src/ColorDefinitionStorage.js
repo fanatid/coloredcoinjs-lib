@@ -103,6 +103,7 @@ ColorDefinitionStorage.prototype.getAll = function() {
  */
 ColorDefinitionStorage.prototype.clear = function() {
   this.store.remove(this.colorDefinitionsDBKey)
+  this.store.remove(this.colorDefinitionsDBKey + '_version')
 }
 
 
