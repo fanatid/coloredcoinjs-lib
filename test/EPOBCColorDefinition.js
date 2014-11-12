@@ -44,7 +44,8 @@ describe('EPOBCColorDefinition', function() {
     it('#2', function() {
       epobc = new EPOBCColorDefinition(1,
         { txId: '000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1', outIndex: 2, height: 312975 })
-      expect(epobc.getDesc()).to.equal('epobc:000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1:2:312975')
+      expect(epobc.getDesc()).to.equal(
+        'epobc:000000000000000020e39bfd5e41ebe61c6dcb9ee6dd6e2ff5f1ef52704c08b1:2:312975')
     })
   })
 

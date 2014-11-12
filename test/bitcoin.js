@@ -26,7 +26,8 @@ describe('bitcoin.getAddressesFromOutputScript', function() {
   })
 
   it('multisig', function() {
-    script = 'OP_2 02130362e2687bb6d090119aec775325326ce16bb333e58887324e1c04a83b754f 02d8ec154637422ae2b8d5fe58f375bdc74feb54164ccd57d0f91b12a0c4f8b434 OP_2 OP_CHECKMULTISIG'
+    script = 'OP_2 02130362e2687bb6d090119aec775325326ce16bb333e58887324e1c04a83b754f \
+02d8ec154637422ae2b8d5fe58f375bdc74feb54164ccd57d0f91b12a0c4f8b434 OP_2 OP_CHECKMULTISIG'
     script = Script.fromASM(script)
     addresses = bitcoin.getAddressesFromOutputScript(script, bitcoin.networks.testnet)
     expect(addresses).to.deep.equal(['n11rxder79nUtQuvNpLyUBkTTuP9acFydy', 'n2Q119tNwnCopKDn1cyLaAzNAbSSWTfWSb'])

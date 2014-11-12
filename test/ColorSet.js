@@ -18,7 +18,8 @@ describe('ColorSet', function() {
   })
 
   it('getColorHash', function() {
-    colorSet = new ColorSet(cdManager, ['', 'epobc:b95323a763fa507110a89ab857af8e949810cf1e67e91104cd64222a04ccd0bb:0:180679'])
+    var colorDescs = ['', 'epobc:b95323a763fa507110a89ab857af8e949810cf1e67e91104cd64222a04ccd0bb:0:180679']
+    colorSet = new ColorSet(cdManager, colorDescs)
     expect(colorSet.getColorHash()).to.equal('6xgXQgnviwX5Lk')
   })
 

@@ -1,8 +1,8 @@
 var expect = require('chai').expect
-var inherits = require('util').inherits
+
+var _ = require('lodash')
 
 var cclib = require('../src/index')
-var mocks = require('./mocks')
 var stubs = require('./stubs')
 
 
@@ -55,7 +55,7 @@ describe('ColorData', function() {
     })
 
     it('runKernel return error', function(done) {
-      epobc.runKernel = function(_, _, _, cb) { cb('error.runKernel') }
+      epobc.runKernel = function() { _.last(arguments)('error.runKernel') }
       epobc.genesis.txId = tx1.getId()
       cData.scanTx(tx1, [], epobc, stubs.getTxStub([]), function(error) {
         expect(error).to.equal('error.runKernel')
@@ -126,8 +126,8 @@ describe('ColorData', function() {
     it('this.scanTx return error', function(done) {
       tx1.addInput(tx2.getId(), 0, 37)
       cData.fetchColorValue = function() { return null }
-      epobc.getAffectingInputs = function(_, _, _, cb) { cb(null, [tx1.ins[0]]) }
-      cData.scanTx = function(_, _, _, _, cb) { cb('error.scanTx') }
+      epobc.getAffectingInputs = function() { _.last(arguments)(null, [tx1.ins[0]]) }
+      cData.scanTx = function() { _.last(arguments)('error.scanTx') }
       cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([tx1, tx2]), function(error, colorValue) {
         expect(error).to.equal('error.scanTx')
         expect(colorValue).to.be.undefined
@@ -141,25 +141,6 @@ describe('ColorData', function() {
         expect(colorValue).to.be.instanceof(cclib.ColorValue)
         expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
         expect(colorValue.getValue()).to.be.equal(15)
-        done()
-      })
-    })
-
-    it.skip('add to store and return value', function(done) {
-      cdStorage.add({
-        colorId: epobc.getColorId(),
-        txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
-        outIndex: 1,
-        value: 1
-      })
-      tx1 = mocks.createTx('ff00111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', [9], [9], [0, 1, 4, 5, 6, 7])
-      bs.getTx = stubs.getTxStub([tx1])
-
-      cData.getColorValue(tx1.getId(), 0, epobc, function(error, colorValue) {
-        expect(error).to.be.null
-        expect(colorValue).to.be.instanceof(cclib.ColorValue)
-        expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
-        expect(colorValue.getValue()).to.be.equal(1)
         done()
       })
     })

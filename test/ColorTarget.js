@@ -6,7 +6,7 @@ var ColorTarget = cclib.ColorTarget
 
 describe('ColorTarget', function() {
   var cdStorage, cdManager, uncolored
-  var cv1
+  var cv1, cv2
   var ct1, ct2
 
   beforeEach(function() {

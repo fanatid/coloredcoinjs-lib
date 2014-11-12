@@ -31,17 +31,9 @@ function bitArray2number(bits) {
   verify.array(bits)
   bits.forEach(verify.number)
 
-  var n = 0
-  var factor = 1
-
-  for (var i in bits) {
-    if (bits[i] === 1)
-      n += factor
-
-    factor = factor * 2
-  }
-
-  return n
+  return bits.reduce(function(result, value, index) {
+    return value === 0 ? result : result + Math.pow(2, index)
+  }, 0)
 }
 
 /**

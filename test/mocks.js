@@ -29,7 +29,8 @@ function createTx(txId, inputs, outputs, inputSequenceIndices) {
   inputs.forEach(function(satoshis) {
     var index = tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1)
     tx.ins[index].value = satoshis
-    tx.ins[index].prevTx = createTx('00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', [], [], [0,1,4,5,6,7])
+    tx.ins[index].prevTx = createTx(
+      '00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', [], [], [0,1,4,5,6,7])
   })
 
   if (tx.ins.length === 0)
