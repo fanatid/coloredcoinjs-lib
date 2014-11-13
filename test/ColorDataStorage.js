@@ -8,16 +8,28 @@ describe('ColorDataStorage', function () {
   var txId1 = '0000000000000000000000000000000000000000000000000000000000000000'
 
   beforeEach(function () {
-    cdStore = new cclib.ColorDataStorage()
+    cdStore = new cclib.ColorDataStorage({saveTimeout: 100})
+    cdStore.clear()
   })
 
   afterEach(function () {
     cdStore.clear()
+    cdStore = undefined
   })
 
   it('inherits SyncStorage', function () {
     expect(cdStore).to.be.instanceof(cclib.SyncStorage)
     expect(cdStore).to.be.instanceof(cclib.ColorDataStorage)
+  })
+
+  it('delayed save', function (done) {
+    var data = {colorId: 1, txId: txId1, outIndex: 0, value: 1}
+    cdStore.add(data)
+    expect(cdStore.store.get(cdStore.colorTxsDBKey)).to.be.undefined
+    setTimeout(function () {
+      expect(cdStore.store.get(cdStore.colorTxsDBKey)).to.deep.equal([data])
+      done()
+    }, 200)
   })
 
   it('add/get', function () {

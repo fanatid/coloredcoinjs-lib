@@ -1,6 +1,7 @@
 var inherits = require('util').inherits
 
 var _ = require('lodash')
+var delayed = require('delayed')
 
 var SyncStorage = require('./SyncStorage')
 var verify = require('./verify')
@@ -17,9 +18,18 @@ var verify = require('./verify')
 /**
  * @class ColorDataStorage
  * @extends SyncStorage
+ *
+ * @param {Object} [opts]
+ * @param {number} [opts.saveTimeout=1000] In milliseconds
  */
-function ColorDataStorage() {
+function ColorDataStorage(opts) {
+  opts = _.extend({
+    saveTimeout: 1000
+  }, opts)
+
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
+
+  this._save2store = delayed.debounce(this._save2store, opts.saveTimeout, this)
 
   this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
   this.colorTxRecords = this.store.get(this.colorTxsDBKey) || []
@@ -43,7 +53,13 @@ ColorDataStorage.prototype._getRecords = function () {
  */
 ColorDataStorage.prototype._saveRecords = function (records) {
   this.colorTxRecords = records
-  this.store.set(this.colorTxsDBKey, records)
+  this._save2store()
+}
+
+/**
+ */
+ColorDataStorage.prototype._save2store = function () {
+  this.store.set(this.colorTxsDBKey, this.colorTxRecords)
 }
 
 /**
