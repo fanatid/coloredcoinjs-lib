@@ -22,7 +22,7 @@ function ColorData(storage) {
  * @param {ColorDefinition} colorDefinition
  * @return {?ColorValue}
  */
-ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) {
+ColorData.prototype.fetchColorValue = function (txId, outIndex, colorDefinition) {
   verify.txId(txId)
   verify.number(outIndex)
   verify.ColorDefinition(colorDefinition)
@@ -32,8 +32,7 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
     txId: txId,
     outIndex: outIndex
   })
-  if (colorData === null)
-    return null
+  if (colorData === null) { return null }
 
   return new ColorValue(colorDefinition, colorData.value)
 }
@@ -52,7 +51,7 @@ ColorData.prototype.fetchColorValue = function(txId, outIndex, colorDefinition) 
  * @param {function} getTxFn
  * @param {ColorData~scanTx} cb Called on finished with params (error)
  */
-ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxFn, cb) {
+ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTxFn, cb) {
   verify.Transaction(tx)
   if (outputIndices !== null) {
     verify.array(outputIndices)
@@ -63,11 +62,11 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxF
 
   var self = this
 
-  Q.fcall(function() {
+  Q.fcall(function () {
     var inColorValues = []
     var empty = true
 
-    tx.ins.forEach(function(input) {
+    tx.ins.forEach(function (input) {
       var colorData = self._storage.get({
         colorId: colorDefinition.getColorId(),
         txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
@@ -82,24 +81,23 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxF
       inColorValues.push(colorValue)
     })
 
-    if (empty && !colorDefinition.isSpecialTx(tx))
-      return
+    if (empty && !colorDefinition.isSpecialTx(tx)) { return }
 
-    return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn).then(function(outColorValues) {
-      outColorValues.forEach(function(colorValue, index) {
+    return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn).then(function (outColorValues) {
+      outColorValues.forEach(function (colorValue, index) {
         var skipAdd = colorValue === null || (outputIndices !== null && outputIndices.indexOf(index) === -1)
+        if (skipAdd) { return }
 
-        if (!skipAdd)
-          self._storage.add({
-            colorId: colorDefinition.getColorId(),
-            txId: tx.getId(),
-            outIndex: index,
-            value: colorValue.getValue()
-          })
+        self._storage.add({
+          colorId: colorDefinition.getColorId(),
+          txId: tx.getId(),
+          outIndex: index,
+          value: colorValue.getValue()
+        })
       })
     })
 
-  }).done(function(){ cb(null) }, function(error) { cb(error) })
+  }).done(function () { cb(null) }, function (error) { cb(error) })
 }
 
 /**
@@ -118,7 +116,7 @@ ColorData.prototype.scanTx = function(tx, outputIndices, colorDefinition, getTxF
  * @param {function} getTxFn
  * @param {ColorData~getColorValue} cb
  */
-ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, getTxFn, cb) {
+ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, getTxFn, cb) {
   verify.txId(txId)
   verify.number(outIndex)
   verify.ColorDefinition(colorDefinition)
@@ -127,34 +125,29 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
 
   var self = this
 
-  Q.fcall(function() {
+  Q.fcall(function () {
     var scannedOutputs = []
 
     function processOne(txId, outIndex) {
-      if (scannedOutputs.indexOf(txId + outIndex) !== -1)
-        return
+      if (scannedOutputs.indexOf(txId + outIndex) !== -1) { return }
 
       scannedOutputs.push(txId + outIndex)
 
       var colorValue = self.fetchColorValue(txId, outIndex, colorDefinition)
-      if (colorValue !== null)
-        return
+      if (colorValue !== null) { return }
 
       function processTx(tx) {
         return Q.nfcall(colorDefinition.constructor.getAffectingInputs, tx, [outIndex], getTxFn)
-          .then(function(inputs) {
+          .then(function (inputs) {
             var promise = Q()
 
-            inputs.forEach(function(input) {
+            inputs.forEach(function (input) {
               var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
-              promise = promise.then(function() {
-                return Q.fcall(processOne, txId, input.index)
-              })
+              promise = promise.then(function () { return Q.fcall(processOne, txId, input.index) })
             })
 
-            promise = promise.then(function() {
+            promise = promise.then(function () {
               return Q.ninvoke(self, 'scanTx', tx, null, colorDefinition, getTxFn)
-
             })
 
             return promise
@@ -166,10 +159,10 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
 
     return Q.fcall(processOne, txId, outIndex)
 
-  }).then(function() {
+  }).then(function () {
     return self.fetchColorValue(txId, outIndex, colorDefinition)
 
-  }).done(function(colorValue) { cb(null, colorValue) }, function(error) { cb(error) })
+  }).done(function (colorValue) { cb(null, colorValue) }, function (error) { cb(error) })
 }
 
 /**
@@ -184,7 +177,7 @@ ColorData.prototype.getColorValue = function(txId, outIndex, colorDefinition, ge
  * @param {function} getTxFn
  * @param {ColorData~getColorValuesForTx} cb
  */
-ColorData.prototype.getColorValuesForTx = function(tx, colorDefinition, getTxFn, cb) {
+ColorData.prototype.getColorValuesForTx = function (tx, colorDefinition, getTxFn, cb) {
   verify.Transaction(tx)
   verify.ColorDefinition(colorDefinition)
   verify.function(getTxFn)
@@ -192,26 +185,26 @@ ColorData.prototype.getColorValuesForTx = function(tx, colorDefinition, getTxFn,
 
   var self = this
 
-  var inColorValuesPromises = tx.ins.map(function(input) {
+  var inColorValuesPromises = tx.ins.map(function (input) {
     var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
     return Q.ninvoke(self, 'getColorValue', txId, input.index, colorDefinition, getTxFn)
   })
 
-  Q.all(inColorValuesPromises).then(function(inColorValues) {
+  Q.all(inColorValuesPromises).then(function (inColorValues) {
     return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn)
 
-  }).done(function(outColorValues) { cb(null, outColorValues) }, function(error) { cb(error) })
+  }).done(function (outColorValues) { cb(null, outColorValues) }, function (error) { cb(error) })
 }
 
 /**
  * @param {string} txId
  * @param {number} outIndex
  */
-ColorData.prototype.removeColorValues = function(txId, outIndex) {
+ColorData.prototype.removeColorValues = function (txId, outIndex) {
   verify.txId(txId)
   verify.number(outIndex)
 
-  return this._storage.remove({ txId: txId, outIndex: outIndex })
+  return this._storage.remove({txId: txId, outIndex: outIndex})
 }
 
 

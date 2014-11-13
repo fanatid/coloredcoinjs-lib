@@ -18,42 +18,42 @@ function ColorTarget(script, colorValue) {
 /**
  * @return {Buffer}
  */
-ColorTarget.prototype.getScript = function() {
+ColorTarget.prototype.getScript = function () {
   return this.script
 }
 
 /**
  * @return {ColorValue}
  */
-ColorTarget.prototype.getColorValue = function() {
+ColorTarget.prototype.getColorValue = function () {
   return this.colorValue
 }
 
 /**
  * @return {number}
  */
-ColorTarget.prototype.getValue = function() {
+ColorTarget.prototype.getValue = function () {
   return this.getColorValue().getValue()
 }
 
 /**
  * @return {ColorDefinition}
  */
-ColorTarget.prototype.getColorDefinition = function() {
+ColorTarget.prototype.getColorDefinition = function () {
   return this.getColorValue().getColorDefinition()
 }
 
 /**
  * @return {number}
  */
-ColorTarget.prototype.getColorId = function() {
+ColorTarget.prototype.getColorId = function () {
   return this.getColorValue().getColorId()
 }
 
 /**
  * @return {boolean}
  */
-ColorTarget.prototype.isUncolored = function() {
+ColorTarget.prototype.isUncolored = function () {
   return this.getColorValue().isUncolored()
 }
 
@@ -65,12 +65,12 @@ ColorTarget.prototype.isUncolored = function() {
 /**
  * Calculate total sum of targets
  *
- * @param {AbstractColorTarget[]}
- * @throws {Error} Will throw an error if colorValues of targets not incompatible
+ * @param {AbstractColorTarget[]} targets
  * @return {number}
+ * @throws {Error} Will throw an error if colorValues of targets not incompatible
  */
-ColorTarget.sum = function(targets) {
-  var colorValues = targets.map(function(target) { return target.getColorValue() })
+ColorTarget.sum = function (targets) {
+  var colorValues = targets.map(function (target) { return target.getColorValue() })
   return colorValues[0].constructor.sum(colorValues)
 }
 

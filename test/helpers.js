@@ -19,17 +19,19 @@ function getTx(isTestnet, txId, cb) {
   var host = isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io'
   var url = 'http://' + host + '/api/v1/tx/raw/' + txId
 
-  Q.nfcall(request, url).spread(function(response, body) {
-    if (response.statusCode !== 200)
+  Q.nfcall(request, url).spread(function (response, body) {
+    if (response.statusCode !== 200) {
       throw new Error('Request error: ' + response.statusMessage)
+    }
 
     var result = JSON.parse(body)
-    if (result.status !== 'success')
+    if (result.status !== 'success') {
       throw new Error(result.message || 'Bad data')
+    }
 
     return Transaction.fromHex(result.data.tx.hex)
 
-  }).done(function(tx) { cb(null, tx) }, function(error) { cb(error) })
+  }).done(function (tx) { cb(null, tx) }, function (error) { cb(error) })
 }
 
 /**

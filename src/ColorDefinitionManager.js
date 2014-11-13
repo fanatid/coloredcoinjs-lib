@@ -16,7 +16,7 @@ function record2ColorDefinition(record) {
   var colorDefinition = null
 
   var engineClss = [UncoloredColorDefinition, EPOBCColorDefinition]
-  engineClss.some(function(engineCls) {
+  engineClss.some(function (engineCls) {
     try {
       colorDefinition = engineCls.fromDesc(record.colorId, record.desc)
     } catch (e) {}
@@ -43,7 +43,7 @@ function ColorDefinitionManager(storage) {
  *
  * @return {UncoloredColorDefinition}
  */
-ColorDefinitionManager.prototype.getUncolored = function() {
+ColorDefinitionManager.prototype.getUncolored = function () {
   return new UncoloredColorDefinition()
 }
 
@@ -52,7 +52,7 @@ ColorDefinitionManager.prototype.getUncolored = function() {
  *
  * @return {GenesisColorDefinition}
  */
-ColorDefinitionManager.prototype.getGenesis = function() {
+ColorDefinitionManager.prototype.getGenesis = function () {
   return new GenesisColorDefinition()
 }
 
@@ -60,16 +60,20 @@ ColorDefinitionManager.prototype.getGenesis = function() {
  * @param {string} type
  * @return {?(EPOBCColorDefinition)}
  */
-ColorDefinitionManager.prototype.getColorDefenitionClsForType = function(type) {
+ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) {
   verify.string(type)
 
+  var result = null
   switch (type) {
     case 'epobc':
-      return EPOBCColorDefinition
+      result = EPOBCColorDefinition
+      break
 
     default:
-      return null
+      break
   }
+
+  return result
 }
 
 /**
@@ -78,19 +82,16 @@ ColorDefinitionManager.prototype.getColorDefenitionClsForType = function(type) {
  * @param {number} colorId
  * @return {?ColorDefinition}
  */
-ColorDefinitionManager.prototype.getByColorId = function(colorId) {
+ColorDefinitionManager.prototype.getByColorId = function (colorId) {
   verify.number(colorId)
 
   var uncolored = this.getUncolored()
-  if (uncolored.getColorId() === colorId)
-    return uncolored
+  if (uncolored.getColorId() === colorId) { return uncolored }
 
   var record = this._storage.getByColorId(colorId)
+  if (record === null) { return null }
 
-  if (record !== null)
-    return record2ColorDefinition(record)
-
-  return null
+  return record2ColorDefinition(record)
 }
 
 /**
@@ -102,26 +103,22 @@ ColorDefinitionManager.prototype.getByColorId = function(colorId) {
  * @return {?ColorDefinition}
  * @throws {Error} If bad desc
  */
-ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
-  if (_.isUndefined(autoAdd)) autoAdd = true
+ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
+  if (_.isUndefined(autoAdd)) { autoAdd = true }
 
   verify.string(desc)
   verify.boolean(autoAdd)
 
   var uncolored = this.getUncolored()
-  if (uncolored.getDesc() === desc)
-    return uncolored
+  if (uncolored.getDesc() === desc) { return uncolored }
 
   var record = this._storage.getByDesc(desc)
-  if (record !== null)
-    return record2ColorDefinition(record)
+  if (record !== null) { return record2ColorDefinition(record) }
 
-  if (autoAdd === false)
-    return null
+  if (autoAdd === false) { return null }
 
-  var colordef = record2ColorDefinition({ colorId: -1, desc: desc })
-  if (colordef === null)
-    throw new Error('Bad desc: ' + desc)
+  var colordef = record2ColorDefinition({colorId: -1, desc: desc})
+  if (colordef === null) { throw new Error('Bad desc: ' + desc) }
 
   record = this._storage.add(desc)
   return record2ColorDefinition(record)
@@ -132,7 +129,7 @@ ColorDefinitionManager.prototype.resolveByDesc = function(desc, autoAdd) {
  *
  * @return {ColorDefinition[]}
  */
-ColorDefinitionManager.prototype.getAllColorDefinitions = function() {
+ColorDefinitionManager.prototype.getAllColorDefinitions = function () {
   return this._storage.getAll().map(record2ColorDefinition)
 }
 

@@ -19,16 +19,16 @@ function ColorSet(cdManager, colorDescs) {
   colorDescs.forEach(verify.string)
 
   this.colorDescs = colorDescs
-  this.colorDefinitions = this.colorDescs.map(function(colorDesc) {
+  this.colorDefinitions = this.colorDescs.map(function (colorDesc) {
     return cdManager.resolveByDesc(colorDesc)
   })
-  this.colorIds = this.colorDefinitions.map(function(colordef) { return colordef.getColorId() })
+  this.colorIds = this.colorDefinitions.map(function (colordef) { return colordef.getColorId() })
 }
 
 /**
  * @return {string}
  */
-ColorSet.prototype.getColorHash = function() {
+ColorSet.prototype.getColorHash = function () {
   // for compact replace ', ' to ',' as in ngcccbase
   var json = JSON.stringify(this.colorDescs.slice(0).sort()).replace(', ', ',')
   var hash = crypto.createHash('sha256').update(json).digest().slice(0, 10)
@@ -38,21 +38,21 @@ ColorSet.prototype.getColorHash = function() {
 /**
  * @return {string[]}
  */
-ColorSet.prototype.getColorDescs = function() {
+ColorSet.prototype.getColorDescs = function () {
   return this.colorDescs
 }
 
 /**
  * @return {ColorDefinition[]}
  */
-ColorSet.prototype.getColorDefinitions = function() {
+ColorSet.prototype.getColorDefinitions = function () {
   return this.colorDefinitions
 }
 
 /**
  * @return {number[]}
  */
-ColorSet.prototype.getColorIds = function() {
+ColorSet.prototype.getColorIds = function () {
   return this.colorIds
 }
 

@@ -24,8 +24,9 @@ function ColorDataStorage() {
   this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
   this.colorTxRecords = this.store.get(this.colorTxsDBKey) || []
 
-  if (_.isUndefined(this.store.get(this.colorTxsDBKey + '_version')))
+  if (_.isUndefined(this.store.get(this.colorTxsDBKey + '_version'))) {
     this.store.set(this.colorTxsDBKey + '_version', '1')
+  }
 }
 
 inherits(ColorDataStorage, SyncStorage)
@@ -33,14 +34,14 @@ inherits(ColorDataStorage, SyncStorage)
 /**
  * @return {ColorDataRecord[]}
  */
-ColorDataStorage.prototype._getRecords = function() {
+ColorDataStorage.prototype._getRecords = function () {
   return this.colorTxRecords
 }
 
 /**
- * @param {ColorDataRecord[]}
+ * @param {ColorDataRecord[]} records
  */
-ColorDataStorage.prototype._saveRecords = function(records) {
+ColorDataStorage.prototype._saveRecords = function (records) {
   this.colorTxRecords = records
   this.store.set(this.colorTxsDBKey, records)
 }
@@ -50,7 +51,7 @@ ColorDataStorage.prototype._saveRecords = function(records) {
  * @return {ColorDataRecord}
  * @throws {Error} If exists and colorValues not equal
  */
-ColorDataStorage.prototype.add = function(data) {
+ColorDataStorage.prototype.add = function (data) {
   verify.object(data)
   verify.number(data.colorId)
   verify.txId(data.txId)
@@ -62,8 +63,9 @@ ColorDataStorage.prototype.add = function(data) {
     txId: data.txId,
     outIndex: data.outIndex
   })
-  if (!_.isUndefined(record) && record.value !== data.value)
+  if (!_.isUndefined(record) && record.value !== data.value) {
     throw new Error('Same data exists and colorValues not equal')
+  }
 
   var records = this._getRecords()
   records.push({
@@ -84,7 +86,7 @@ ColorDataStorage.prototype.add = function(data) {
  * @param {number} data.outIndex
  * @return {?ColorDataRecord}
  */
-ColorDataStorage.prototype.get = function(data) {
+ColorDataStorage.prototype.get = function (data) {
   verify.object(data)
   verify.number(data.colorId)
   verify.txId(data.txId)
@@ -99,22 +101,24 @@ ColorDataStorage.prototype.get = function(data) {
 }
 
 /**
- * @param {number} [colorId]
- * @param {string} [txId]
- * @param {number} [outIndex]
+ * @param {Object} data
+ * @param {number} [data.colorId]
+ * @param {string} [data.txId]
+ * @param {number} [data.outIndex]
  */
-ColorDataStorage.prototype.remove = function(data) {
+ColorDataStorage.prototype.remove = function (data) {
   verify.object(data)
-  if (_.isUndefined(data.colorId) && _.isUndefined(data.txId) && _.isUndefined(data.outIndex))
+  if (_.isUndefined(data.colorId) && _.isUndefined(data.txId) && _.isUndefined(data.outIndex)) {
     throw new Error('Bad data')
-  if (!_.isUndefined(data.colorId)) verify.number(data.colorId)
-  if (!_.isUndefined(data.txId)) verify.txId(data.txId)
-  if (!_.isUndefined(data.outIndex)) verify.number(data.outIndex)
+  }
+  if (!_.isUndefined(data.colorId)) { verify.number(data.colorId) }
+  if (!_.isUndefined(data.txId)) { verify.txId(data.txId) }
+  if (!_.isUndefined(data.outIndex)) { verify.number(data.outIndex) }
 
-  var records = this._getRecords().filter(function(record) {
-    if (!_.isUndefined(data.colorId) && record.colorId !== data.colorId) return true
-    if (!_.isUndefined(data.txId) && record.txId !== data.txId) return true
-    if (!_.isUndefined(data.outIndex) && record.outIndex !== data.outIndex) return true
+  var records = this._getRecords().filter(function (record) {
+    if (!_.isUndefined(data.colorId) && record.colorId !== data.colorId) { return true }
+    if (!_.isUndefined(data.txId) && record.txId !== data.txId) { return true }
+    if (!_.isUndefined(data.outIndex) && record.outIndex !== data.outIndex) { return true }
     return false
   })
   this._saveRecords(records)
@@ -123,7 +127,7 @@ ColorDataStorage.prototype.remove = function(data) {
 /**
  * Remove all colorTxs
  */
-ColorDataStorage.prototype.clear = function() {
+ColorDataStorage.prototype.clear = function () {
   this.store.remove(this.colorTxsDBKey)
   this.store.remove(this.colorTxsDBKey + '_version')
 }

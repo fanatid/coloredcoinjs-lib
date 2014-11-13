@@ -22,8 +22,9 @@ function SyncStorage(opts) {
   this.globalPrefix = opts.globalPrefix
 
   // If localStorage not available, data will be saved into memory
-  if (store.disabled)
+  if (store.disabled) {
     console.warn('localStorage is not supported!')
+  }
 
   this.store = store
 }

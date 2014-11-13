@@ -3,19 +3,21 @@ var _ = require('lodash')
 
 function createInstanceCheck(importFn) {
   var cls
-  return function(thing) {
-    if (_.isUndefined(cls)) cls = importFn()
+
+  function instanceCheck(thing) {
+    if (_.isUndefined(cls)) { cls = importFn() }
     return thing instanceof cls
   }
+
+  return instanceCheck
 }
 
 function isHexString(thing) {
-  if (!(_.isString(thing) && thing.length % 2 === 0))
-    return false
+  if (!(_.isString(thing) && thing.length % 2 === 0)) { return false }
 
-  for (var i = 0; i < thing.length; ++i)
-    if ('0123456789abcdefABCDEF'.indexOf(thing[i]) === -1)
-      return false
+  for (var i = 0; i < thing.length; ++i) {
+    if ('0123456789abcdefABCDEF'.indexOf(thing[i]) === -1) { return false }
+  }
 
   return true
 }
@@ -37,19 +39,19 @@ var functions = {
   hexString: isHexString,
   txId: isTxId,
 
-  ColorData: createInstanceCheck(function() { return require('./ColorData') }),
-  ColorDataStorage: createInstanceCheck(function() { return require('./ColorDataStorage') }),
-  ColorDefinition: createInstanceCheck(function(){ return require('./ColorDefinition') }),
-  ColorDefinitionManager: createInstanceCheck(function() { return require('./ColorDefinitionManager') }),
-  ColorDefinitionStorage: createInstanceCheck(function() { return require('./ColorDefinitionStorage') }),
-  ColorSet: createInstanceCheck(function() { return require('./ColorSet') }),
-  ColorTarget: createInstanceCheck(function() { return require('./ColorTarget') }),
-  ColorValue: createInstanceCheck(function() { return require('./ColorValue') }),
-  ComposedTx: createInstanceCheck(function() { return require('./ComposedTx') } ),
-  EPOBCColorDefinition: createInstanceCheck(function() { return require('./EPOBCColorDefinition') }),
-  OperationalTx: createInstanceCheck(function() { return require('./OperationalTx') }),
-  Transaction: createInstanceCheck(function() { return require('./bitcoin').Transaction }),
-  UncoloredColorDefinition: createInstanceCheck(function() { return require('./UncoloredColorDefinition') })
+  ColorData: createInstanceCheck(function () { return require('./ColorData') }),
+  ColorDataStorage: createInstanceCheck(function () { return require('./ColorDataStorage') }),
+  ColorDefinition: createInstanceCheck(function () { return require('./ColorDefinition') }),
+  ColorDefinitionManager: createInstanceCheck(function () { return require('./ColorDefinitionManager') }),
+  ColorDefinitionStorage: createInstanceCheck(function () { return require('./ColorDefinitionStorage') }),
+  ColorSet: createInstanceCheck(function () { return require('./ColorSet') }),
+  ColorTarget: createInstanceCheck(function () { return require('./ColorTarget') }),
+  ColorValue: createInstanceCheck(function () { return require('./ColorValue') }),
+  ComposedTx: createInstanceCheck(function () { return require('./ComposedTx') }),
+  EPOBCColorDefinition: createInstanceCheck(function () { return require('./EPOBCColorDefinition') }),
+  OperationalTx: createInstanceCheck(function () { return require('./OperationalTx') }),
+  Transaction: createInstanceCheck(function () { return require('./bitcoin').Transaction }),
+  UncoloredColorDefinition: createInstanceCheck(function () { return require('./UncoloredColorDefinition') })
 }
 
 var expected = {
@@ -80,11 +82,12 @@ var expected = {
 }
 
 function extendVerify(verify, functions, expected) {
-  Object.keys(functions).forEach(function(name) {
-    verify[name] = function() {
+  Object.keys(functions).forEach(function (name) {
+    verify[name] = function () {
       var args = Array.prototype.slice.call(arguments)
-      if (functions[name].apply(null, args) === false)
+      if (functions[name].apply(null, args) === false) {
         throw new TypeError('Expected ' + expected[name] + ', got ' + args)
+      }
     }
   })
 }

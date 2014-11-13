@@ -10,17 +10,12 @@ var verify = require('./verify')
  * @return {number[]}
  */
 function number2bitArray(n, bits) {
-  if (_.isUndefined(bits))
-    bits = 32
+  if (_.isUndefined(bits)) { bits = 32 }
 
   verify.number(n)
   verify.number(bits)
 
-  var result = []
-  for (var i = 0; i < bits; ++i)
-    result.push((n >> i) & 1)
-
-  return result
+  return _.range(bits).map(function (shift) { return (n >> shift) & 1 })
 }
 
 /**
@@ -31,7 +26,7 @@ function bitArray2number(bits) {
   verify.array(bits)
   bits.forEach(verify.number)
 
-  return bits.reduce(function(result, value, index) {
+  return bits.reduce(function (result, value, index) {
     return value === 0 ? result : result + Math.pow(2, index)
   }, 0)
 }
@@ -63,7 +58,7 @@ function groupTargetsByColor(targets, targetCls) {
   verify.function(targetCls)
 
   var targetsByColor = {}
-  targets.forEach(function(target) {
+  targets.forEach(function (target) {
     var colorDefinition = target.getColorDefinition()
 
     var UncoloredColorDefinition = require('./UncoloredColorDefinition')
@@ -73,8 +68,9 @@ function groupTargetsByColor(targets, targetCls) {
     if (isUncoloredCls || isTargetCls) {
       var colorId = target.getColorId()
 
-      if (_.isUndefined(targetsByColor[colorId]))
+      if (_.isUndefined(targetsByColor[colorId])) {
         targetsByColor[colorId] = []
+      }
 
       targetsByColor[colorId].push(target)
 

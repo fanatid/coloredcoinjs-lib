@@ -4,7 +4,7 @@ var verify = require('./verify')
 /**
  * @class ColorValue
  *
- * @param {ColorDefinition} colordef 
+ * @param {ColorDefinition} colordef
  * @param {number} value
  */
 function ColorValue(colordef, value) {
@@ -18,35 +18,35 @@ function ColorValue(colordef, value) {
 /**
  * @return {colordef.ColorDefinition}
  */
-ColorValue.prototype.getColorDefinition = function() {
+ColorValue.prototype.getColorDefinition = function () {
   return this.colordef
 }
 
 /**
  * @return {number}
  */
-ColorValue.prototype.getColorId = function() {
+ColorValue.prototype.getColorId = function () {
   return this.colordef.getColorId()
 }
 
 /**
  * @return {boolean}
  */
-ColorValue.prototype.isUncolored = function() {
+ColorValue.prototype.isUncolored = function () {
   return this.getColorDefinition().getColorType() === 'uncolored'
 }
 
 /**
  * @return {number}
  */
-ColorValue.prototype.getValue = function() {
+ColorValue.prototype.getValue = function () {
   return this.value
 }
 
 /**
  * @return {ColorValue}
  */
-ColorValue.prototype.clone = function() {
+ColorValue.prototype.clone = function () {
   return new ColorValue(this.getColorDefinition(), this.getValue())
 }
 
@@ -56,13 +56,14 @@ ColorValue.prototype.clone = function() {
  * @param {ColorValue} other
  * @throws {TypeError} If not compatibility
  */
-ColorValue.prototype.checkCompatibility = function(other) {
+ColorValue.prototype.checkCompatibility = function (other) {
   var isCompatibility = (
     other instanceof ColorValue &&
     this.getColorId() === other.getColorId())
 
-  if (!isCompatibility)
+  if (!isCompatibility) {
     throw new TypeError('ColorValues not compatibility')
+  }
 }
 
 /**
@@ -72,7 +73,7 @@ ColorValue.prototype.checkCompatibility = function(other) {
  * @return {ColorValue}
  * @throws {TypeError} If not compatibility
  */
-ColorValue.prototype.plus = function(other) {
+ColorValue.prototype.plus = function (other) {
   this.checkCompatibility(other)
 
   return new ColorValue(this.getColorDefinition(), this.getValue() + other.getValue())
@@ -83,7 +84,7 @@ ColorValue.prototype.plus = function(other) {
  *
  * @return {ColorValue}
  */
-ColorValue.prototype.neg = function() {
+ColorValue.prototype.neg = function () {
   return new ColorValue(this.getColorDefinition(), -this.getValue())
 }
 
@@ -94,7 +95,7 @@ ColorValue.prototype.neg = function() {
  * @return {ColorValue}
  * @throws {TypeError} If not compatibility
  */
-ColorValue.prototype.minus = function(other) {
+ColorValue.prototype.minus = function (other) {
   return this.plus(other.neg())
 }
 
@@ -104,11 +105,12 @@ ColorValue.prototype.minus = function(other) {
  * @param {ColorValue[]} colorValues
  * @throws {(Error|TypeError)} If colorValues.length equal zero or colorValues not incompatible
  */
-ColorValue.sum = function(colorValues) {
-  if (colorValues.length === 0)
+ColorValue.sum = function (colorValues) {
+  if (colorValues.length === 0) {
     throw new Error('colorValues length must be least 1')
+  }
 
-  return colorValues.reduce(function(a, b) { return a.plus(b) })
+  return colorValues.reduce(function (a, b) { return a.plus(b) })
 }
 
 

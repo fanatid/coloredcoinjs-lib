@@ -22,8 +22,9 @@ function ColorDefinitionStorage() {
   this.colorDefinitionsDBKey = this.globalPrefix + 'ColorDefinitions'
   this.colorDefinitionsRecords = this.store.get(this.colorDefinitionsDBKey) || []
 
-  if (_.isUndefined(this.store.get(this.colorDefinitionsDBKey + '_version')))
+  if (_.isUndefined(this.store.get(this.colorDefinitionsDBKey + '_version'))) {
     this.store.set(this.colorDefinitionsDBKey + '_version', '1')
+  }
 }
 
 inherits(ColorDefinitionStorage, SyncStorage)
@@ -31,14 +32,14 @@ inherits(ColorDefinitionStorage, SyncStorage)
 /**
  * @return {ColorDefinitionRecord[]}
  */
-ColorDefinitionStorage.prototype._getRecords = function() {
+ColorDefinitionStorage.prototype._getRecords = function () {
   return this.colorDefinitionsRecords
 }
 
 /**
- * @param {ColorDefinitionRecord[]}
+ * @param {ColorDefinitionRecord[]} records
  */
-ColorDefinitionStorage.prototype._saveRecords = function(records) {
+ColorDefinitionStorage.prototype._saveRecords = function (records) {
   this.colorDefinitionsRecords = records
   this.store.set(this.colorDefinitionsDBKey, records)
 }
@@ -48,21 +49,21 @@ ColorDefinitionStorage.prototype._saveRecords = function(records) {
  * @return {ColorDefinitionRecord}
  * @throws {Error} If desc aready uses
  */
-ColorDefinitionStorage.prototype.add = function(desc) {
+ColorDefinitionStorage.prototype.add = function (desc) {
   verify.string(desc)
 
   var newColorId = 1
   var records = this._getRecords()
 
-  records.forEach(function(record) {
-    if (record.desc === desc)
+  records.forEach(function (record) {
+    if (record.desc === desc) {
       throw new Error('UniqueConstraint')
+    }
 
-    if (record.colorId >= newColorId)
-      newColorId = record.colorId + 1
+    if (record.colorId >= newColorId) { newColorId = record.colorId + 1 }
   })
 
-  records.push({ colorId: newColorId, desc: desc })
+  records.push({colorId: newColorId, desc: desc})
   this._saveRecords(records)
 
   return _.clone(_.last(records))
@@ -72,10 +73,10 @@ ColorDefinitionStorage.prototype.add = function(desc) {
  * @param {number} colorId
  * @return {?ColorDefinitionRecord}
  */
-ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
+ColorDefinitionStorage.prototype.getByColorId = function (colorId) {
   verify.number(colorId)
 
-  var record = _.find(this._getRecords(), { colorId: colorId })
+  var record = _.find(this._getRecords(), {colorId: colorId})
   return _.isUndefined(record) ? null : _.clone(record)
 }
 
@@ -83,10 +84,10 @@ ColorDefinitionStorage.prototype.getByColorId = function(colorId) {
  * @param {string} desc
  * @return {?ColorDefinitionRecord}
  */
-ColorDefinitionStorage.prototype.getByDesc = function(desc) {
+ColorDefinitionStorage.prototype.getByDesc = function (desc) {
   verify.string(desc)
 
-  var record = _.find(this._getRecords(), { desc: desc })
+  var record = _.find(this._getRecords(), {desc: desc})
 
   return _.isUndefined(record) ? null : _.clone(record)
 }
@@ -94,14 +95,14 @@ ColorDefinitionStorage.prototype.getByDesc = function(desc) {
 /**
  * @return {ColorDefinitionRecord[]}
  */
-ColorDefinitionStorage.prototype.getAll = function() {
+ColorDefinitionStorage.prototype.getAll = function () {
   return _.cloneDeep(this._getRecords())
 }
 
 /**
  * Remove all ColorDefinitions
  */
-ColorDefinitionStorage.prototype.clear = function() {
+ColorDefinitionStorage.prototype.clear = function () {
   this.store.remove(this.colorDefinitionsDBKey)
   this.store.remove(this.colorDefinitionsDBKey + '_version')
 }

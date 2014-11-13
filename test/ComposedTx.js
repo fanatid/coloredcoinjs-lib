@@ -5,50 +5,50 @@ var expect = require('chai').expect
 var cclib = require('../src/index')
 
 
-describe('ComposedTx', function() {
+describe('ComposedTx', function () {
   var tx
 
-  beforeEach(function() {
+  beforeEach(function () {
     var operationalTx = new cclib.OperationalTx()
 
     tx = new cclib.ComposedTx(operationalTx)
   })
 
-  it('addTxIn/addTxIns/getTxIns', function() {
+  it('addTxIn/addTxIns/getTxIns', function () {
     tx.addTxIn(null)
     tx.addTxIns([1, 2])
     expect(tx.getTxIns()).to.deep.equal([null, 1, 2])
   })
 
-  it('addTxOut throw Error', function() {
+  it('addTxOut throw Error', function () {
     var target = {
-      isUncolored: function() { return false }
+      isUncolored: function () { return false }
     }
-    var fn = function() { tx.addTxOut({ target: target }) }
+    var fn = function () { tx.addTxOut({target: target}) }
     expect(fn).to.throw(Error)
   })
 
-  it('addTxOut/addTxOuts/getTxOuts', function() {
+  it('addTxOut/addTxOuts/getTxOuts', function () {
     tx.addTxOut({
       target: {
-        isUncolored: function() { return true },
-        getScript: function() { return '00' },
-        getValue: function() { return 2 }
+        isUncolored: function () { return true },
+        getScript: function () { return '00' },
+        getValue: function () { return 2 }
       }
     })
-    tx.addTxOuts([{ script: '11', value: 4 }])
-    tx.getTxOuts([{ script: '00', value: 2 }, { script: '11', value: 4 }])
+    tx.addTxOuts([{script: '11', value: 4}])
+    tx.getTxOuts([{script: '00', value: 2}, {script: '11', value: 4}])
   })
 
-  it('estimateSize', function() {
-    var size = tx.estimateSize({ txIns: 2, txOuts: 3, bytes: 99 })
+  it('estimateSize', function () {
+    var size = tx.estimateSize({txIns: 2, txOuts: 3, bytes: 99})
     expect(size).to.equal(573)
   })
 
-  it('estimateRequiredFee', function() {
+  it('estimateRequiredFee', function () {
     function TestOperationalTx() { cclib.OperationalTx.call(this) }
     inherits(TestOperationalTx, cclib.OperationalTx)
-    TestOperationalTx.prototype.getRequiredFee = function(size) { return size*2 }
+    TestOperationalTx.prototype.getRequiredFee = function (size) { return size * 2 }
     var operationalTx = new TestOperationalTx()
     tx = new cclib.ComposedTx(operationalTx)
     var fee = tx.estimateRequiredFee()

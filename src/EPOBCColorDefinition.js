@@ -35,18 +35,17 @@ Tag.genesisTagBits = [1, 0, 1, 0, 0, 1]
  * @return {number}
  * @throws {Error} If paddingCode greater that 63
  */
-Tag.closestPaddingCode = function(minPadding) {
+Tag.closestPaddingCode = function (minPadding) {
   verify.number(minPadding)
 
-  if (minPadding <= 0)
-    return 0
+  if (minPadding <= 0) { return 0 }
 
   var paddingCode = 1
-  while (Math.pow(2, paddingCode) < minPadding && paddingCode <= 63)
+  while (Math.pow(2, paddingCode) < minPadding && paddingCode <= 63) {
     paddingCode += 1
+  }
 
-  if (paddingCode > 63)
-    throw new Error('Requires to much padding')
+  if (paddingCode > 63) { throw new Error('Requires to much padding') }
 
   return paddingCode
 }
@@ -56,14 +55,13 @@ Tag.closestPaddingCode = function(minPadding) {
  * @param {Transaction} tx
  * @return {?Tag} Tag instance if tx is genesis or xfer and not coinbase
  */
-Tag.fromTx = function(tx) {
+Tag.fromTx = function (tx) {
   verify.Transaction(tx)
 
   var isCoinbase = (
     tx.ins[0].hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
     tx.ins[0].index === 4294967295)
-  if (isCoinbase)
-    return null
+  if (isCoinbase) { return null }
 
   return Tag.fromSequence(tx.ins[0].sequence)
 }
@@ -73,17 +71,16 @@ Tag.fromTx = function(tx) {
  * @param {number} sequence
  * @return {?Tag}
  */
-Tag.fromSequence = function(sequence) {
+Tag.fromSequence = function (sequence) {
   verify.number(sequence)
 
   var bits = util.number2bitArray(sequence)
   var tagBits = bits.slice(0, 6)
 
-  var isXfer = Tag.xferTagBits.every(function(v, i) { return v === tagBits[i] })
-  var isGenesis = Tag.genesisTagBits.every(function(v, i) { return v === tagBits[i] })
+  var isXfer = Tag.xferTagBits.every(function (v, i) { return v === tagBits[i] })
+  var isGenesis = Tag.genesisTagBits.every(function (v, i) { return v === tagBits[i] })
 
-  if (!(isXfer || isGenesis))
-    return null
+  if (!(isXfer || isGenesis)) { return null }
 
   var paddingCode = util.bitArray2number(bits.slice(6, 12))
   return new Tag(paddingCode, isGenesis)
@@ -92,11 +89,11 @@ Tag.fromSequence = function(sequence) {
 /**
  * @return {number}
  */
-Tag.prototype.toSequence = function() {
+Tag.prototype.toSequence = function () {
   var bits = Array.prototype.concat(
     this.isGenesis ? Tag.genesisTagBits : Tag.xferTagBits,
     util.number2bitArray(this.paddingCode, 6),
-    Array.apply(null, new Array(20)).map(function() { return 0 })
+    Array.apply(null, new Array(20)).map(function () { return 0 })
   )
 
   return util.bitArray2number(bits)
@@ -105,9 +102,8 @@ Tag.prototype.toSequence = function() {
 /**
  * @return {number}
  */
-Tag.prototype.getPadding = function() {
-  if (this.paddingCode === 0)
-    return 0
+Tag.prototype.getPadding = function () {
+  if (this.paddingCode === 0) { return 0 }
 
   return Math.pow(2, this.paddingCode)
 }
@@ -134,34 +130,29 @@ function getXferAffectingInputs(tx, padding, outIndex) {
 
   for (var oi = 0; oi < outIndex; ++oi) {
     valueWop = tx.outs[oi].value - padding
-    if (valueWop <= 0)
-      return []
+    if (valueWop <= 0) { return [] }
 
     outPrecSum += valueWop
   }
 
   outValueWop = tx.outs[outIndex].value - padding
-  if (outValueWop <= 0)
-    return []
+  if (outValueWop <= 0) { return [] }
 
   var affectingInputs = []
   var inputRunningSum = 0
 
   for (var ii = 0; ii < tx.ins.length; ++ii) {
     var prevTag = Tag.fromTx(tx.ins[ii].prevTx)
-    if (prevTag === null)
-      break
+    if (prevTag === null) { break }
 
     valueWop = tx.ins[ii].value - prevTag.getPadding()
-    if (valueWop <= 0)
-      break
+    if (valueWop <= 0) { break }
 
     var isAffectingInput = (
       inputRunningSum < (outPrecSum + outValueWop) &&
       (inputRunningSum + valueWop) > outPrecSum)
 
-    if (isAffectingInput)
-      affectingInputs.push(ii)
+    if (isAffectingInput) { affectingInputs.push(ii) }
 
     inputRunningSum += valueWop
   }
@@ -200,7 +191,7 @@ inherits(EPOBCColorDefinition, ColorDefinition)
 /**
  * @return {string}
  */
-EPOBCColorDefinition.prototype.getColorType = function() {
+EPOBCColorDefinition.prototype.getColorType = function () {
   return 'epobc'
 }
 
@@ -212,13 +203,12 @@ EPOBCColorDefinition.prototype.getColorType = function() {
  * @return {EPOBCColorDefinition}
  * @throws {Error} On wrong desc
  */
-EPOBCColorDefinition.fromDesc = function(colorId, desc) {
+EPOBCColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
   verify.string(desc)
 
   var items = desc.split(':')
-  if (items[0] !== 'epobc')
-    throw new Error('Wrong desc')
+  if (items[0] !== 'epobc') { throw new Error('Wrong desc') }
 
   var genesis = {
     txId: items[1],
@@ -234,7 +224,7 @@ EPOBCColorDefinition.fromDesc = function(colorId, desc) {
  *
  * @return {string}
  */
-EPOBCColorDefinition.prototype.getDesc = function() {
+EPOBCColorDefinition.prototype.getDesc = function () {
   var data = ['epobc', this.genesis.txId, this.genesis.outIndex, this.genesis.height]
   return data.join(':')
 }
@@ -243,7 +233,7 @@ EPOBCColorDefinition.prototype.getDesc = function() {
  * @param {Transaction} tx
  * @return {boolean}
  */
-EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
+EPOBCColorDefinition.prototype.isSpecialTx = function (tx) {
   verify.Transaction(tx)
 
   return tx.getId() === this.genesis.txId
@@ -264,25 +254,25 @@ EPOBCColorDefinition.prototype.isSpecialTx = function(tx) {
  * @param {function} getTxFn
  * @param {EPOBCColorDefinition~runKernel} cb
  */
-EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, cb) {
+EPOBCColorDefinition.prototype.runKernel = function (tx, colorValueSet, getTxFn, cb) {
   verify.Transaction(tx)
   verify.array(colorValueSet)
-  colorValueSet.filter(function(cv) { return cv !== null }).forEach(verify.ColorValue)
+  colorValueSet.filter(function (cv) { return cv !== null }).forEach(verify.ColorValue)
   verify.function(cb)
 
   var self = this
 
-  Q.fcall(function() {
+  Q.fcall(function () {
     var tag = Tag.fromTx(tx)
 
     if (tag === null || tag.isGenesis) {
-      var outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function(){ return null })
+      var outColorValues = Array.apply(null, new Array(tx.outs.length)).map(function () { return null })
 
       if (tag !== null && self.isSpecialTx(tx)) {
         var valueWop = tx.outs[0].value - tag.getPadding()
-
-        if (valueWop > 0)
+        if (valueWop > 0) {
           outColorValues[0] = new ColorValue(self, valueWop)
+        }
       }
 
       return outColorValues
@@ -290,27 +280,23 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, 
 
     var padding = tag.getPadding()
 
-    return Q.ninvoke(tx, 'ensureInputValues', getTxFn).then(function(tx) {
-      var promises = tx.outs.map(function(output, outIndex) {
+    return Q.ninvoke(tx, 'ensureInputValues', getTxFn).then(function (tx) {
+      var promises = tx.outs.map(function (output, outIndex) {
         var outValueWop = output.value - padding
-
-        if (outValueWop <= 0)
-          return null
+        if (outValueWop <= 0) { return null }
 
         var affectingInputs = getXferAffectingInputs(tx, padding, outIndex)
-        var allColored = affectingInputs.every(function(ai) {
+        var allColored = affectingInputs.every(function (ai) {
           return (colorValueSet[ai] !== null && !_.isUndefined(colorValueSet[ai]))
         })
 
-        if (!allColored)
-          return null
+        if (!allColored) { return null }
 
-        var colorValues = [new ColorValue(self, 0 )]
-        colorValues = colorValues.concat(affectingInputs.map(function(ai) { return colorValueSet[ai] }))
+        var colorValues = [new ColorValue(self, 0)]
+        colorValues = colorValues.concat(affectingInputs.map(function (ai) { return colorValueSet[ai] }))
 
         var totalColorValue = ColorValue.sum(colorValues)
-        if (totalColorValue.getValue() < outValueWop)
-          return null
+        if (totalColorValue.getValue() < outValueWop) { return null }
 
         return new ColorValue(self, outValueWop)
       })
@@ -318,7 +304,7 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, 
       return Q.all(promises)
     })
 
-  }).done(function(colorValues) { cb(null, colorValues) }, function(error) { cb(error) })
+  }).done(function (colorValues) { cb(null, colorValues) }, function (error) { cb(error) })
 }
 
 /**
@@ -336,32 +322,30 @@ EPOBCColorDefinition.prototype.runKernel = function(tx, colorValueSet, getTxFn, 
  * @param {function} getTxFn
  * @param {function} cb
  */
-EPOBCColorDefinition.getAffectingInputs = function(tx, outputSet, getTxFn, cb) {
+EPOBCColorDefinition.getAffectingInputs = function (tx, outputSet, getTxFn, cb) {
   verify.Transaction(tx)
   verify.array(outputSet)
   outputSet.forEach(verify.number)
   verify.function(getTxFn)
   verify.function(cb)
 
-  Q.fcall(function() {
+  Q.fcall(function () {
     var tag = Tag.fromTx(tx)
-    if (tag === null || tag.isGenesis)
-      return []
+    if (tag === null || tag.isGenesis) { return [] }
 
     var padding = tag.getPadding()
-    return Q.ninvoke(tx, 'ensureInputValues', getTxFn).then(function(tx) {
-      var aii = {}
+    return Q.ninvoke(tx, 'ensureInputValues', getTxFn).then(function (tx) {
+      var affectingInputs = _.chain(outputSet)
+        .map(function (outIndex) { return getXferAffectingInputs(tx, padding, outIndex) })
+        .flatten()
+        .uniq()
+        .map(function (ii) { return tx.ins[ii] })
+        .value()
 
-      outputSet.forEach(function(outIndex) {
-        getXferAffectingInputs(tx, padding, outIndex).forEach(function(ai) {
-          aii[ai] = 1
-        })
-      })
-
-      return Object.keys(aii).map(function(ii) { return tx.ins[ii] })
+      return affectingInputs
     })
 
-  }).done(function(result) { cb(null, result) }, function(error) { cb(error) })
+  }).done(function (result) { cb(null, result) }, function (error) { cb(error) })
 }
 
 /**
@@ -376,25 +360,33 @@ EPOBCColorDefinition.getAffectingInputs = function(tx, outputSet, getTxFn, cb) {
  * @param {OperationalTx} operationalTx
  * @param {EPOBCColorDefinition~makeComposedTx} cb
  */
-EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
+EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
   verify.OperationalTx(operationalTx)
   verify.function(cb)
 
-  var targetsByColor, targetsColorIds
-  var uncoloredTargets, uncoloredNeeded
-  var dustThreshold, coinsByColor, minPadding
-  var composedTx, tag, fee
+  var targetsByColor
+  var targetsColorIds
+  var uncoloredTargets
+  var uncoloredNeeded
+  var dustThreshold
+  var coinsByColor
+  var minPadding
+  var composedTx
+  var tag
 
-  Q.fcall(function() {
+  Q.fcall(function () {
     targetsByColor = util.groupTargetsByColor(operationalTx.getTargets(), EPOBCColorDefinition)
 
     uncoloredTargets = targetsByColor[new UncoloredColorDefinition().getColorId()] || []
     delete targetsByColor[new UncoloredColorDefinition().getColorId()]
 
-    if (uncoloredTargets.length === 0)
+    if (uncoloredTargets.length === 0) {
       uncoloredNeeded = new ColorValue(new UncoloredColorDefinition(), 0)
-    else
+
+    } else {
       uncoloredNeeded = ColorTarget.sum(uncoloredTargets)
+
+    }
 
     targetsColorIds = Object.keys(targetsByColor)
     dustThreshold = operationalTx.getDustThreshold()
@@ -403,12 +395,12 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
 
     // get inputs, create change targets, compute min padding
     var promise = Q()
-    targetsColorIds.forEach(function(targetColorId) {
-      promise = promise.then(function() {
+    targetsColorIds.forEach(function (targetColorId) {
+      promise = promise.then(function () {
         var targets = targetsByColor[targetColorId]
         var neededSum = ColorTarget.sum(targets)
 
-        return Q.ninvoke(operationalTx, 'selectCoins', neededSum, null).spread(function(coins, coinsValue) {
+        return Q.ninvoke(operationalTx, 'selectCoins', neededSum, null).spread(function (coins, coinsValue) {
           coinsByColor[targetColorId] = coins
 
           var change = coinsValue.minus(neededSum)
@@ -419,10 +411,9 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
             targets.push(changeTarget)
           }
 
-          targets.forEach(function(target) {
+          targets.forEach(function (target) {
             var paddingNeeded = dustThreshold.getValue() - target.getValue()
-            if (paddingNeeded > minPadding)
-              minPadding = paddingNeeded
+            if (paddingNeeded > minPadding) { minPadding = paddingNeeded }
           })
         })
       })
@@ -430,40 +421,41 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
 
     return promise
 
-  }).then(function() {
+  }).then(function () {
     composedTx = operationalTx.makeComposedTx()
     tag = new Tag(Tag.closestPaddingCode(minPadding), false)
 
     // create txins & txouts, compute uncolored requirements
-    targetsColorIds.forEach(function(targetColorId) {
-      coinsByColor[targetColorId].forEach(function(coin) {
+    targetsColorIds.forEach(function (targetColorId) {
+      coinsByColor[targetColorId].forEach(function (coin) {
         var coinValue = new ColorValue(new UncoloredColorDefinition(), coin.value)
         uncoloredNeeded = uncoloredNeeded.minus(coinValue)
         composedTx.addTxIn(coin)
       })
 
-      targetsByColor[targetColorId].forEach(function(target) {
+      targetsByColor[targetColorId].forEach(function (target) {
         var targetValue = target.getValue() + tag.getPadding()
         var uncoloredValue = new ColorValue(new UncoloredColorDefinition(), targetValue)
         uncoloredNeeded = uncoloredNeeded.plus(uncoloredValue)
-        composedTx.addTxOut({ script: target.getScript(), value: targetValue })
+        composedTx.addTxOut({script: target.getScript(), value: targetValue})
       })
     })
 
-  }).then(function() {
-    composedTx.addTxOuts(uncoloredTargets.map(function(target) { return { target: target } }))
+  }).then(function () {
+    composedTx.addTxOuts(uncoloredTargets.map(function (target) { return {target: target} }))
 
-    fee = composedTx.estimateRequiredFee()
-    if (uncoloredNeeded.plus(fee).getValue() <= 0)
+    var fee = composedTx.estimateRequiredFee()
+    if (uncoloredNeeded.plus(fee).getValue() <= 0) {
       return uncoloredNeeded.neg().minus(fee)
+    }
 
-    return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx).spread(function(coins, coinsValue) {
+    return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx).spread(function (coins, coinsValue) {
       composedTx.addTxIns(coins)
       fee = composedTx.estimateRequiredFee()
       return coinsValue.minus(uncoloredNeeded).minus(fee)
     })
 
-  }).then(function(uncoloredChange) {
+  }).then(function (uncoloredChange) {
     if (uncoloredChange.getValue() > dustThreshold.getValue()) {
       var uncoloredAddress = operationalTx.getChangeAddress(new UncoloredColorDefinition())
       composedTx.addTxOut({
@@ -474,7 +466,7 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
 
     composedTx.txIns[0].sequence = tag.toSequence()
 
-  }).done(function() { cb(null, composedTx) }, function(error) { cb(error) })
+  }).done(function () { cb(null, composedTx) }, function (error) { cb(error) })
 }
 
 /**
@@ -487,32 +479,36 @@ EPOBCColorDefinition.makeComposedTx = function(operationalTx, cb) {
  * @param {OperationalTx} operationalTx
  * @param {EPOBCColorDefinition~composeGenesisTx} cb
  */
-EPOBCColorDefinition.composeGenesisTx = function(operationalTx, cb) {
+EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
   verify.OperationalTx(operationalTx)
   verify.function(cb)
 
-  var composedTx, uncoloredNeeded, tag
+  var tag
+  var composedTx
+  var uncoloredNeeded
 
-  Q.fcall(function() {
-    if (operationalTx.getTargets().length !== 1)
+  Q.fcall(function () {
+    if (operationalTx.getTargets().length !== 1) {
       throw new Error('genesis transaction need exactly one target')
+    }
 
     var gTarget = operationalTx.getTargets()[0]
-    if (gTarget.getColorId() !== new GenesisColorDefinition().getColorId())
+    if (gTarget.getColorId() !== new GenesisColorDefinition().getColorId()) {
       throw new Error('transaction target is not genesis')
+    }
 
     var gValue = gTarget.getValue()
     var paddingNeeded = operationalTx.getDustThreshold().getValue() - gValue
     tag = new Tag(Tag.closestPaddingCode(paddingNeeded), true)
 
     composedTx = operationalTx.makeComposedTx()
-    composedTx.addTxOut({ script: gTarget.getScript(), value: tag.getPadding() + gValue })
+    composedTx.addTxOut({script: gTarget.getScript(), value: tag.getPadding() + gValue})
 
     uncoloredNeeded = new ColorValue(new UncoloredColorDefinition(), tag.getPadding() + gValue)
 
     return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx)
-  
-  }).spread(function(coins, coinsValue) {
+
+  }).spread(function (coins, coinsValue) {
     composedTx.addTxIns(coins)
 
     var fee = composedTx.estimateRequiredFee()
@@ -527,7 +523,7 @@ EPOBCColorDefinition.composeGenesisTx = function(operationalTx, cb) {
 
     composedTx.txIns[0].sequence = tag.toSequence()
 
-  }).done(function() { cb(null, composedTx) }, function(error) { cb(error) })
+  }).done(function () { cb(null, composedTx) }, function (error) { cb(error) })
 }
 
 

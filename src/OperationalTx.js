@@ -1,3 +1,6 @@
+var NotImplementedError = require('./errors').NotImplementedError
+
+
 /**
  * @class OperationalTx
  */
@@ -8,8 +11,8 @@ function OperationalTx() {}
  *
  * @return {Array}
  */
-OperationalTx.prototype.getTargets = function() {
-  throw new Error('getTargets not implemented')
+OperationalTx.prototype.getTargets = function () {
+  throw new NotImplementedError('OperationalTx.getTargets')
 }
 
 /**
@@ -23,8 +26,8 @@ OperationalTx.prototype.getTargets = function() {
  * @param {?Object} [feeEstimator=null]
  * @param {function} cb
  */
-OperationalTx.prototype.selectCoins = function() {
-  throw new Error('selectCoins not implemented')
+OperationalTx.prototype.selectCoins = function () {
+  throw new NotImplementedError('OperationalTx.selectCoins')
 }
 
 /**
@@ -34,8 +37,8 @@ OperationalTx.prototype.selectCoins = function() {
  * @param {ColorDefinition} colorDefinition
  * @return {string}
  */
-OperationalTx.prototype.getChangeAddress = function() {
-  throw new Error('getChangeAddress not implemented')
+OperationalTx.prototype.getChangeAddress = function () {
+  throw new NotImplementedError('OperationalTx.getChangeAddress')
 }
 
 /**
@@ -45,8 +48,8 @@ OperationalTx.prototype.getChangeAddress = function() {
  * @param {number} txSize
  * @return {ColorValue}
  */
-OperationalTx.prototype.getRequiredFee = function() {
-  throw new Error('getRequiredFee not implemented')
+OperationalTx.prototype.getRequiredFee = function () {
+  throw new NotImplementedError('OperationalTx.getRequiredFee')
 }
 
 /**
@@ -56,8 +59,8 @@ OperationalTx.prototype.getRequiredFee = function() {
  * @abstract
  * @return {number}
  */
-OperationalTx.prototype.getDustThreshold = function() {
-  throw new Error('getDustThreshold not implemented')
+OperationalTx.prototype.getDustThreshold = function () {
+  throw new NotImplementedError('OperationalTx.getDustThreshold')
 }
 
 /**
@@ -65,7 +68,7 @@ OperationalTx.prototype.getDustThreshold = function() {
  *
  * @return {ComposedTx}
  */
-OperationalTx.prototype.makeComposedTx = function() {
+OperationalTx.prototype.makeComposedTx = function () {
   var ComposedTx = require('./ComposedTx')
   return new ComposedTx(this)
 }

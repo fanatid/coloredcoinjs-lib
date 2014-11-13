@@ -24,14 +24,14 @@ inherits(UncoloredColorDefinition, ColorDefinition)
 /**
  * @return {string}
  */
-UncoloredColorDefinition.prototype.getColorType = function() {
+UncoloredColorDefinition.prototype.getColorType = function () {
   return 'uncolored'
 }
 
 /**
  * @return {string}
  */
-UncoloredColorDefinition.prototype.getDesc = function() {
+UncoloredColorDefinition.prototype.getDesc = function () {
   return ''
 }
 
@@ -41,15 +41,17 @@ UncoloredColorDefinition.prototype.getDesc = function() {
  * @return {UncoloredColorDefinition}
  * @throws {Error} If colorId not equal UncoloredColorDefinition.colorId or desc not equal ''
  */
-UncoloredColorDefinition.fromDesc = function(colorId, desc) {
+UncoloredColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
   verify.string(desc)
 
-  if (colorId !== UncoloredColorId)
+  if (colorId !== UncoloredColorId) {
     throw new Error('wrong colorId')
+  }
 
-  if (desc !== '')
+  if (desc !== '') {
     throw new Error('bad desc')
+  }
 
   return new UncoloredColorDefinition()
 }
@@ -66,23 +68,24 @@ UncoloredColorDefinition.fromDesc = function(colorId, desc) {
  * @param {OperationalTx} operationalTx
  * @param {UncoloredColorDefinition~makeComposedTx} cb
  */
-UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
+UncoloredColorDefinition.makeComposedTx = function (operationalTx, cb) {
   verify.OperationalTx(operationalTx)
   verify.function(cb)
 
   var composedTx
-  var targets, targetsTotalValue
+  var targets
+  var targetsTotalValue
 
-  Q.fcall(function() {
+  Q.fcall(function () {
     targets = operationalTx.getTargets()
     targetsTotalValue = ColorTarget.sum(targets)
 
     composedTx = operationalTx.makeComposedTx()
-    composedTx.addTxOuts(targets.map(function(target) { return {target: target} }))
+    composedTx.addTxOuts(targets.map(function (target) { return {target: target} }))
 
     return Q.ninvoke(operationalTx, 'selectCoins', targetsTotalValue, composedTx)
 
-  }).spread(function(coins, coinsValue) {
+  }).spread(function (coins, coinsValue) {
     composedTx.addTxIns(coins)
 
     var fee = composedTx.estimateRequiredFee()
@@ -96,7 +99,7 @@ UncoloredColorDefinition.makeComposedTx = function(operationalTx, cb) {
       })
     }
 
-  }).done(function() { cb(null, composedTx) }, function(error) { cb(error) })
+  }).done(function () { cb(null, composedTx) }, function (error) { cb(error) })
 }
 
 

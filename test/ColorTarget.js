@@ -4,12 +4,16 @@ var cclib = require('../src/index')
 var ColorTarget = cclib.ColorTarget
 
 
-describe('ColorTarget', function() {
-  var cdStorage, cdManager, uncolored
-  var cv1, cv2
-  var ct1, ct2
+describe('ColorTarget', function () {
+  var cdStorage
+  var cdManager
+  var uncolored
+  var cv1
+  var cv2
+  var ct1
+  var ct2
 
-  beforeEach(function() {
+  beforeEach(function () {
     cdStorage = new cclib.ColorDefinitionStorage()
     cdManager = new cclib.ColorDefinitionManager(cdStorage)
     uncolored = cdManager.getUncolored()
@@ -17,35 +21,35 @@ describe('ColorTarget', function() {
     ct1 = new ColorTarget('0102', cv1)
   })
 
-  afterEach(function() {
+  afterEach(function () {
     cdStorage.clear()
   })
 
-  it('getScript', function() {
+  it('getScript', function () {
     expect(ct1.getScript()).to.equal('0102')
   })
 
-  it('getColorValue', function() {
+  it('getColorValue', function () {
     expect(ct1.getColorValue()).to.deep.equal(cv1)
   })
 
-  it('getValue', function() {
+  it('getValue', function () {
     expect(ct1.getValue()).to.equal(10)
   })
 
-  it('getColorDefinition', function() {
+  it('getColorDefinition', function () {
     expect(ct1.getColorDefinition()).to.deep.equal(uncolored)
   })
 
-  it('getColorId', function() {
+  it('getColorId', function () {
     expect(ct1.getColorId()).to.equal(uncolored.getColorId())
   })
 
-  it('isUncolored', function() {
+  it('isUncolored', function () {
     expect(ct1.isUncolored()).to.be.true
   })
 
-  it('sum', function() {
+  it('sum', function () {
     cv2 = new cclib.ColorValue(uncolored, 15)
     ct2 = new ColorTarget('', cv2)
     var tcv = new cclib.ColorValue(uncolored, 25)

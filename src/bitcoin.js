@@ -13,7 +13,7 @@ var verify = require('./verify')
  * @param {number} network.scriptHash
  * @return {string[]}
  */
-bitcoin.getAddressesFromOutputScript = function(script, network) {
+bitcoin.getAddressesFromOutputScript = function (script, network) {
   var addresses = []
 
   switch (bitcoin.scripts.classifyOutput(script)) {
@@ -26,7 +26,7 @@ bitcoin.getAddressesFromOutputScript = function(script, network) {
       break
 
     case 'multisig':
-      addresses = script.chunks.slice(1, -2).map(function(pubKey) {
+      addresses = script.chunks.slice(1, -2).map(function (pubKey) {
         return bitcoin.ECPubKey.fromBuffer(pubKey).getAddress(network)
       })
       break
@@ -39,27 +39,28 @@ bitcoin.getAddressesFromOutputScript = function(script, network) {
       break
   }
 
-  return addresses.map(function(addr) { return addr.toBase58Check() })
+  return addresses.map(function (addr) { return addr.toBase58Check() })
 }
 
 var transactionClone = bitcoin.Transaction.prototype.clone
 /**
  * @return {bitcoinjs-lib.Transaction}
  */
-bitcoin.Transaction.prototype.clone = function() {
+bitcoin.Transaction.prototype.clone = function () {
   var self = this
 
   var tx = transactionClone.apply(self, Array.prototype.slice.call(arguments))
 
-  if (!_.isUndefined(self.ensured))
-    tx.ensured = self.ensured
+  if (!_.isUndefined(self.ensured)) { tx.ensured = self.ensured }
 
-  tx.ins = tx.ins.map(function(input, index) {
-    if (!_.isUndefined(self.ins[index].value))
+  tx.ins = tx.ins.map(function (input, index) {
+    if (!_.isUndefined(self.ins[index].value)) {
       input.value = self.ins[index].value
+    }
 
-    if (!_.isUndefined(self.ins[index].prevTx))
+    if (!_.isUndefined(self.ins[index].prevTx)) {
       input.prevTx = self.ins[index].prevTx
+    }
 
     return input
   })
@@ -80,36 +81,32 @@ bitcoin.Transaction.prototype.clone = function() {
  * @param {function} getTxFn
  * @param {Transaction~ensureInputValues} cb
  */
-bitcoin.Transaction.prototype.ensureInputValues = function(getTxFn, cb) {
+bitcoin.Transaction.prototype.ensureInputValues = function (getTxFn, cb) {
   verify.function(getTxFn)
   verify.function(cb)
 
   var tx = this.clone()
 
-  Q.fcall(function() {
-    if (tx.ensured === true)
-      return tx
+  Q.fcall(function () {
+    if (tx.ensured === true) { return tx }
 
-    var promises = tx.ins.map(function(input) {
+    var promises = tx.ins.map(function (input) {
       var isCoinbase = (
         input.hash.toString('hex') === '0000000000000000000000000000000000000000000000000000000000000000' &&
         input.index === 4294967295)
 
-      if (isCoinbase) {
-        input.value = 0
-        return
-      }
+      if (isCoinbase) { return (input.value = 0) }
 
       var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
-      return Q.nfcall(getTxFn, txId).then(function(prevTx) {
+      return Q.nfcall(getTxFn, txId).then(function (prevTx) {
         input.prevTx = prevTx
         input.value = prevTx.outs[input.index].value
       })
     })
 
-    return Q.all(promises).then(function() { tx.ensured = true })
+    return Q.all(promises).then(function () { tx.ensured = true })
 
-  }).done(function() { cb(null, tx) }, function(error) { cb(error) })
+  }).done(function () { cb(null, tx) }, function (error) { cb(error) })
 }
 
 

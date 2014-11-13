@@ -1,3 +1,4 @@
+var NotImplementedError = require('./errors').NotImplementedError
 var verify = require('./verify')
 
 
@@ -17,7 +18,7 @@ function ColorDefinition(colorId) {
 /**
  * @return {number}
  */
-ColorDefinition.prototype.getColorId = function() {
+ColorDefinition.prototype.getColorId = function () {
   return this.colorId
 }
 
@@ -25,16 +26,16 @@ ColorDefinition.prototype.getColorId = function() {
  * @abstract
  * @return {string}
  */
-ColorDefinition.prototype.getColorType = function() {
-  throw new Error('ColorDefinition.getColorType not implemented')
+ColorDefinition.prototype.getColorType = function () {
+  throw new NotImplementedError('ColorDefinition.getColorType')
 }
 
 /**
  * @abstract
  * @return {string}
  */
-ColorDefinition.prototype.getDesc = function() {
-  throw new Error('ColorDefinition.getDesc not implemented')
+ColorDefinition.prototype.getDesc = function () {
+  throw new NotImplementedError('ColorDefinition.getDesc')
 }
 
 /**
@@ -45,8 +46,8 @@ ColorDefinition.prototype.getDesc = function() {
  * @param {string} desc
  * @return {ColorDefinition}
  */
-ColorDefinition.prototype.fromDesc = function() {
-  throw new Error('ColorDefinition.fromDesc not implemented')
+ColorDefinition.prototype.fromDesc = function () {
+  throw new NotImplementedError('ColorDefinition.fromDesc')
 }
 
 /**
@@ -62,8 +63,8 @@ ColorDefinition.prototype.fromDesc = function() {
  * @param {OperationalTx} operationalTx
  * @param {ColorDefinition~makeComposedTx} cb
  */
-ColorDefinition.prototype.makeComposedTx = function() {
-  throw new Error('ColorDefinition.makeComposedTx not implemented')
+ColorDefinition.prototype.makeComposedTx = function () {
+  throw new NotImplementedError('ColorDefinition.makeComposedTx')
 }
 
 

@@ -15,15 +15,18 @@ function getTxStub(transactions) {
 
   var txMap = {}
 
-  transactions.forEach(function(tx) {
+  transactions.forEach(function (tx) {
     txMap[tx.getId()] = tx.clone()
   })
 
   function getTx(txId, cb) {
-    if (_.isUndefined(txMap[txId]))
+    if (_.isUndefined(txMap[txId])) {
       cb(new Error('notFoundTx'))
-    else
+
+    } else {
       cb(null, txMap[txId].clone())
+
+    }
   }
 
   return getTx
