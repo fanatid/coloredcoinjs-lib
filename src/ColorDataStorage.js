@@ -66,7 +66,7 @@ ColorDataStorage.prototype._save2store = function () {
 /**
  * @param {ColorDataRecord} data
  * @return {ColorDataRecord}
- * @throws {Error} If exists and colorValues not equal
+ * @throws {Error} If exists and value not equal
  */
 ColorDataStorage.prototype.add = function (data) {
   verify.object(data)
@@ -80,20 +80,24 @@ ColorDataStorage.prototype.add = function (data) {
     txId: data.txId,
     outIndex: data.outIndex
   })
-  if (!_.isUndefined(record) && record.value !== data.value) {
+
+  if (_.isUndefined(record)) {
+    var records = this._getRecords()
+    records.push({
+      colorId: data.colorId,
+      txId: data.txId,
+      outIndex: data.outIndex,
+      value: data.value
+    })
+    this._saveRecords(records)
+    record = _.last(records)
+
+  } else if (record.value !== data.value) {
     throw new Error('Same data exists and colorValues not equal')
+
   }
 
-  var records = this._getRecords()
-  records.push({
-    colorId: data.colorId,
-    txId: data.txId,
-    outIndex: data.outIndex,
-    value: data.value
-  })
-  this._saveRecords(records)
-
-  return _.clone(_.last(records))
+  return _.clone(record)
 }
 
 /**
@@ -101,7 +105,7 @@ ColorDataStorage.prototype.add = function (data) {
  * @param {number} data.colorId
  * @param {string} data.txId
  * @param {number} data.outIndex
- * @return {?ColorDataRecord}
+ * @return {?number}
  */
 ColorDataStorage.prototype.get = function (data) {
   verify.object(data)
@@ -114,7 +118,7 @@ ColorDataStorage.prototype.get = function (data) {
     txId: data.txId,
     outIndex: data.outIndex
   })
-  return _.isUndefined(record) ? null : _.clone(record)
+  return _.isUndefined(record) ? null : record.value
 }
 
 /**

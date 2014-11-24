@@ -35,7 +35,7 @@ describe('ColorDataStorage', function () {
   it('add/get', function () {
     cdStore.add({colorId: 1, txId: txId1, outIndex: 0, value: 1})
     var result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})
-    expect(result).to.deep.equal({colorId: 1, txId: txId1, outIndex: 0, value: 1})
+    expect(result).to.deep.equal(1)
   })
 
   it('add throw error', function () {
@@ -53,7 +53,7 @@ describe('ColorDataStorage', function () {
   it('remove', function () {
     cdStore.add({colorId: 1, txId: txId1, outIndex: 0, value: 1})
     var result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})
-    expect(result).to.deep.equal({colorId: 1, txId: txId1, outIndex: 0, value: 1})
+    expect(result).to.deep.equal(1)
 
     cdStore.remove({txId: txId1, outIndex: 0})
     result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})

@@ -111,7 +111,7 @@ describe('ColorData', function () {
           txId: tx2.getId(),
           outIndex: 0
         })
-        expect(record.value).to.equal(6)
+        expect(record).to.equal(6)
         done()
       })
     })

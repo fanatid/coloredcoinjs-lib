@@ -27,14 +27,14 @@ ColorData.prototype.fetchColorValue = function (txId, outIndex, colorDefinition)
   verify.number(outIndex)
   verify.ColorDefinition(colorDefinition)
 
-  var colorData = this._storage.get({
+  var colorValue = this._storage.get({
     colorId: colorDefinition.getColorId(),
     txId: txId,
     outIndex: outIndex
   })
-  if (colorData === null) { return null }
+  if (colorValue === null) { return null }
 
-  return new ColorValue(colorDefinition, colorData.value)
+  return new ColorValue(colorDefinition, colorValue)
 }
 
 /**
@@ -67,17 +67,17 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
     var empty = true
 
     tx.ins.forEach(function (input) {
-      var colorData = self._storage.get({
+      var colorValue = self._storage.get({
         colorId: colorDefinition.getColorId(),
         txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
         outIndex: input.index
       })
 
-      var colorValue = null
-      if (colorData !== null) {
+      if (colorValue !== null) {
         empty = false
-        colorValue = new ColorValue(colorDefinition, colorData.value)
+        colorValue = new ColorValue(colorDefinition, colorValue)
       }
+
       inColorValues.push(colorValue)
     })
 
