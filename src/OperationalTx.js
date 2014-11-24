@@ -7,13 +7,22 @@ var NotImplementedError = require('./errors').NotImplementedError
 function OperationalTx() {}
 
 /**
- * Returns a array of ColorTargets
- *
- * @return {Array}
+ * @return {ColorTarget[]}
  */
 OperationalTx.prototype.getTargets = function () {
   throw new NotImplementedError('OperationalTx.getTargets')
 }
+
+/**
+ * @todo Describe utxo and return toRawCoin Object
+ */
+
+/**
+ * @callback OperationalTx~selectCoins
+ * @param {?Error} error
+ * @param {{toRawCoin: function}[]} utxo
+ * @param {ColorValue} utxoColorValue
+ */
 
 /**
  * Returns a Array of UTXO objects with whose colordef is the same as colorvValue
@@ -23,8 +32,8 @@ OperationalTx.prototype.getTargets = function () {
  *
  * @abstract
  * @param {ColorValue} colorValue
- * @param {?Object} [feeEstimator=null]
- * @param {function} cb
+ * @param {?Object} [feeEstimator]
+ * @param {OperationalTx~selectCoins} cb
  */
 OperationalTx.prototype.selectCoins = function () {
   throw new NotImplementedError('OperationalTx.selectCoins')

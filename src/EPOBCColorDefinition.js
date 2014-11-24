@@ -320,7 +320,7 @@ EPOBCColorDefinition.prototype.runKernel = function (tx, colorValueSet, getTxFn,
  * @param {Transaction} tx
  * @param {number[]} outputSet
  * @param {function} getTxFn
- * @param {function} cb
+ * @param {EPOBCColorDefinition~getAffectingInputs} cb
  */
 EPOBCColorDefinition.getAffectingInputs = function (tx, outputSet, getTxFn, cb) {
   verify.Transaction(tx)
@@ -401,7 +401,7 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
         var neededSum = ColorTarget.sum(targets)
 
         return Q.ninvoke(operationalTx, 'selectCoins', neededSum, null).spread(function (coins, coinsValue) {
-          coinsByColor[targetColorId] = coins
+          coinsByColor[targetColorId] = coins.map(function (coin) { return coin.toRawCoin() })
 
           var change = coinsValue.minus(neededSum)
           if (change.getValue() > 0) {
@@ -450,7 +450,7 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
     }
 
     return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx).spread(function (coins, coinsValue) {
-      composedTx.addTxIns(coins)
+      composedTx.addTxIns(coins.map(function (coin) { return coin.toRawCoin() }))
       fee = composedTx.estimateRequiredFee()
       return coinsValue.minus(uncoloredNeeded).minus(fee)
     })
@@ -464,7 +464,7 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
       })
     }
 
-    composedTx.txIns[0].sequence = tag.toSequence()
+    composedTx.setTxInSequence(0, tag.toSequence())
 
   }).done(function () { cb(null, composedTx) }, function (error) { cb(error) })
 }
@@ -509,7 +509,7 @@ EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
     return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx)
 
   }).spread(function (coins, coinsValue) {
-    composedTx.addTxIns(coins)
+    composedTx.addTxIns(coins.map(function (coin) { return coin.toRawCoin() }))
 
     var fee = composedTx.estimateRequiredFee()
     var uncoloredChange = coinsValue.minus(uncoloredNeeded).minus(fee)
@@ -521,7 +521,7 @@ EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
       })
     }
 
-    composedTx.txIns[0].sequence = tag.toSequence()
+    composedTx.setTxInSequence(0, tag.toSequence())
 
   }).done(function () { cb(null, composedTx) }, function (error) { cb(error) })
 }

@@ -15,60 +15,99 @@ function ComposedTx(operationalTx) {
   this.txOuts = []
 }
 
-// Todo: change coin to object
 /**
- * @param {Coin} txIn
+ * @param {{txId: string, outIndex: number, sequence: (number|undefined)}} txIn
  */
 ComposedTx.prototype.addTxIn = function (txIn) {
-  this.txIns.push(txIn)
+  this.addTxIns([txIn])
 }
 
 /**
- * @param {Coin[]} txIns
+ * @param {{txId: string, outIndex: number, sequence: (number|undefined)}[]} txIns
  */
 ComposedTx.prototype.addTxIns = function (txIns) {
-  txIns.forEach(this.addTxIn.bind(this))
+  var self = this
+
+  verify.array(txIns)
+  txIns.forEach(function (txIn) {
+    verify.object(txIn)
+    verify.txId(txIn.txId)
+    verify.number(txIn.outIndex)
+
+    self.txIns.push({txId: txIn.txId, outIndex: txIn.outIndex})
+
+    if (!_.isUndefined(txIn.sequence)) {
+      verify.number(txIn.sequence)
+      _.last(self.txIns).sequence = txIn.sequence
+    }
+  })
 }
 
 /**
- * @return {Coin[]}
+ * @param {number} index
+ * @param {number} sequence
+ * @throws {RangeError} If txIn for index doesn't exists
+ */
+ComposedTx.prototype.setTxInSequence = function (index, sequence) {
+  verify.number(index)
+  verify.number(sequence)
+
+  if (index < 0 || index >= this.txIns.length) {
+    throw RangeError('index must be greate than equal or less than ' + this.txIns.length)
+  }
+
+  this.txIns[index].sequence = sequence
+}
+
+/**
+ * @return {{txId: string, outIndex: number, sequence: (number|undefined)}[]}
  */
 ComposedTx.prototype.getTxIns = function () {
   return this.txIns
 }
 
 /**
- * @param {Object} data
- * @param {ColorTarget} [data.target] If data.target is not undefined, script and value will be extracted from target
- * @param {string} [data.script]
- * @param {number} [data.value]
+ * @param {({target: ColorTarget}|{script: string, value: number})} out
  * @throws {Error} If target is colored
  */
-ComposedTx.prototype.addTxOut = function (data) {
-  if (!_.isUndefined(data.target)) {
-    verify.object(data.target)
-
-    if (!data.target.isUncolored()) { throw new Error('target is colored') }
-
-    data.script = data.target.getScript()
-    data.value = data.target.getValue()
-  }
-
-  verify.hexString(data.script)
-  verify.number(data.value)
-
-  this.txOuts.push({script: data.script, value: data.value})
+ComposedTx.prototype.addTxOut = function (out) {
+  this.addTxOuts([out])
 }
 
 /**
- * @param {ColorTarget[]} colorTargets
+ * @param {({target: ColorTarget}|{script: string, value: number})[]} outs
+ * @throws {Error} If target is colored
  */
-ComposedTx.prototype.addTxOuts = function (colorTargets) {
-  colorTargets.forEach(this.addTxOut.bind(this))
+ComposedTx.prototype.addTxOuts = function (outs) {
+  var self = this
+
+  verify.array(outs)
+  outs.forEach(function (out) {
+    var txOut = {}
+
+    if (_.isUndefined(out.target)) {
+      txOut.script = out.script
+      txOut.value = out.value
+
+    } else {
+      if (out.target.isUncolored() === false) {
+        throw new Error('Target is colored')
+      }
+
+      txOut.script = out.target.getScript()
+      txOut.value = out.target.getValue()
+
+    }
+
+    verify.hexString(txOut.script)
+    verify.number(txOut.value)
+
+    self.txOuts.push(txOut)
+  })
 }
 
 /**
- * @return {ColorTarget[]}
+ * @return {{script: string, data: number}[]}
  */
 ComposedTx.prototype.getTxOuts = function () {
   return this.txOuts

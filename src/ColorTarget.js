@@ -58,14 +58,9 @@ ColorTarget.prototype.isUncolored = function () {
 }
 
 /**
- * @typedef {Object} AbstractColorTarget
- * @property {function} getColorValue
- */
-
-/**
  * Calculate total sum of targets
  *
- * @param {AbstractColorTarget[]} targets
+ * @param {{getColorValue: function}[]} targets
  * @return {number}
  * @throws {Error} Will throw an error if colorValues of targets not incompatible
  */

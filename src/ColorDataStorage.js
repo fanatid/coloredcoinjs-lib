@@ -26,6 +26,7 @@ function ColorDataStorage(opts) {
   opts = _.extend({
     saveTimeout: 1000
   }, opts)
+  verify.number(opts.saveTimeout)
 
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 

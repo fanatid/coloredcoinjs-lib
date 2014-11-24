@@ -38,19 +38,12 @@ function bitArray2number(bits) {
  */
 
 /**
- * @typedef {Object} GroupedTargets
- * @property {AbstractTarget[]} colorId1
- * @property {AbstractTarget[]} colorId2
- * @property {AbstractTarget[]} colorIdN
- */
-
-/**
  * Group targets by ColorId or return error if target is not uncolored
  *  or not instance of targetCls
  *
  * @param {AbstractTarget[]} targets
  * @param {function} targetCls ColorDefinition constructor for filter targets
- * @return {GroupedTargets}
+ * @return {{colorId1: AbstractTarget[], colorIdN: AbstractTarget[]}}
  * @throws {Error} If ColorDefinition not Uncolored and not targetCls
  */
 function groupTargetsByColor(targets, targetCls) {

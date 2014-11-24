@@ -86,7 +86,7 @@ UncoloredColorDefinition.makeComposedTx = function (operationalTx, cb) {
     return Q.ninvoke(operationalTx, 'selectCoins', targetsTotalValue, composedTx)
 
   }).spread(function (coins, coinsValue) {
-    composedTx.addTxIns(coins)
+    composedTx.addTxIns(coins.map(function (coin) { return coin.toRawCoin() }))
 
     var fee = composedTx.estimateRequiredFee()
     var change = coinsValue.minus(targetsTotalValue).minus(fee)

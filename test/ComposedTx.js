@@ -15,9 +15,9 @@ describe('ComposedTx', function () {
   })
 
   it('addTxIn/addTxIns/getTxIns', function () {
-    tx.addTxIn(null)
-    tx.addTxIns([1, 2])
-    expect(tx.getTxIns()).to.deep.equal([null, 1, 2])
+    var txIn = {txId: '06a480de0293ce9c2d8c76e15ac3b2f61f5bf7a47d139527ce335bf55b000e8f', outIndex: 0}
+    tx.addTxIns([txIn])
+    expect(tx.getTxIns()).to.deep.equal([txIn])
   })
 
   it('addTxOut throw Error', function () {
