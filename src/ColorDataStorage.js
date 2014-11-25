@@ -38,6 +38,10 @@ function ColorDataStorage(opts) {
   if (_.isUndefined(this.store.get(this.colorTxsDBKey + '_version'))) {
     this.store.set(this.colorTxsDBKey + '_version', '1')
   }
+
+  if (this.store.get(this.colorTxsDBKey + '_version') === '1') {
+    this.store.set(this.colorTxsDBKey + '_version', 2)
+  }
 }
 
 inherits(ColorDataStorage, SyncStorage)

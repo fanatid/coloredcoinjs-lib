@@ -25,6 +25,10 @@ function ColorDefinitionStorage() {
   if (_.isUndefined(this.store.get(this.colorDefinitionsDBKey + '_version'))) {
     this.store.set(this.colorDefinitionsDBKey + '_version', '1')
   }
+
+  if (this.store.get(this.colorDefinitionsDBKey + '_version') === '1') {
+    this.store.set(this.colorDefinitionsDBKey + '_version', 2)
+  }
 }
 
 inherits(ColorDefinitionStorage, SyncStorage)
