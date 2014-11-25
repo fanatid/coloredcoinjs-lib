@@ -106,7 +106,7 @@ describe('ColorData', function () {
       cdStorage.add({colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6})
       cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]), function (error) {
         expect(error).to.be.null
-        var record = cdStorage.get({
+        var record = cdStorage.getValue({
           colorId: 1,
           txId: tx2.getId(),
           outIndex: 0

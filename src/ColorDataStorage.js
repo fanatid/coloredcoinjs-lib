@@ -101,13 +101,10 @@ ColorDataStorage.prototype.add = function (data) {
 }
 
 /**
- * @param {Object} data
- * @param {number} data.colorId
- * @param {string} data.txId
- * @param {number} data.outIndex
+ * @param {{colorId: number, txId: string, outIndex: number}} data
  * @return {?number}
  */
-ColorDataStorage.prototype.get = function (data) {
+ColorDataStorage.prototype.getValue = function (data) {
   verify.object(data)
   verify.number(data.colorId)
   verify.txId(data.txId)
@@ -119,6 +116,27 @@ ColorDataStorage.prototype.get = function (data) {
     outIndex: data.outIndex
   })
   return _.isUndefined(record) ? null : record.value
+}
+
+/**
+ * @param {{txId: string, outIndex: number}} data
+ */
+ColorDataStorage.prototype.getAnyValue = function (data) {
+  verify.object(data)
+  verify.txId(data.txId)
+  verify.number(data.outIndex)
+
+  var result = null
+  this._getRecords().some(function (record) {
+    if (record.txId === data.txId && record.outIndex === data.outIndex) {
+      result = record
+      return true
+    }
+
+    return false
+  })
+
+  return result
 }
 
 /**

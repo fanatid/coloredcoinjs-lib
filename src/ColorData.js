@@ -1,4 +1,5 @@
 var Q = require('q')
+var _ = require('lodash')
 
 var ColorValue = require('./ColorValue')
 var verify = require('./verify')
@@ -12,6 +13,8 @@ function ColorData(storage) {
   verify.ColorDataStorage(storage)
 
   this._storage = storage
+  this._isRunning = false
+  this._queue = []
 }
 
 /**
@@ -27,7 +30,7 @@ ColorData.prototype.fetchColorValue = function (txId, outIndex, colorDefinition)
   verify.number(outIndex)
   verify.ColorDefinition(colorDefinition)
 
-  var colorValue = this._storage.get({
+  var colorValue = this._storage.getValue({
     colorId: colorDefinition.getColorId(),
     txId: txId,
     outIndex: outIndex
@@ -67,7 +70,7 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
     var empty = true
 
     tx.ins.forEach(function (input) {
-      var colorValue = self._storage.get({
+      var colorValue = self._storage.getValue({
         colorId: colorDefinition.getColorId(),
         txId: Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex'),
         outIndex: input.index
@@ -125,42 +128,55 @@ ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, g
 
   var self = this
 
-  Q.fcall(function () {
+  var promise = Q()
+  if (self._isRunning) {
+    self._queue.push(Q.defer())
+    promise = _.last(self._queue).promise
+  }
+  self._isRunning = true
+
+  promise.then(function () {
     var scannedOutputs = []
 
     function processOne(txId, outIndex) {
       if (scannedOutputs.indexOf(txId + outIndex) !== -1) { return }
-
       scannedOutputs.push(txId + outIndex)
 
-      var colorValue = self.fetchColorValue(txId, outIndex, colorDefinition)
-      if (colorValue !== null) { return }
+      if (self._storage.getAnyValue({txId: txId, outIndex: outIndex}) !== null) { return }
 
-      function processTx(tx) {
-        return Q.nfcall(colorDefinition.constructor.getAffectingInputs, tx, [outIndex], getTxFn)
-          .then(function (inputs) {
-            var promise = Q()
+      return Q.nfcall(getTxFn, txId).then(function (tx) {
+        var getAffectingInputs = colorDefinition.constructor.getAffectingInputs
+        return Q.nfcall(getAffectingInputs, tx, [outIndex], getTxFn).then(function (inputs) {
+          var promise = Q()
 
-            inputs.forEach(function (input) {
-              var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
-              promise = promise.then(function () { return Q.fcall(processOne, txId, input.index) })
-            })
-
-            promise = promise.then(function () {
-              return Q.ninvoke(self, 'scanTx', tx, null, colorDefinition, getTxFn)
-            })
-
-            return promise
+          inputs.forEach(function (input) {
+            var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
+            promise = promise.then(function () { return Q.fcall(processOne, txId, input.index) })
           })
-      }
 
-      return Q.nfcall(getTxFn, txId).then(processTx)
+          promise = promise.then(function () {
+            return Q.ninvoke(self, 'scanTx', tx, null, colorDefinition, getTxFn)
+          })
+
+          return promise
+        })
+      })
     }
 
     return Q.fcall(processOne, txId, outIndex)
 
   }).then(function () {
     return self.fetchColorValue(txId, outIndex, colorDefinition)
+
+  }).finally(function () {
+    if (self._queue.length === 0) {
+      self._isRunning = false
+
+    } else {
+      // @todo Using queue instead array, because shift is slow
+      self._queue.shift().resolve()
+
+    }
 
   }).done(function (colorValue) { cb(null, colorValue) }, function (error) { cb(error) })
 }

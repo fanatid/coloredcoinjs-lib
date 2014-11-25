@@ -34,7 +34,7 @@ describe('ColorDataStorage', function () {
 
   it('add/get', function () {
     cdStore.add({colorId: 1, txId: txId1, outIndex: 0, value: 1})
-    var result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})
+    var result = cdStore.getValue({colorId: 1, txId: txId1, outIndex: 0})
     expect(result).to.deep.equal(1)
   })
 
@@ -46,17 +46,17 @@ describe('ColorDataStorage', function () {
 
   it('get return null', function () {
     cdStore.add({colorId: 2, txId: txId1, outIndex: 0, value: 1})
-    var result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})
+    var result = cdStore.getValue({colorId: 1, txId: txId1, outIndex: 0})
     expect(result).to.be.null
   })
 
   it('remove', function () {
     cdStore.add({colorId: 1, txId: txId1, outIndex: 0, value: 1})
-    var result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})
+    var result = cdStore.getValue({colorId: 1, txId: txId1, outIndex: 0})
     expect(result).to.deep.equal(1)
 
     cdStore.remove({txId: txId1, outIndex: 0})
-    result = cdStore.get({colorId: 1, txId: txId1, outIndex: 0})
+    result = cdStore.getValue({colorId: 1, txId: txId1, outIndex: 0})
     expect(result).to.be.null
   })
 })
