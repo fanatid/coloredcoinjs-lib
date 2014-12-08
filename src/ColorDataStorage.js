@@ -1,10 +1,10 @@
 var inherits = require('util').inherits
 
 var _ = require('lodash')
-var delayed = require('delayed')
 
 var SyncStorage = require('./SyncStorage')
 var verify = require('./verify')
+var util = require('./util')
 
 
 /**
@@ -30,7 +30,7 @@ function ColorDataStorage(opts) {
 
   SyncStorage.apply(this, Array.prototype.slice.call(arguments))
 
-  this._save2store = delayed.debounce(this._save2store, opts.saveTimeout, this)
+  this._save2store = util.debounce(this._save2store, opts.saveTimeout, this)
 
   this.colorTxsDBKey = this.globalPrefix + 'colorTxs'
   this.colorTxRecords = this.store.get(this.colorTxsDBKey) || []

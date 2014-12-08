@@ -1,8 +1,8 @@
 var Q = require('q')
-var _ = require('lodash')
 
 var ColorValue = require('./ColorValue')
 var verify = require('./verify')
+var util = require('./util')
 
 /**
  * @class ColorData
@@ -14,7 +14,6 @@ function ColorData(storage) {
 
   this._storage = storage
   this._isRunning = false
-  this._queue = []
 }
 
 /**
@@ -119,7 +118,7 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
  * @param {function} getTxFn
  * @param {ColorData~getColorValue} cb
  */
-ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, getTxFn, cb) {
+ColorData.prototype.getColorValue = util.makeSerial(function (txId, outIndex, colorDefinition, getTxFn, cb) {
   verify.txId(txId)
   verify.number(outIndex)
   verify.ColorDefinition(colorDefinition)
@@ -128,14 +127,7 @@ ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, g
 
   var self = this
 
-  var promise = Q()
-  if (self._isRunning) {
-    self._queue.push(Q.defer())
-    promise = _.last(self._queue).promise
-  }
-  self._isRunning = true
-
-  promise.then(function () {
+  Q.fcall(function () {
     var scannedOutputs = []
 
     function processOne(txId, outIndex) {
@@ -168,18 +160,8 @@ ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, g
   }).then(function () {
     return self.fetchColorValue(txId, outIndex, colorDefinition)
 
-  }).finally(function () {
-    if (self._queue.length === 0) {
-      self._isRunning = false
-
-    } else {
-      // @todo Using queue instead array, because shift is slow
-      self._queue.shift().resolve()
-
-    }
-
   }).done(function (colorValue) { cb(null, colorValue) }, function (error) { cb(error) })
-}
+})
 
 /**
  * @callback ColorData~getColorValuesForTx

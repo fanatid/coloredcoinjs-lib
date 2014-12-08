@@ -37,4 +37,44 @@ describe('util', function () {
       expect(result).to.deep.equal({'0': [target1], '2': [target2]})
     })
   })
+
+  it('debounce', function (done) {
+    var called = 0
+    function f() { called += 1 }
+    var df = util.debounce(f, 100)
+    df()
+    setTimeout(df, 30)
+    setTimeout(function () {
+      expect(called).to.equal(1)
+      done()
+    }, 150)
+  })
+
+  it('makeSerial', function (done) {
+    function A() {}
+    A.prototype.f = util.makeSerial(function (value, cb) {
+      expect(this.constructor.name).to.equal('A')
+      setTimeout(function () { cb(value * 2) }, 100)
+    })
+
+    var cnt = 0
+
+    var a = new A()
+    a.f(1, function (value) {
+      expect(value).to.equal(2)
+      expect(cnt).to.equal(0)
+      cnt += 1
+
+      a.f(3, function (value) {
+        expect(value).to.equal(6)
+        expect(cnt).to.equal(2)
+        done()
+      })
+    })
+    a.f(2, function (value) {
+      expect(value).to.equal(4)
+      expect(cnt).to.equal(1)
+      cnt += 1
+    })
+  })
 })

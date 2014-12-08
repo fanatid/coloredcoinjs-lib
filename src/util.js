@@ -1,4 +1,5 @@
 var _ = require('lodash')
+var Q = require('q')
 
 var bitcoin = require('./bitcoin')
 var verify = require('./verify')
@@ -86,6 +87,79 @@ function address2script(address) {
   return bitcoin.Address.fromBase58Check(address).toOutputScript()
 }
 
+/**
+ * @param {function} fn
+ * @param {number} ms
+ * @param {?} [ctx]
+ * @return {function}
+ */
+function debounce(fn, ms, ctx) {
+  if (_.isUndefined(ctx)) { ctx = null }
+
+  var args = Array.prototype.slice.call(arguments, 3)
+  var timeout = null
+
+  return function debounced() {
+    var _args = Array.prototype.slice.call(arguments)
+    var f = function debouncedCaller() {
+      return fn.apply(ctx, args.concat(_args))
+    }
+
+    if (timeout !== null) {
+      clearTimeout(timeout)
+    }
+    return timeout = setTimeout(f, ms)
+  }
+}
+
+/**
+ * @param {function} fn
+ * @return {function}
+ */
+function makeSerial(fn) {
+  var queue = []
+
+  return function serialFunction() {
+    var self = this
+    var args = Array.prototype.slice.call(arguments)
+
+    var originalCallback
+    if (_.isFunction(_.last(args))) {
+      originalCallback = _.last(args)
+      args = args.slice(0, -1)
+    }
+
+    queue.push(Q.defer())
+    if (queue.length === 1) {
+      queue[0].resolve()
+    }
+
+    _.last(queue).promise.then(function () {
+      var deferred = Q.defer()
+      function callback() {
+        deferred.resolve()
+        if (!_.isUndefined(originalCallback)) {
+          originalCallback.apply(this, Array.prototype.slice.call(arguments))
+        }
+      }
+
+      fn.apply(self, args.concat([callback]))
+
+      return deferred.promise
+
+    }).catch(function (error) {
+      throw error
+
+    }).finally(function () {
+      queue.shift()
+      if (queue.length > 0) {
+        queue[0].resolve()
+      }
+
+    }).done()
+  }
+}
+
 
 module.exports = {
   number2bitArray: number2bitArray,
@@ -93,5 +167,9 @@ module.exports = {
 
   groupTargetsByColor: groupTargetsByColor,
 
-  address2script: address2script
+  address2script: address2script,
+
+  debounce: debounce,
+
+  makeSerial: makeSerial
 }

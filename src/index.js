@@ -5,6 +5,9 @@ module.exports = {
   /** extended bitcoinjs-lib */
   bitcoin: require('./bitcoin'),
 
+  /** debounce, makeSerial and other functions */
+  util: require('./util'),
+
   /** Storage */
   SyncStorage: require('./SyncStorage'),
 

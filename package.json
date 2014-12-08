@@ -17,7 +17,6 @@
   "dependencies": {
     "bitcoinjs-lib": "^1.2.0",
     "bs58": "^2.0.0",
-    "delayed": "^1.0.1",
     "errno": "^0.1.1",
     "localStorage": "^1.0.3",
     "lodash": "^2.4.1",
