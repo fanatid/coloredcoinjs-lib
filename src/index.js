@@ -1,12 +1,9 @@
 module.exports = {
-  /** types checker */
-  verify: require('./verify'),
-
-  /** extended bitcoinjs-lib */
+  /** extended bitcoinjs-lib, errors, util and verify functions */
   bitcoin: require('./bitcoin'),
-
-  /** debounce, makeSerial and other functions */
+  errors: require('./errors'),
   util: require('./util'),
+  verify: require('./verify'),
 
   /** Storage */
   SyncStorage: require('./SyncStorage'),
