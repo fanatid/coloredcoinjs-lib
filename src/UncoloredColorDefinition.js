@@ -39,18 +39,18 @@ UncoloredColorDefinition.prototype.getDesc = function () {
  * @param {number} colorId
  * @param {string} desc
  * @return {UncoloredColorDefinition}
- * @throws {Error} If colorId not equal UncoloredColorDefinition.colorId or desc not equal ''
+ * @throws {TypeError} If colorId not equal UncoloredColorDefinition.colorId or desc not equal ''
  */
 UncoloredColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
   verify.string(desc)
 
   if (colorId !== UncoloredColorId) {
-    throw new Error('wrong colorId')
+    throw new TypeError('Wrong colorId')
   }
 
   if (desc !== '') {
-    throw new Error('bad desc')
+    throw new TypeError('Bad desc')
   }
 
   return new UncoloredColorDefinition()

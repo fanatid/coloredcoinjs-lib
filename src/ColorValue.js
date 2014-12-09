@@ -103,11 +103,14 @@ ColorValue.prototype.minus = function (other) {
  * Sum values of colorValues
  *
  * @param {ColorValue[]} colorValues
- * @throws {(Error|TypeError)} If colorValues.length equal zero or colorValues not incompatible
+ * @throws {(RangeError|TypeError)} If colorValues.length equal zero or colorValues not incompatible
  */
 ColorValue.sum = function (colorValues) {
+  verify.array(colorValues)
+  colorValues.forEach(verify.ColorValue)
+
   if (colorValues.length === 0) {
-    throw new Error('colorValues length must be least 1')
+    throw new RangeError('colorValues length must be least 1')
   }
 
   return colorValues.reduce(function (a, b) { return a.plus(b) })

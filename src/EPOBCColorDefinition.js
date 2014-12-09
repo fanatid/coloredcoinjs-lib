@@ -33,7 +33,7 @@ Tag.genesisTagBits = [1, 0, 1, 0, 0, 1]
  * Calculate paddingCode from minPadding
  * @param {number} minPadding
  * @return {number}
- * @throws {Error} If paddingCode greater that 63
+ * @throws {RangeError} If paddingCode greater that 63
  */
 Tag.closestPaddingCode = function (minPadding) {
   verify.number(minPadding)
@@ -45,7 +45,7 @@ Tag.closestPaddingCode = function (minPadding) {
     paddingCode += 1
   }
 
-  if (paddingCode > 63) { throw new Error('Requires to much padding') }
+  if (paddingCode > 63) { throw new RangeError('Requires to much padding') }
 
   return paddingCode
 }
@@ -201,14 +201,14 @@ EPOBCColorDefinition.prototype.getColorType = function () {
  * @param {number} colorId
  * @param {string} desc
  * @return {EPOBCColorDefinition}
- * @throws {Error} On wrong desc
+ * @throws {TypeError} On wrong desc
  */
 EPOBCColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
   verify.string(desc)
 
   var items = desc.split(':')
-  if (items[0] !== 'epobc') { throw new Error('Wrong desc') }
+  if (items[0] !== 'epobc') { throw new TypeError('Wrong desc') }
 
   var genesis = {
     txId: items[1],
@@ -471,7 +471,7 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
 
 /**
  * @callback EPOBCColorDefinition~composeGenesisTx
- * @param {?Error} error
+ * @param {?(RangeError|TypeError)} error
  * @param {ComposedTx} composedTx
  */
 
@@ -489,12 +489,12 @@ EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
 
   Q.fcall(function () {
     if (operationalTx.getTargets().length !== 1) {
-      throw new Error('genesis transaction need exactly one target')
+      throw new RangeError('Genesis transaction need exactly one target')
     }
 
     var gTarget = operationalTx.getTargets()[0]
     if (gTarget.getColorId() !== new GenesisColorDefinition().getColorId()) {
-      throw new Error('transaction target is not genesis')
+      throw new TypeError('Transaction target is not genesis')
     }
 
     var gValue = gTarget.getValue()

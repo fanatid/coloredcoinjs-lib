@@ -3,8 +3,8 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
-var verify = require('./verify')
 var util = require('./util')
+var verify = require('./verify')
 
 
 /**
@@ -97,8 +97,15 @@ ColorDataStorage.prototype.add = function (data) {
     record = _.last(records)
 
   } else if (record.value !== data.value) {
-    throw new Error('Same data exists and colorValues not equal')
-
+    var msg = [
+      'ColorDataStorage: [',
+      'colorId: ' + record.colorId + ', ',
+      'txId: ' + record.txId + ', ',
+      'outIndex: ' + record.outIndex,
+      '] have value `' + record.value + '`',
+      ' whereas you give `' + data.value  + '`'
+    ].join('')
+    throw new Error(msg)
   }
 
   return _.clone(record)
@@ -148,11 +155,12 @@ ColorDataStorage.prototype.getAnyValue = function (data) {
  * @param {number} [data.colorId]
  * @param {string} [data.txId]
  * @param {number} [data.outIndex]
+ * @throws {TypeError}
  */
 ColorDataStorage.prototype.remove = function (data) {
   verify.object(data)
   if (_.isUndefined(data.colorId) && _.isUndefined(data.txId) && _.isUndefined(data.outIndex)) {
-    throw new Error('Bad data')
+    throw new TypeError('Bad data')
   }
   if (!_.isUndefined(data.colorId)) { verify.number(data.colorId) }
   if (!_.isUndefined(data.txId)) { verify.txId(data.txId) }

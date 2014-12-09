@@ -76,7 +76,7 @@ ComposedTx.prototype.addTxOut = function (out) {
 
 /**
  * @param {({target: ColorTarget}|{script: string, value: number})[]} outs
- * @throws {Error} If target is colored
+ * @throws {TypeError} If target is colored
  */
 ComposedTx.prototype.addTxOuts = function (outs) {
   var self = this
@@ -91,7 +91,7 @@ ComposedTx.prototype.addTxOuts = function (outs) {
 
     } else {
       if (out.target.isUncolored() === false) {
-        throw new Error('Target is colored')
+        throw new TypeError('Target is colored')
       }
 
       txOut.script = out.target.getScript()

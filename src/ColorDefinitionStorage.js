@@ -3,6 +3,7 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
+var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -51,7 +52,7 @@ ColorDefinitionStorage.prototype._saveRecords = function (records) {
 /**
  * @param {string} desc
  * @return {ColorDefinitionRecord}
- * @throws {Error} If desc aready uses
+ * @throws {UniqueConstraint} If desc aready uses
  */
 ColorDefinitionStorage.prototype.add = function (desc) {
   verify.string(desc)
@@ -61,7 +62,7 @@ ColorDefinitionStorage.prototype.add = function (desc) {
 
   records.forEach(function (record) {
     if (record.desc === desc) {
-      throw new Error('UniqueConstraint')
+      throw new errors.UniqueConstraint('ColorDefinitionStorage: ' + desc)
     }
 
     if (record.colorId >= newColorId) { newColorId = record.colorId + 1 }

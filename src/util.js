@@ -45,7 +45,7 @@ function bitArray2number(bits) {
  * @param {AbstractTarget[]} targets
  * @param {function} targetCls ColorDefinition constructor for filter targets
  * @return {{colorId1: AbstractTarget[], colorIdN: AbstractTarget[]}}
- * @throws {Error} If ColorDefinition not Uncolored and not targetCls
+ * @throws {TypeError} If ColorDefinition not Uncolored and not targetCls
  */
 function groupTargetsByColor(targets, targetCls) {
   verify.array(targets)
@@ -59,19 +59,16 @@ function groupTargetsByColor(targets, targetCls) {
     var isUncoloredCls = colorDefinition instanceof UncoloredColorDefinition
     var isTargetCls = colorDefinition instanceof targetCls
 
-    if (isUncoloredCls || isTargetCls) {
-      var colorId = target.getColorId()
-
-      if (_.isUndefined(targetsByColor[colorId])) {
-        targetsByColor[colorId] = []
-      }
-
-      targetsByColor[colorId].push(target)
-
-      return
+    if (!isUncoloredCls && !isTargetCls) {
+      throw new TypeError('Incompatible color definition')
     }
 
-    throw new Error('Incompatible color definition')
+    var colorId = target.getColorId()
+
+    if (_.isUndefined(targetsByColor[colorId])) {
+      targetsByColor[colorId] = []
+    }
+    targetsByColor[colorId].push(target)
   })
 
   return targetsByColor
