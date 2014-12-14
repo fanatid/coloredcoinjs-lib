@@ -15,6 +15,9 @@ function ColorDefinition(colorId) {
   this.colorId = colorId
 }
 
+// @todo
+// Add register function
+
 /**
  * @return {number}
  */

@@ -1,5 +1,6 @@
 var _ = require('lodash')
 
+var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -46,14 +47,14 @@ ComposedTx.prototype.addTxIns = function (txIns) {
 /**
  * @param {number} index
  * @param {number} sequence
- * @throws {RangeError} If txIn for index doesn't exists
+ * @throws {RangeError}
  */
 ComposedTx.prototype.setTxInSequence = function (index, sequence) {
   verify.number(index)
   verify.number(sequence)
 
   if (index < 0 || index >= this.txIns.length) {
-    throw RangeError('index must be greate than equal or less than ' + this.txIns.length)
+    throw new RangeError('TxIn for index not found')
   }
 
   this.txIns[index].sequence = sequence
@@ -68,7 +69,7 @@ ComposedTx.prototype.getTxIns = function () {
 
 /**
  * @param {({target: ColorTarget}|{script: string, value: number})} out
- * @throws {Error} If target is colored
+ * @throws {VerifyTypeError} If target is colored
  */
 ComposedTx.prototype.addTxOut = function (out) {
   this.addTxOuts([out])
@@ -76,7 +77,7 @@ ComposedTx.prototype.addTxOut = function (out) {
 
 /**
  * @param {({target: ColorTarget}|{script: string, value: number})[]} outs
- * @throws {TypeError} If target is colored
+ * @throws {VerifyTypeError} If target is colored
  */
 ComposedTx.prototype.addTxOuts = function (outs) {
   var self = this
@@ -90,8 +91,9 @@ ComposedTx.prototype.addTxOuts = function (outs) {
       txOut.value = out.value
 
     } else {
+      verify.ColorTarget(out.target)
       if (out.target.isUncolored() === false) {
-        throw new TypeError('Target is colored')
+        throw new errors.VerifyTypeError('')
       }
 
       txOut.script = out.target.getScript()

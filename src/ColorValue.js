@@ -1,3 +1,4 @@
+var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -54,7 +55,7 @@ ColorValue.prototype.clone = function () {
  * Check compatibility with other ColorValue
  *
  * @param {ColorValue} other
- * @throws {TypeError} If not compatibility
+ * @throws {IncompatibilityColorValuesError}
  */
 ColorValue.prototype.checkCompatibility = function (other) {
   var isCompatibility = (
@@ -62,7 +63,7 @@ ColorValue.prototype.checkCompatibility = function (other) {
     this.getColorId() === other.getColorId())
 
   if (!isCompatibility) {
-    throw new TypeError('ColorValues not compatibility')
+    throw new errors.IncompatibilityColorValuesError(this + ', ' + other)
   }
 }
 
@@ -71,7 +72,7 @@ ColorValue.prototype.checkCompatibility = function (other) {
  *
  * @param {ColorValue} other
  * @return {ColorValue}
- * @throws {TypeError} If not compatibility
+ * @throws {IncompatibilityColorValuesError}
  */
 ColorValue.prototype.plus = function (other) {
   this.checkCompatibility(other)
@@ -93,7 +94,7 @@ ColorValue.prototype.neg = function () {
  *
  * @param {ColorValue} other
  * @return {ColorValue}
- * @throws {TypeError} If not compatibility
+ * @throws {IncompatibilityColorValuesError}
  */
 ColorValue.prototype.minus = function (other) {
   return this.plus(other.neg())
@@ -103,17 +104,24 @@ ColorValue.prototype.minus = function (other) {
  * Sum values of colorValues
  *
  * @param {ColorValue[]} colorValues
- * @throws {(RangeError|TypeError)} If colorValues.length equal zero or colorValues not incompatible
+ * @throws {(IncompatibilityColorValuesError|ZeroArrayLengthError)}
  */
 ColorValue.sum = function (colorValues) {
   verify.array(colorValues)
   colorValues.forEach(verify.ColorValue)
 
   if (colorValues.length === 0) {
-    throw new RangeError('colorValues length must be least 1')
+    throw new errors.ZeroArrayLengthError('ColorValue.sum')
   }
 
   return colorValues.reduce(function (a, b) { return a.plus(b) })
+}
+
+/**
+ * @return {string}
+ */
+ColorValue.prototype.toString = function () {
+  return 'ColorValue(colorId: ' + this.getColorId() + ', value: ' + this.getValue() + ')'
 }
 
 

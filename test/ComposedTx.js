@@ -29,13 +29,10 @@ describe('ComposedTx', function () {
   })
 
   it('addTxOut/addTxOuts/getTxOuts', function () {
-    tx.addTxOut({
-      target: {
-        isUncolored: function () { return true },
-        getScript: function () { return '00' },
-        getValue: function () { return 2 }
-      }
-    })
+    var cd = new cclib.UncoloredColorDefinition()
+    var cv = new cclib.ColorValue(cd, 2)
+    var ct = new cclib.ColorTarget('00', cv)
+    tx.addTxOut({target: ct})
     tx.addTxOuts([{script: '11', value: 4}])
     tx.getTxOuts([{script: '00', value: 2}, {script: '11', value: 4}])
   })

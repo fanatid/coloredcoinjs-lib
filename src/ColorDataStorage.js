@@ -3,6 +3,7 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var SyncStorage = require('./SyncStorage')
+var errors = require('./errors')
 var util = require('./util')
 var verify = require('./verify')
 
@@ -70,7 +71,7 @@ ColorDataStorage.prototype._save2store = function () {
 /**
  * @param {ColorDataRecord} data
  * @return {ColorDataRecord}
- * @throws {Error} If exists and value not equal
+ * @throws {UniqueConstraintError} If exists and value not equal
  */
 ColorDataStorage.prototype.add = function (data) {
   verify.object(data)
@@ -95,17 +96,11 @@ ColorDataStorage.prototype.add = function (data) {
     })
     this._saveRecords(records)
     record = _.last(records)
+  }
 
-  } else if (record.value !== data.value) {
-    var msg = [
-      'ColorDataStorage: [',
-      'colorId: ' + record.colorId + ', ',
-      'txId: ' + record.txId + ', ',
-      'outIndex: ' + record.outIndex,
-      '] have value `' + record.value + '`',
-      ' whereas you give `' + data.value  + '`'
-    ].join('')
-    throw new Error(msg)
+  if (record.value !== data.value) {
+    throw new errors.UniqueConstraintError(
+      'Record: ' + JSON.stringify(record) + ', recived data: ' + JSON.strinigfy(data))
   }
 
   return _.clone(record)
@@ -155,13 +150,13 @@ ColorDataStorage.prototype.getAnyValue = function (data) {
  * @param {number} [data.colorId]
  * @param {string} [data.txId]
  * @param {number} [data.outIndex]
- * @throws {TypeError}
  */
 ColorDataStorage.prototype.remove = function (data) {
   verify.object(data)
   if (_.isUndefined(data.colorId) && _.isUndefined(data.txId) && _.isUndefined(data.outIndex)) {
-    throw new TypeError('Bad data')
+    return
   }
+
   if (!_.isUndefined(data.colorId)) { verify.number(data.colorId) }
   if (!_.isUndefined(data.txId)) { verify.txId(data.txId) }
   if (!_.isUndefined(data.outIndex)) { verify.number(data.outIndex) }

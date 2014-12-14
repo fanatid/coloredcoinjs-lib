@@ -3,7 +3,6 @@ var _ = require('lodash')
 global.localStorage = require('localStorage')
 var store = require('store')
 
-var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -35,12 +34,6 @@ function SyncStorage(opts) {
 
   this.globalPrefix = opts.globalPrefix
   this.store = store
-}
-
-/**
- */
-SyncStorage.prototype.saveImmediately = function () {
-  throw new errors.NotImplementedError('SyncStorage.saveImmediately')
 }
 
 

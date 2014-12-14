@@ -3,6 +3,7 @@ var _ = require('lodash')
 var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var EPOBCColorDefinition = require('./EPOBCColorDefinition')
+var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -10,7 +11,7 @@ var verify = require('./verify')
  * Convert record to ColorDefinition
  *
  * @param {ColorDefinitionRecord} record
- * @return {ColorDefinition}
+ * @return {?ColorDefinition}
  */
 function record2ColorDefinition(record) {
   var colorDefinition = null
@@ -101,7 +102,7 @@ ColorDefinitionManager.prototype.getByColorId = function (colorId) {
  * @param {string} desc
  * @param {boolean} [autoAdd=true]
  * @return {?ColorDefinition}
- * @throws {TypeError} If bad desc
+ * @throws {ColorDefinitionBadDescriptionError}
  */
 ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
   if (_.isUndefined(autoAdd)) { autoAdd = true }
@@ -118,7 +119,9 @@ ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
   if (autoAdd === false) { return null }
 
   var colordef = record2ColorDefinition({colorId: -1, desc: desc})
-  if (colordef === null) { throw new TypeError('Bad desc: ' + desc) }
+  if (colordef === null) {
+    throw new errors.ColorDefinitionBadDescriptionError(desc)
+  }
 
   record = this._storage.add(desc)
   return record2ColorDefinition(record)

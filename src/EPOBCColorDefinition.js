@@ -8,6 +8,7 @@ var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorValue = require('./ColorValue')
 var ColorTarget = require('./ColorTarget')
+var errors = require('./errors')
 var util = require('./util')
 var verify = require('./verify')
 
@@ -33,7 +34,7 @@ Tag.genesisTagBits = [1, 0, 1, 0, 0, 1]
  * Calculate paddingCode from minPadding
  * @param {number} minPadding
  * @return {number}
- * @throws {RangeError} If paddingCode greater that 63
+ * @throws {EPOBCPaddingError}
  */
 Tag.closestPaddingCode = function (minPadding) {
   verify.number(minPadding)
@@ -45,7 +46,9 @@ Tag.closestPaddingCode = function (minPadding) {
     paddingCode += 1
   }
 
-  if (paddingCode > 63) { throw new RangeError('Requires to much padding') }
+  if (paddingCode > 63) {
+    throw new errors.EPOBCPaddingError('Required ' + minPadding + ', otherwise max ' + Math.pow(2, 63))
+  }
 
   return paddingCode
 }
@@ -201,14 +204,16 @@ EPOBCColorDefinition.prototype.getColorType = function () {
  * @param {number} colorId
  * @param {string} desc
  * @return {EPOBCColorDefinition}
- * @throws {TypeError} On wrong desc
+ * @throws {ColorDefinitionBadDescriptionError}
  */
 EPOBCColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
   verify.string(desc)
 
   var items = desc.split(':')
-  if (items[0] !== 'epobc') { throw new TypeError('Wrong desc') }
+  if (items[0] !== 'epobc') {
+    throw new errors.ColorDefinitionBadDescriptionError('EPOBC fail load: ' + desc)
+  }
 
   var genesis = {
     txId: items[1],
@@ -471,7 +476,7 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
 
 /**
  * @callback EPOBCColorDefinition~composeGenesisTx
- * @param {?(RangeError|TypeError)} error
+ * @param {?(ComposeGenesisTxError|IncompatibilityColorDefinitionsError)} error
  * @param {ComposedTx} composedTx
  */
 
@@ -489,12 +494,12 @@ EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
 
   Q.fcall(function () {
     if (operationalTx.getTargets().length !== 1) {
-      throw new RangeError('Genesis transaction need exactly one target')
+      throw new errors.ComposeGenesisTxError('Genesis transaction need exactly one target')
     }
 
     var gTarget = operationalTx.getTargets()[0]
     if (gTarget.getColorId() !== new GenesisColorDefinition().getColorId()) {
-      throw new TypeError('Transaction target is not genesis')
+      throw new errors.IncompatibilityColorDefinitionsError('Transaction target is not genesis')
     }
 
     var gValue = gTarget.getValue()

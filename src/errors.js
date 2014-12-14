@@ -1,7 +1,33 @@
 var createError = require('errno').create
 
 
+var ColoredCoinError = createError('ColoredCoinError')
+var IncompatibilityError = createError('IncompatibilityError', ColoredCoinError)
+var VerifyTypeError = createError('VerifyTypeError', ColoredCoinError)
+
+
 module.exports = {
-  NotImplementedError: createError('NotImplementedError'),
-  UniqueConstraint: createError('UniqueConstraint')
+  // Base error
+  ColoredCoinError: ColoredCoinError,
+
+  // Verification errors
+  VerifyTypeError: VerifyTypeError,
+  ZeroArrayLengthError: createError('ZeroArrayLengthError', VerifyTypeError),
+
+  // Abstract methods
+  NotImplementedError: createError('NotImplementedError', ColoredCoinError),
+
+  // DataStorage
+  UniqueConstraintError: createError('UniqueConstraintError', ColoredCoinError),
+
+  // Incompatibility errors (ComposeGenesisTx, ColorValue, etc ...)
+  IncompatibilityError: IncompatibilityError,
+  IncompatibilityColorDefinitionsError: createError('IncompatibilityColorDefinitionsError', IncompatibilityError),
+  IncompatibilityColorValuesError: createError('IncompatibilityColorValuesError', IncompatibilityError),
+
+  // Other
+  ColorDefinitionBadDescriptionError: createError('ColorDefinitionBadDescriptionError', ColoredCoinError),
+  ColorDefinitionBadColorIdError: createError('ColorDefinitionBadColorIdError', ColoredCoinError),
+  ComposeGenesisTxError: createError('ComposeGenesisTxError', ColoredCoinError),
+  EPOBCPaddingError: createError('EPOBCPaddingError', ColoredCoinError)
 }

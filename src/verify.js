@@ -1,5 +1,7 @@
 var _ = require('lodash')
 
+var VerifyTypeError = require('./errors').VerifyTypeError
+
 
 function createInstanceCheck(importFn) {
   var cls
@@ -86,7 +88,7 @@ function extendVerify(verify, functions, expected) {
     verify[name] = function () {
       var args = Array.prototype.slice.call(arguments)
       if (functions[name].apply(null, args) === false) {
-        throw new TypeError('Expected ' + expected[name] + ', got ' + args)
+        throw new VerifyTypeError('Expected ' + expected[name] + ', got ' + args)
       }
     }
   })

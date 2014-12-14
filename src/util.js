@@ -2,6 +2,7 @@ var _ = require('lodash')
 var Q = require('q')
 
 var bitcoin = require('./bitcoin')
+var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -45,7 +46,7 @@ function bitArray2number(bits) {
  * @param {AbstractTarget[]} targets
  * @param {function} targetCls ColorDefinition constructor for filter targets
  * @return {{colorId1: AbstractTarget[], colorIdN: AbstractTarget[]}}
- * @throws {TypeError} If ColorDefinition not Uncolored and not targetCls
+ * @throws {IncompatibilityColorDefinitionsError} If ColorDefinition not Uncolored and not targetCls
  */
 function groupTargetsByColor(targets, targetCls) {
   verify.array(targets)
@@ -60,7 +61,7 @@ function groupTargetsByColor(targets, targetCls) {
     var isTargetCls = colorDefinition instanceof targetCls
 
     if (!isUncoloredCls && !isTargetCls) {
-      throw new TypeError('Incompatible color definition')
+      throw new errors.IncompatibilityColorDefinitionsError()
     }
 
     var colorId = target.getColorId()

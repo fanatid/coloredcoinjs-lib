@@ -62,7 +62,7 @@ ColorTarget.prototype.isUncolored = function () {
  *
  * @param {{getColorValue: function}[]} targets
  * @return {number}
- * @throws {Error} Will throw an error if colorValues of targets not incompatible
+ * @throws {IncompatibilityColorValuesError}
  */
 ColorTarget.sum = function (targets) {
   var colorValues = targets.map(function (target) { return target.getColorValue() })

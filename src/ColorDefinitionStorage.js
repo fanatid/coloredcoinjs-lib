@@ -52,7 +52,7 @@ ColorDefinitionStorage.prototype._saveRecords = function (records) {
 /**
  * @param {string} desc
  * @return {ColorDefinitionRecord}
- * @throws {UniqueConstraint} If desc aready uses
+ * @throws {UniqueConstraintError} If desc aready uses
  */
 ColorDefinitionStorage.prototype.add = function (desc) {
   verify.string(desc)
@@ -62,7 +62,7 @@ ColorDefinitionStorage.prototype.add = function (desc) {
 
   records.forEach(function (record) {
     if (record.desc === desc) {
-      throw new errors.UniqueConstraint('ColorDefinitionStorage: ' + desc)
+      throw new errors.UniqueConstraintError('ColorDefinitionStorage: ' + desc)
     }
 
     if (record.colorId >= newColorId) { newColorId = record.colorId + 1 }

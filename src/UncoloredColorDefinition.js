@@ -4,6 +4,7 @@ var Q = require('q')
 
 var ColorDefinition = require('./ColorDefinition')
 var ColorTarget = require('./ColorTarget')
+var errors = require('./errors')
 var util = require('./util')
 var verify = require('./verify')
 
@@ -39,18 +40,18 @@ UncoloredColorDefinition.prototype.getDesc = function () {
  * @param {number} colorId
  * @param {string} desc
  * @return {UncoloredColorDefinition}
- * @throws {TypeError} If colorId not equal UncoloredColorDefinition.colorId or desc not equal ''
+ * @throws {(ColorDefinitionBadColorIdError|ColorDefinitionBadDescriptionError)}
  */
 UncoloredColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
   verify.string(desc)
 
   if (colorId !== UncoloredColorId) {
-    throw new TypeError('Wrong colorId')
+    throw new errors.ColorDefinitionBadColorIdError('UncoloredColorDefinition.fromDesc')
   }
 
   if (desc !== '') {
-    throw new TypeError('Bad desc')
+    throw new errors.ColorDefinitionBadDescriptionError('Uncolored fail load: ' + desc)
   }
 
   return new UncoloredColorDefinition()

@@ -1,6 +1,7 @@
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
+var errors = cclib.errors
 var ColorDefinition = cclib.ColorDefinition
 var ColorValue = cclib.ColorValue
 
@@ -49,13 +50,13 @@ describe('ColorValue', function () {
   it('checkCompatibility not throw', function () {
     cv2 = new ColorValue(uncoloredColorDefinition, 0)
     var fn = function () { cv1.checkCompatibility(cv2) }
-    expect(fn).to.not.throw(TypeError)
+    expect(fn).to.not.throw(errors.IncompatibilityColorValuesError)
   })
 
   it('checkCompatibility throw error', function () {
     cv2 = new ColorValue(new ColorDefinition(1), 0)
     var fn = function () { cv1.checkCompatibility(cv2) }
-    expect(fn).to.throw(TypeError)
+    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
   })
 
   it('plus with compatibility', function () {
@@ -67,7 +68,7 @@ describe('ColorValue', function () {
   it('plus with not compatibility', function () {
     cv2 = new ColorValue(new ColorDefinition(1), 1)
     var fn = function () { cv1.plus(cv2) }
-    expect(fn).to.throw(TypeError)
+    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
   })
 
   it('neg', function () {
@@ -84,7 +85,7 @@ describe('ColorValue', function () {
   it('minus with not compatibility', function () {
     cv2 = new ColorValue(new ColorDefinition(1), 1)
     var fn = function () { cv1.minus(cv2) }
-    expect(fn).to.throw(TypeError)
+    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
   })
 
   it('sum with compatibility', function () {
@@ -100,6 +101,6 @@ describe('ColorValue', function () {
   it('sum with not compatibility', function () {
     cv2 = new ColorValue(new ColorDefinition(1), 1)
     var fn = function () { ColorValue.sum([cv1, cv2]) }
-    expect(fn).to.throw(TypeError)
+    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
   })
 })
