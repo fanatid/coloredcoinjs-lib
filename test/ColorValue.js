@@ -7,8 +7,6 @@ var ColorValue = cclib.ColorValue
 
 
 describe('ColorValue', function () {
-  var cdStorage = new cclib.ColorDefinitionStorage() // not need clear, cdManager use only uncolored
-  var cdManager = new cclib.ColorDefinitionManager(cdStorage)
   var uncoloredColorDefinition = cclib.ColorDefinitionManager.getUncolored()
   var cv1
   var cv2
@@ -31,8 +29,8 @@ describe('ColorValue', function () {
   })
 
   it('isUncolored return false', function () {
-    var colordef = cdManager.resolveByDesc(
-      'epobc:73560ffd916267a70a1233eb63d5d97e79e7eac981a52860df1ac38d2568b3a5:0:274664')
+    var colordef = cclib.EPOBCColorDefinition.fromDesc(
+      1, 'epobc:73560ffd916267a70a1233eb63d5d97e79e7eac981a52860df1ac38d2568b3a5:0:274664')
     cv1 = new ColorValue(colordef, 1)
     expect(cv1.isUncolored()).to.be.false
   })

@@ -28,7 +28,7 @@ OperationalTx.prototype.getTargets = function () {
  *
  * @abstract
  * @param {ColorValue} colorValue
- * @param {?Object} [feeEstimator]
+ * @param {?{estimateRequiredFee: function}} [feeEstimator]
  * @param {OperationalTx~selectCoins} cb
  */
 OperationalTx.prototype.selectCoins = function () {

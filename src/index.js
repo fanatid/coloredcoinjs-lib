@@ -27,5 +27,6 @@ module.exports = {
 
   /** Transactions */
   OperationalTx: require('./OperationalTx'),
+  SimpleOperationalTx: require('./SimpleOperationalTx'),
   ComposedTx: require('./ComposedTx')
 }

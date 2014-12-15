@@ -2,7 +2,6 @@ var expect = require('chai').expect
 
 var cclib = require('../../src')
 var bitcoin = cclib.bitcoin
-var SimpleOperationalTx = require('./SimpleOperationalTx')
 
 
 describe('coloredcoinjs-lib (transfer)', function () {
@@ -16,7 +15,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
     var colorTarget = new cclib.ColorTarget(
       privkey2.pub.getAddress(bitcoin.networks.testnet).toOutputScript().toHex(), colorValue)
 
-    var opTx = new SimpleOperationalTx({
+    var opTx = new cclib.SimpleOperationalTx({
       targets: [
         colorTarget
       ],
@@ -74,7 +73,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
     var colorTarget = new cclib.ColorTarget(
       privkey2.pub.getAddress(bitcoin.networks.testnet).toOutputScript().toHex(), colorValue)
 
-    var opTx = new SimpleOperationalTx({
+    var opTx = new cclib.SimpleOperationalTx({
       targets: [
         colorTarget
       ],
