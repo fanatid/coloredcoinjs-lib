@@ -26,6 +26,7 @@ module.exports = {
   IncompatibilityColorValuesError: createError('IncompatibilityColorValuesError', IncompatibilityError),
 
   // Other
+  ColorDefinitionAlreadyRegisteredError: createError('ColorDefinitionAlreadyRegisteredError', ColoredCoinError),
   ColorDefinitionBadDescriptionError: createError('ColorDefinitionBadDescriptionError', ColoredCoinError),
   ColorDefinitionBadColorIdError: createError('ColorDefinitionBadColorIdError', ColoredCoinError),
   ComposeGenesisTxError: createError('ComposeGenesisTxError', ColoredCoinError),

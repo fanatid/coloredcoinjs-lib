@@ -1,4 +1,6 @@
-var NotImplementedError = require('./errors').NotImplementedError
+var _ = require('lodash')
+
+var errors = require('./errors')
 var verify = require('./verify')
 
 
@@ -15,8 +17,33 @@ function ColorDefinition(colorId) {
   this.colorId = colorId
 }
 
-// @todo
-// Add register function
+ColorDefinition._colorDefinitionClasses = {}
+
+/**
+ * @param {string} type
+ * @param {function} cls
+ * @throws {ColorDefinitionAlreadyRegisteredError}
+ */
+ColorDefinition.registerColorDefinition = function (type, cls) {
+  verify.string(type)
+  verify.function(cls)
+
+  if (!_.isUndefined(ColorDefinition._colorDefinitionClasses[type])) {
+    throw new errors.ColorDefinitionAlreadyRegisteredError(type + ': ' + cls.name)
+  }
+
+  ColorDefinition._colorDefinitionClasses[type] = cls
+}
+
+/**
+ * @param {string} type
+ * @return {?function}
+ */
+ColorDefinition.getColorDefenitionClsForType = function (type) {
+  verify.string(type)
+
+  return ColorDefinition._colorDefinitionClasses[type] || null
+}
 
 /**
  * @return {number}
@@ -30,7 +57,7 @@ ColorDefinition.prototype.getColorId = function () {
  * @return {string}
  */
 ColorDefinition.prototype.getColorType = function () {
-  throw new NotImplementedError('ColorDefinition.getColorType')
+  throw new errors.NotImplementedError('ColorDefinition.getColorType')
 }
 
 /**
@@ -38,7 +65,7 @@ ColorDefinition.prototype.getColorType = function () {
  * @return {string}
  */
 ColorDefinition.prototype.getDesc = function () {
-  throw new NotImplementedError('ColorDefinition.getDesc')
+  throw new errors.NotImplementedError('ColorDefinition.getDesc')
 }
 
 /**
@@ -50,7 +77,7 @@ ColorDefinition.prototype.getDesc = function () {
  * @return {ColorDefinition}
  */
 ColorDefinition.prototype.fromDesc = function () {
-  throw new NotImplementedError('ColorDefinition.fromDesc')
+  throw new errors.NotImplementedError('ColorDefinition.fromDesc')
 }
 
 /**
@@ -67,7 +94,7 @@ ColorDefinition.prototype.fromDesc = function () {
  * @param {ColorDefinition~makeComposedTx} cb
  */
 ColorDefinition.prototype.makeComposedTx = function () {
-  throw new NotImplementedError('ColorDefinition.makeComposedTx')
+  throw new errors.NotImplementedError('ColorDefinition.makeComposedTx')
 }
 
 

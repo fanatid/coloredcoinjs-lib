@@ -1,32 +1,10 @@
 var _ = require('lodash')
 
+var ColorDefinition = require('./ColorDefinition')
 var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
-var EPOBCColorDefinition = require('./EPOBCColorDefinition')
 var errors = require('./errors')
 var verify = require('./verify')
-
-
-/**
- * Convert record to ColorDefinition
- *
- * @param {ColorDefinitionRecord} record
- * @return {?ColorDefinition}
- */
-function record2ColorDefinition(record) {
-  var colorDefinition = null
-
-  var engineClss = [UncoloredColorDefinition, EPOBCColorDefinition]
-  engineClss.some(function (engineCls) {
-    try {
-      colorDefinition = engineCls.fromDesc(record.colorId, record.desc)
-    } catch (e) {}
-
-    return colorDefinition !== null
-  })
-
-  return colorDefinition
-}
 
 
 /**
@@ -37,6 +15,29 @@ function ColorDefinitionManager(storage) {
   verify.ColorDefinitionStorage(storage)
 
   this._storage = storage
+}
+
+/**
+ * @param {ColorDefinitionRecord} record
+ * @return {?ColorDefinition}
+ */
+ColorDefinitionManager.prototype._record2ColorDefinition = function (record) {
+  var type = record.desc.split(':')[0]
+  var ColorDefinitionCls = this.getColorDefenitionClsForType(type)
+
+  try {
+    return ColorDefinitionCls.fromDesc(record.colorId, record.desc)
+
+  } catch (e) {
+    // try uncolored
+    try {
+      return UncoloredColorDefinition.fromDesc(record.colorId, record.desc)
+
+    } catch (e) {}
+
+  }
+
+  return null
 }
 
 /**
@@ -59,22 +60,10 @@ ColorDefinitionManager.prototype.getGenesis = function () {
 
 /**
  * @param {string} type
- * @return {?(EPOBCColorDefinition)}
+ * @return {?function}
  */
 ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) {
-  verify.string(type)
-
-  var result = null
-  switch (type) {
-    case 'epobc':
-      result = EPOBCColorDefinition
-      break
-
-    default:
-      break
-  }
-
-  return result
+  return ColorDefinition.getColorDefenitionClsForType(type)
 }
 
 /**
@@ -92,7 +81,7 @@ ColorDefinitionManager.prototype.getByColorId = function (colorId) {
   var record = this._storage.getByColorId(colorId)
   if (record === null) { return null }
 
-  return record2ColorDefinition(record)
+  return this._record2ColorDefinition(record)
 }
 
 /**
@@ -114,17 +103,17 @@ ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
   if (uncolored.getDesc() === desc) { return uncolored }
 
   var record = this._storage.getByDesc(desc)
-  if (record !== null) { return record2ColorDefinition(record) }
+  if (record !== null) { return this._record2ColorDefinition(record) }
 
   if (autoAdd === false) { return null }
 
-  var colordef = record2ColorDefinition({colorId: -1, desc: desc})
+  var colordef = this._record2ColorDefinition({colorId: -1, desc: desc})
   if (colordef === null) {
     throw new errors.ColorDefinitionBadDescriptionError(desc)
   }
 
   record = this._storage.add(desc)
-  return record2ColorDefinition(record)
+  return this._record2ColorDefinition(record)
 }
 
 /**
@@ -133,7 +122,7 @@ ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
  * @return {ColorDefinition[]}
  */
 ColorDefinitionManager.prototype.getAllColorDefinitions = function () {
-  return this._storage.getAll().map(record2ColorDefinition)
+  return this._storage.getAll().map(this._record2ColorDefinition.bind(this))
 }
 
 

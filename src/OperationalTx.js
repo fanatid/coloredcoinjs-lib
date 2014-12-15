@@ -14,10 +14,6 @@ OperationalTx.prototype.getTargets = function () {
 }
 
 /**
- * @todo Describe utxo and return toRawCoin Object
- */
-
-/**
  * @callback OperationalTx~selectCoins
  * @param {?Error} error
  * @param {{toRawCoin: function}[]} utxo

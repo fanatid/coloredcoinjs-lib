@@ -535,5 +535,7 @@ EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
 EPOBCColorDefinition._Tag = Tag
 EPOBCColorDefinition._getXferAffectingInputs = getXferAffectingInputs
 
+ColorDefinition.registerColorDefinition('epobc', EPOBCColorDefinition)
+
 
 module.exports = EPOBCColorDefinition
