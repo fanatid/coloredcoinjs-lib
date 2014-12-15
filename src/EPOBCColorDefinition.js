@@ -4,6 +4,7 @@ var _ = require('lodash')
 var Q = require('q')
 
 var ColorDefinition = require('./ColorDefinition')
+var ColorDefinitionManager = require('./ColorDefinitionManager')
 var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var ColorValue = require('./ColorValue')
@@ -535,7 +536,7 @@ EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
 EPOBCColorDefinition._Tag = Tag
 EPOBCColorDefinition._getXferAffectingInputs = getXferAffectingInputs
 
-ColorDefinition.registerColorDefinition('epobc', EPOBCColorDefinition)
+ColorDefinitionManager.registerColorDefinition('epobc', EPOBCColorDefinition)
 
 
 module.exports = EPOBCColorDefinition

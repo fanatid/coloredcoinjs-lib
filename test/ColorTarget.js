@@ -16,7 +16,7 @@ describe('ColorTarget', function () {
   beforeEach(function () {
     cdStorage = new cclib.ColorDefinitionStorage()
     cdManager = new cclib.ColorDefinitionManager(cdStorage)
-    uncolored = cdManager.getUncolored()
+    uncolored = cclib.ColorDefinitionManager.getUncolored()
     cv1 = new cclib.ColorValue(uncolored, 10)
     ct1 = new ColorTarget('0102', cv1)
   })

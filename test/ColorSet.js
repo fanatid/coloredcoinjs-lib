@@ -31,7 +31,7 @@ describe('ColorSet', function () {
 
   it('getColorDefinitions', function () {
     colorSet = new ColorSet(cdManager, [''])
-    expect(colorSet.getColorDefinitions()).to.deep.equal([cdManager.getUncolored()])
+    expect(colorSet.getColorDefinitions()).to.deep.equal([cclib.ColorDefinitionManager.getUncolored()])
   })
 
   it('getColorIds', function () {

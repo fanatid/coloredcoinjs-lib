@@ -9,7 +9,7 @@ var ColorValue = cclib.ColorValue
 describe('ColorValue', function () {
   var cdStorage = new cclib.ColorDefinitionStorage() // not need clear, cdManager use only uncolored
   var cdManager = new cclib.ColorDefinitionManager(cdStorage)
-  var uncoloredColorDefinition = cdManager.getUncolored()
+  var uncoloredColorDefinition = cclib.ColorDefinitionManager.getUncolored()
   var cv1
   var cv2
 

@@ -1,5 +1,3 @@
-var _ = require('lodash')
-
 var errors = require('./errors')
 var verify = require('./verify')
 
@@ -15,34 +13,6 @@ function ColorDefinition(colorId) {
   verify.number(colorId)
 
   this.colorId = colorId
-}
-
-ColorDefinition._colorDefinitionClasses = {}
-
-/**
- * @param {string} type
- * @param {function} cls
- * @throws {ColorDefinitionAlreadyRegisteredError}
- */
-ColorDefinition.registerColorDefinition = function (type, cls) {
-  verify.string(type)
-  verify.function(cls)
-
-  if (!_.isUndefined(ColorDefinition._colorDefinitionClasses[type])) {
-    throw new errors.ColorDefinitionAlreadyRegisteredError(type + ': ' + cls.name)
-  }
-
-  ColorDefinition._colorDefinitionClasses[type] = cls
-}
-
-/**
- * @param {string} type
- * @return {?function}
- */
-ColorDefinition.getColorDefenitionClsForType = function (type) {
-  verify.string(type)
-
-  return ColorDefinition._colorDefinitionClasses[type] || null
 }
 
 /**

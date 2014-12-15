@@ -1,11 +1,9 @@
 var _ = require('lodash')
 
-var ColorDefinition = require('./ColorDefinition')
 var GenesisColorDefinition = require('./GenesisColorDefinition')
 var UncoloredColorDefinition = require('./UncoloredColorDefinition')
 var errors = require('./errors')
 var verify = require('./verify')
-
 
 /**
  * @class ColorDefinitionManager
@@ -17,13 +15,86 @@ function ColorDefinitionManager(storage) {
   this._storage = storage
 }
 
+ColorDefinitionManager._colorDefinitionClasses = {}
+
+/**
+ * @return {UncoloredColorDefinition}
+ */
+ColorDefinitionManager.getUncolored = function () {
+  return new UncoloredColorDefinition()
+}
+
+/**
+ * @{link ColorDefinitionManager.getUncolored}
+ */
+ColorDefinitionManager.prototype.getUncolored = function () {
+  console.warn('Instance method deprecated, use static ColorDefinitionManager.getUncolored')
+  return ColorDefinitionManager.getUncolored()
+}
+
+/**
+ * @return {GenesisColorDefinition}
+ */
+ColorDefinitionManager.getGenesis = function () {
+  return new GenesisColorDefinition()
+}
+
+/**
+ * @{link ColorDefinitionManager.getGenesis}
+ */
+ColorDefinitionManager.prototype.getGenesis = function () {
+  console.warn('Instance method deprecated, use static ColorDefinitionManager.getGenesis')
+  return ColorDefinitionManager.getGenesis()
+}
+
+/**
+ * @return {GenesisColorDefinition}
+ */
+ColorDefinitionManager.getGenesis = function () {
+  return new GenesisColorDefinition()
+}
+
+/**
+ * @param {string} type
+ * @param {function} cls
+ * @throws {ColorDefinitionAlreadyRegisteredError}
+ */
+ColorDefinitionManager.registerColorDefinition = function (type, cls) {
+  verify.string(type)
+  verify.function(cls)
+
+  if (!_.isUndefined(ColorDefinitionManager._colorDefinitionClasses[type])) {
+    throw new errors.ColorDefinitionAlreadyRegisteredError(type + ': ' + cls.name)
+  }
+
+  ColorDefinitionManager._colorDefinitionClasses[type] = cls
+}
+
+/**
+ * @param {string} type
+ * @return {?function}
+ */
+ColorDefinitionManager.getColorDefenitionClsForType = function (type) {
+  verify.string(type)
+
+  return ColorDefinitionManager._colorDefinitionClasses[type] || null
+}
+
+/**
+ * @{link ColorDefinitionManager.getColorDefenitionClsForType}
+ */
+ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) {
+  console.warn('Instance method deprecated, use static ColorDefinitionManager.getGenesis')
+  return ColorDefinitionManager.getColorDefenitionClsForType(type)
+}
+
 /**
  * @param {ColorDefinitionRecord} record
  * @return {?ColorDefinition}
  */
 ColorDefinitionManager.prototype._record2ColorDefinition = function (record) {
   var type = record.desc.split(':')[0]
-  var ColorDefinitionCls = this.getColorDefenitionClsForType(type)
+  var ColorDefinitionCls = ColorDefinitionManager.getColorDefenitionClsForType(type)
 
   try {
     return ColorDefinitionCls.fromDesc(record.colorId, record.desc)
@@ -41,32 +112,6 @@ ColorDefinitionManager.prototype._record2ColorDefinition = function (record) {
 }
 
 /**
- * Get uncolored ColorDefinition
- *
- * @return {UncoloredColorDefinition}
- */
-ColorDefinitionManager.prototype.getUncolored = function () {
-  return new UncoloredColorDefinition()
-}
-
-/**
- * Get genesis ColorDefinition for issue coins
- *
- * @return {GenesisColorDefinition}
- */
-ColorDefinitionManager.prototype.getGenesis = function () {
-  return new GenesisColorDefinition()
-}
-
-/**
- * @param {string} type
- * @return {?function}
- */
-ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) {
-  return ColorDefinition.getColorDefenitionClsForType(type)
-}
-
-/**
  * Get ColorDefinition from storage by colorId or return null if not exists
  *
  * @param {number} colorId
@@ -75,11 +120,15 @@ ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) 
 ColorDefinitionManager.prototype.getByColorId = function (colorId) {
   verify.number(colorId)
 
-  var uncolored = this.getUncolored()
-  if (uncolored.getColorId() === colorId) { return uncolored }
+  var uncolored = ColorDefinitionManager.getUncolored()
+  if (uncolored.getColorId() === colorId) {
+    return uncolored
+  }
 
   var record = this._storage.getByColorId(colorId)
-  if (record === null) { return null }
+  if (record === null) {
+    return null
+  }
 
   return this._record2ColorDefinition(record)
 }
@@ -94,18 +143,23 @@ ColorDefinitionManager.prototype.getByColorId = function (colorId) {
  * @throws {ColorDefinitionBadDescriptionError}
  */
 ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
-  if (_.isUndefined(autoAdd)) { autoAdd = true }
-
   verify.string(desc)
+  if (_.isUndefined(autoAdd)) { autoAdd = true }
   verify.boolean(autoAdd)
 
-  var uncolored = this.getUncolored()
-  if (uncolored.getDesc() === desc) { return uncolored }
+  var uncolored = ColorDefinitionManager.getUncolored()
+  if (uncolored.getDesc() === desc) {
+    return uncolored
+  }
 
   var record = this._storage.getByDesc(desc)
-  if (record !== null) { return this._record2ColorDefinition(record) }
+  if (record !== null) {
+    return this._record2ColorDefinition(record)
+  }
 
-  if (autoAdd === false) { return null }
+  if (autoAdd === false) {
+    return null
+  }
 
   var colordef = this._record2ColorDefinition({colorId: -1, desc: desc})
   if (colordef === null) {

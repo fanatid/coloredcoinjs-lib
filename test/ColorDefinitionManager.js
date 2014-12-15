@@ -21,31 +21,31 @@ describe('ColorDefinitionManager', function () {
 
   describe('getUncolored', function () {
     it('is UncoloredColorDefinition', function () {
-      expect(cdManager.getUncolored()).to.be.instanceof(cclib.UncoloredColorDefinition)
+      expect(cclib.ColorDefinitionManager.getUncolored()).to.be.instanceof(cclib.UncoloredColorDefinition)
     })
 
     it('colorId is 0', function () {
-      expect(cdManager.getUncolored().getColorId()).to.equal(0)
+      expect(cclib.ColorDefinitionManager.getUncolored().getColorId()).to.equal(0)
     })
   })
 
   describe('getGenesis', function () {
     it('is GenesisColorDefinition', function () {
-      expect(cdManager.getGenesis()).to.be.instanceof(cclib.GenesisColorDefinition)
+      expect(cclib.ColorDefinitionManager.getGenesis()).to.be.instanceof(cclib.GenesisColorDefinition)
     })
 
     it('colorId is -1', function () {
-      expect(cdManager.getGenesis().getColorId()).to.equal(-1)
+      expect(cclib.ColorDefinitionManager.getGenesis().getColorId()).to.equal(-1)
     })
   })
 
   describe('getColorDefenitionClsForType', function () {
     it('return null', function () {
-      expect(cdManager.getColorDefenitionClsForType('aaa')).to.be.null
+      expect(cclib.ColorDefinitionManager.getColorDefenitionClsForType('aaa')).to.be.null
     })
 
     it('return EPOBCColorDefinition constructor', function () {
-      expect(cdManager.getColorDefenitionClsForType('epobc')).to.equal(EPOBCColorDefinition)
+      expect(cclib.ColorDefinitionManager.getColorDefenitionClsForType('epobc')).to.equal(EPOBCColorDefinition)
     })
   })
 
@@ -57,7 +57,7 @@ describe('ColorDefinitionManager', function () {
 
     it('return uncolred', function () {
       var result = cdManager.getByColorId(0)
-      expect(result).to.deep.equal(cdManager.getUncolored())
+      expect(result).to.deep.equal(cclib.ColorDefinitionManager.getUncolored())
     })
 
     it('return ColorDefinition', function () {
@@ -81,7 +81,7 @@ describe('ColorDefinitionManager', function () {
 
     it('return uncolored', function () {
       var result = cdManager.resolveByDesc('')
-      expect(result).to.deep.equal(cdManager.getUncolored())
+      expect(result).to.deep.equal(cclib.ColorDefinitionManager.getUncolored())
     })
 
     it('add new record', function () {
