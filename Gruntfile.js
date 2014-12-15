@@ -29,7 +29,7 @@ module.exports = function (grunt) {
       }
     },
     jscs: {
-      src: ['Gruntfile.js', 'src/*.js', 'test/*.js'],
+      src: ['Gruntfile.js', 'src', 'test'],
       options: {
         config: '.jscsrc'
       }
@@ -40,8 +40,8 @@ module.exports = function (grunt) {
       coverage: {
         src: 'test',
         options: {
-          excludes: ['helpers.js', 'mocks.js', 'stubs.js'],
-          mask: '*.js',
+          excludes: ['helpers.js', 'mocks.js', 'stubs.js', 'integration/SimpleOperationalTx.js'],
+          mask: '**/*.js',
           reporter: 'spec',
           timeout: 10000
         }
@@ -50,8 +50,8 @@ module.exports = function (grunt) {
         src: 'test',
         options: {
           coverage: true,
-          excludes: ['helpers.js', 'mocks.js', 'stubs.js'],
-          mask: '*.js',
+          excludes: ['helpers.js', 'mocks.js', 'stubs.js', 'integration/SimpleOperationalTx.js'],
+          mask: '**/*.js',
           reporter: 'spec',
           timeout: 10000
         }
@@ -63,7 +63,7 @@ module.exports = function (grunt) {
           reporter: 'spec',
           timeout: 10000
         },
-        src: ['test/*.js']
+        src: ['test/**/*.js']
       }
     },
     uglify: {
@@ -81,7 +81,7 @@ module.exports = function (grunt) {
         }
       },
       src: {
-        files: ['src/**.js', 'test/*.js', 'test/fixtures/*.json'],
+        files: ['src', 'test'],
         tasks: ['jshint', 'coverage']
       }
     }

@@ -62,7 +62,7 @@ OperationalTx.prototype.getRequiredFee = function () {
  *  which isn't dust according to current parameters
  *
  * @abstract
- * @return {number}
+ * @return {ColorValue}
  */
 OperationalTx.prototype.getDustThreshold = function () {
   throw new NotImplementedError('OperationalTx.getDustThreshold')
