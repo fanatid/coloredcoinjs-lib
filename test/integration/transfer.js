@@ -6,6 +6,62 @@ var SimpleOperationalTx = require('./SimpleOperationalTx')
 
 
 describe('coloredcoinjs-lib (transfer)', function () {
+  it('uncolored', function (done) {
+    // http://tbtc.blockr.io/tx/info/1ed281e85ca502b96e3d3cc89900b1070ca091485deabcd295a872c1a4074862
+
+    var privkey1 = bitcoin.ECKey.fromWIF('KwXFNLGYPjveV61ts5BW37dxtgnSLUJ7xQUcgjD3aFwSsJvqHq3T')
+    var privkey2 = bitcoin.ECKey.fromWIF('L3UBdFJ8rRAE85N7SGdpsSFPPLgpR8UVcv2Wz2BJfSYDK2KvsN7P')
+
+    var colorValue = new cclib.ColorValue(cclib.ColorDefinitionManager.getUncolored(), 100000)
+    var colorTarget = new cclib.ColorTarget(
+      privkey2.pub.getAddress(bitcoin.networks.testnet).toOutputScript().toHex(), colorValue)
+
+    var opTx = new SimpleOperationalTx({
+      targets: [
+        colorTarget
+      ],
+      coins: [
+        {
+          colorId: 0,
+          txId: '7669d431e87482f7c3a95f851c42baf07cf9402d57dcf22e334afbe37ea0fd62',
+          outIndex: 1,
+          value: 1000000
+        }
+      ],
+      changeAddresses: {
+        0: privkey1.pub.getAddress(bitcoin.networks.testnet).toBase58Check()
+      },
+      fee: 0
+    })
+
+    cclib.UncoloredColorDefinition.makeComposedTx(opTx, function (error, composedTx) {
+      expect(error).to.be.null
+      expect(composedTx).to.be.instanceof(cclib.ComposedTx)
+
+      var txb = new bitcoin.TransactionBuilder()
+      composedTx.getTxIns().forEach(function (txIn) {
+        txb.addInput(txIn.txId, txIn.outIndex, txIn.sequence)
+      })
+      composedTx.getTxOuts().forEach(function (txOut) {
+        txb.addOutput(bitcoin.Script.fromHex(txOut.script), txOut.value)
+      })
+
+      txb.sign(0, privkey1)
+
+      var tx = txb.build()
+      expect(tx.toHex()).to.equal([
+        '010000000162fda07ee3fb4a332ef2dc572d40f97cf0ba421c855fa9c3f78274e831d46976010000',
+        '006b483045022100c001be1821ce62cef0a42c99f21ee0c5b633004719c48a79232cba7d8bc1821f',
+        '022026a8cd3f2c9967cfadce856630746d2348f5300f367c099c6a859a91e3c2b41e0121025327a9',
+        '49b0c31d11d65825a34f552a404177c4a59b193f0c255bc75fb9a7888dffffffff02a08601000000',
+        '00001976a91417e9355bd86b5598498c7efbf705fbb0cb9eae8788aca0bb0d00000000001976a914',
+        'a9ecbc0039952c8a0b348ea8ad76c0fc31d27fc088ac00000000'
+      ].join(''))
+
+      done()
+    })
+  })
+
   it('EPOBC', function (done) {
     // http://tbtc.blockr.io/tx/info/694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c
 
@@ -44,7 +100,6 @@ describe('coloredcoinjs-lib (transfer)', function () {
     })
 
     cclib.EPOBCColorDefinition.makeComposedTx(opTx, function (error, composedTx) {
-      if (error) throw error
       expect(error).to.be.null
       expect(composedTx).to.be.instanceof(cclib.ComposedTx)
 

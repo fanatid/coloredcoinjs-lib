@@ -13,7 +13,6 @@ function ColorData(storage) {
   verify.ColorDataStorage(storage)
 
   this._storage = storage
-  this._isRunning = false
 }
 
 /**
