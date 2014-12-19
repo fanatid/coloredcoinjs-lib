@@ -14,8 +14,10 @@ var verify = require('./verify')
  * @extends OperationalTx
  * @param {Object} data
  * @param {ColorTarget[]} data.targets
- * @param {{colorId: number, txId: string, outIndex: number, value: number}[]} data.coins
- * @param {{colorId1: string, colorIdN: string}} data.changeAddresses
+ * @param {OperationalTx~AbstractRawCoin[]} data.coins
+ * @param {Object} data.changeAddresses
+ * @param {string} data.changeAddresses.colorId1
+ * @param {string} data.changeAddresses.colorIdN
  * @param {number} data.fee
  */
 function SimpleOperationalTx(data) {
@@ -94,7 +96,7 @@ SimpleOperationalTx.prototype.selectCoins = function (colorValue, feeEstimator, 
 }
 
 /**
- * @{link OperationalTx~getChangeAddress}
+ * @{linkcode OperationalTx~getChangeAddress}
  */
 SimpleOperationalTx.prototype.getChangeAddress = function (colordef) {
   verify.ColorDefinition(colordef)

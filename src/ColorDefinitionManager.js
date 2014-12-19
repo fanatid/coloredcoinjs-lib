@@ -48,15 +48,8 @@ ColorDefinitionManager.prototype.getGenesis = function () {
 }
 
 /**
- * @return {GenesisColorDefinition}
- */
-ColorDefinitionManager.getGenesis = function () {
-  return new GenesisColorDefinition()
-}
-
-/**
  * @param {string} type
- * @param {function} cls
+ * @param {ColorDefinition} cls
  * @throws {ColorDefinitionAlreadyRegisteredError}
  */
 ColorDefinitionManager.registerColorDefinition = function (type, cls) {
@@ -90,6 +83,7 @@ ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) 
 }
 
 /**
+ * @private
  * @param {ColorDefinitionRecord} record
  * @return {?ColorDefinition}
  */
@@ -141,7 +135,7 @@ ColorDefinitionManager.prototype.getByColorId = function (colorId) {
  * @param {string} desc
  * @param {boolean} [autoAdd=true]
  * @return {?ColorDefinition}
- * @throws {ColorDefinitionBadDescriptionError}
+ * @throws {ColorDefinitionBadDescError}
  */
 ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
   verify.string(desc)
@@ -164,7 +158,7 @@ ColorDefinitionManager.prototype.resolveByDesc = function (desc, autoAdd) {
 
   var colordef = this._record2ColorDefinition({colorId: -1, desc: desc})
   if (colordef === null) {
-    throw new errors.ColorDefinitionBadDescriptionError(desc)
+    throw new errors.ColorDefinitionBadDescError(desc)
   }
 
   record = this._storage.add(desc)

@@ -17,7 +17,7 @@ function ColorValue(colordef, value) {
 }
 
 /**
- * @return {colordef.ColorDefinition}
+ * @return {ColorDefinition}
  */
 ColorValue.prototype.getColorDefinition = function () {
   return this.colordef
@@ -55,7 +55,7 @@ ColorValue.prototype.clone = function () {
  * Check compatibility with other ColorValue
  *
  * @param {ColorValue} other
- * @throws {IncompatibilityColorValuesError}
+ * @throws {IncompatibilityColorValuesError} If ColorValues are incompatible
  */
 ColorValue.prototype.checkCompatibility = function (other) {
   var isCompatibility = (
@@ -72,7 +72,7 @@ ColorValue.prototype.checkCompatibility = function (other) {
  *
  * @param {ColorValue} other
  * @return {ColorValue}
- * @throws {IncompatibilityColorValuesError}
+ * @throws {IncompatibilityColorValuesError} If ColorValues are incompatible
  */
 ColorValue.prototype.plus = function (other) {
   this.checkCompatibility(other)
@@ -94,7 +94,7 @@ ColorValue.prototype.neg = function () {
  *
  * @param {ColorValue} other
  * @return {ColorValue}
- * @throws {IncompatibilityColorValuesError}
+ * @throws {IncompatibilityColorValuesError} If ColorValues are incompatible
  */
 ColorValue.prototype.minus = function (other) {
   return this.plus(other.neg())
@@ -105,6 +105,7 @@ ColorValue.prototype.minus = function (other) {
  *
  * @param {ColorValue[]} colorValues
  * @throws {(IncompatibilityColorValuesError|ZeroArrayLengthError)}
+ *   If colorValues are incompatible or colorValues length is zero
  */
 ColorValue.sum = function (colorValues) {
   verify.array(colorValues)

@@ -34,18 +34,18 @@ function bitArray2number(bits) {
 }
 
 /**
- * @typedef {Object} AbstractTarget
- * @property {function} getColorDefinition Return ColorDefiniton for target
- * @property {function} getColorId Return colorId of ColorDefiniton for target
+ * @typedef {Object} groupTargetsByColorResult
+ * @property {ColorTarget[]} colorId1
+ * @property {ColorTarget[]} colorIdN
  */
 
 /**
  * Group targets by ColorId or return error if target is not uncolored
  *  or not instance of targetCls
  *
- * @param {AbstractTarget[]} targets
+ * @param {ColorTarget[]} targets
  * @param {function} targetCls ColorDefinition constructor for filter targets
- * @return {{colorId1: AbstractTarget[], colorIdN: AbstractTarget[]}}
+ * @return {groupTargetsByColorResult}
  * @throws {IncompatibilityColorDefinitionsError} If ColorDefinition not Uncolored and not targetCls
  */
 function groupTargetsByColor(targets, targetCls) {
@@ -77,7 +77,7 @@ function groupTargetsByColor(targets, targetCls) {
 
 /**
  * @param {string} address
- * @return {bitcoinjs-lib.Script}
+ * @return {external:bitcoinjs-lib.Script}
  */
 function address2script(address) {
   verify.string(address)
@@ -88,7 +88,7 @@ function address2script(address) {
 /**
  * @param {function} fn
  * @param {number} ms
- * @param {?} [ctx]
+ * @param {*} [ctx]
  * @return {function}
  */
 function debounce(fn, ms, ctx) {

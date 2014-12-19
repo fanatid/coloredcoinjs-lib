@@ -15,6 +15,7 @@ var verify = require('./verify')
 
 
 /**
+ * @private
  * @class Tag
  * @param {number} paddingCode
  * @param {boolean} isGenesis
@@ -33,6 +34,7 @@ Tag.genesisTagBits = [1, 0, 1, 0, 0, 1]
 
 /**
  * Calculate paddingCode from minPadding
+ *
  * @param {number} minPadding
  * @return {number}
  * @throws {EPOBCPaddingError}
@@ -56,7 +58,7 @@ Tag.closestPaddingCode = function (minPadding) {
 
 
 /**
- * @param {Transaction} tx
+ * @param {external:bitcoinjs-lib.Transaction} tx
  * @return {?Tag} Tag instance if tx is genesis or xfer and not coinbase
  */
 Tag.fromTx = function (tx) {
@@ -118,7 +120,8 @@ Tag.prototype.getPadding = function () {
  *  for an output in the transaction tx with output index outIndex
  *  which has a padding of padding (2^n for some n>0 or 0)
  *
- * @param {Transaction} tx
+ * @private
+ * @param {external:bitcoinjs-lib.Transaction} tx
  * @param {number} padding
  * @param {number} outIndex
  * @return {number[]}
@@ -166,18 +169,14 @@ function getXferAffectingInputs(tx, padding, outIndex) {
 
 
 /**
- * @typedef {Object} EPOBCColorDefinitionGenesis
- * @param {string} txId
- * @param {number} outIndex
- * @param {number} height
- */
-
-/**
  * @class EPOBCColorDefinition
  * @extends ColorDefinition
  *
  * @param {number} colorId
- * @param {EPOBCColorDefinitionGenesis} genesis
+ * @param {Object} genesis
+ * @param {string} genesis.txId
+ * @param {number} genesis.outIndex
+ * @param {number} genesis.height
  */
 function EPOBCColorDefinition(colorId, genesis) {
   ColorDefinition.call(this, colorId)
@@ -205,7 +204,7 @@ EPOBCColorDefinition.prototype.getColorType = function () {
  * @param {number} colorId
  * @param {string} desc
  * @return {EPOBCColorDefinition}
- * @throws {ColorDefinitionBadDescriptionError}
+ * @throws {ColorDefinitionBadDescError}
  */
 EPOBCColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
@@ -213,7 +212,7 @@ EPOBCColorDefinition.fromDesc = function (colorId, desc) {
 
   var items = desc.split(':')
   if (items[0] !== 'epobc') {
-    throw new errors.ColorDefinitionBadDescriptionError('EPOBC fail load: ' + desc)
+    throw new errors.ColorDefinitionBadDescError('EPOBC fail load: ' + desc)
   }
 
   var genesis = {
@@ -236,7 +235,7 @@ EPOBCColorDefinition.prototype.getDesc = function () {
 }
 
 /**
- * @param {Transaction} tx
+ * @param {external:bitcoinjs-lib.Transaction} tx
  * @return {boolean}
  */
 EPOBCColorDefinition.prototype.isSpecialTx = function (tx) {
@@ -246,9 +245,9 @@ EPOBCColorDefinition.prototype.isSpecialTx = function (tx) {
 }
 
 /**
- * @callback EPOBCColorDefinition~runKernel
+ * @callback EPOBCColorDefinition~runKernelCallback
  * @param {?Error} error
- * @param {(?ColorValue)[]} colorValues
+ * @param {Array.<?ColorValue>} colorValues
  */
 
 /**
@@ -256,9 +255,9 @@ EPOBCColorDefinition.prototype.isSpecialTx = function (tx) {
  *  return the colorValues of the tx.outs in a Array via callback cb
  *
  * @param {Transaction} tx
- * @param {(?ColorValue)[]} colorValueSet
- * @param {function} getTxFn
- * @param {EPOBCColorDefinition~runKernel} cb
+ * @param {Array.<?ColorValue>} colorValueSet
+ * @param {getTxFn} getTxFn
+ * @param {EPOBCColorDefinition~runKernelCallback} cb
  */
 EPOBCColorDefinition.prototype.runKernel = function (tx, colorValueSet, getTxFn, cb) {
   verify.Transaction(tx)
@@ -314,7 +313,7 @@ EPOBCColorDefinition.prototype.runKernel = function (tx, colorValueSet, getTxFn,
 }
 
 /**
- * @callback EPOBCColorDefinition~getAffectingInputs
+ * @callback EPOBCColorDefinition~getAffectingInputsCallback
  * @param {?Error} error
  * @param {Object[]} affectingInputs
  */
@@ -325,8 +324,8 @@ EPOBCColorDefinition.prototype.runKernel = function (tx, colorValueSet, getTxFn,
  *
  * @param {Transaction} tx
  * @param {number[]} outputSet
- * @param {function} getTxFn
- * @param {EPOBCColorDefinition~getAffectingInputs} cb
+ * @param {getTxFn} getTxFn
+ * @param {EPOBCColorDefinition~getAffectingInputsCallback} cb
  */
 EPOBCColorDefinition.getAffectingInputs = function (tx, outputSet, getTxFn, cb) {
   verify.Transaction(tx)
@@ -355,16 +354,10 @@ EPOBCColorDefinition.getAffectingInputs = function (tx, outputSet, getTxFn, cb) 
 }
 
 /**
- * @callback EPOBCColorDefinition~makeComposedTx
- * @param {?Error} error
- * @param {ComposedTx} composedTx
- */
-
-/**
  * Create ComposeTx from OperationalTx
  *
  * @param {OperationalTx} operationalTx
- * @param {EPOBCColorDefinition~makeComposedTx} cb
+ * @param {ColorDefinition~transformToComposedTxCallback} cb
  */
 EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
   verify.OperationalTx(operationalTx)
@@ -476,14 +469,8 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
 }
 
 /**
- * @callback EPOBCColorDefinition~composeGenesisTx
- * @param {?(ComposeGenesisTxError|IncompatibilityColorDefinitionsError)} error
- * @param {ComposedTx} composedTx
- */
-
-/**
  * @param {OperationalTx} operationalTx
- * @param {EPOBCColorDefinition~composeGenesisTx} cb
+ * @param {ColorDefinition~transformToComposedTxCallback} cb
  */
 EPOBCColorDefinition.composeGenesisTx = function (operationalTx, cb) {
   verify.OperationalTx(operationalTx)

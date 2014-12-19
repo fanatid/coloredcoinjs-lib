@@ -7,17 +7,34 @@ var verify = require('./verify')
 
 
 /**
- * @typedef {Object} AbstarctStorage
- * @param {function} set
- * @param {function} get
- * @param {function} remove
+ * @callback SyncStorage~AbstractStoreSet
+ * @param {string} key
+ * @param {*} value
+ */
+
+/**
+ * @callback SyncStorage~AbstractStoreGet
+ * @param {string} key
+ * @return {*}
+ */
+
+/**
+ * @callback SyncStorage~AbstractStoreRemove
+ * @param {string} key
+ */
+
+/**
+ * @typedef {Object} SyncStorage~AbstractStore
+ * @property {SyncStorage~AbstractStoreSet} set
+ * @property {SyncStorage~AbstractStoreGet} get
+ * @property {SyncStorage~AbstractStoreRemove} remove
  */
 
 /**
  * @class SyncStorage
  * @param {Object} [opts]
  * @param {string} [opts.globalPrefix=cc_]
- * @param {AbstractStorage} [opts.store=localStorage]
+ * @param {SyncStorage~AbstractStore} [opts.store=store]
  */
 function SyncStorage(opts) {
   opts = _.extend({

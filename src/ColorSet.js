@@ -6,9 +6,9 @@ var verify = require('./verify')
 
 
 /**
- * @class ColorSet
- *
  * A set of colors which belong to certain a asset.
+ *
+ * @class ColorSet
  *
  * @param {ColorDefinitionManager} cdManager
  * @param {string[]} colorDescs
@@ -22,10 +22,14 @@ function ColorSet(cdManager, colorDescs) {
   this.colorDefinitions = this.colorDescs.map(function (colorDesc) {
     return cdManager.resolveByDesc(colorDesc)
   })
-  this.colorIds = this.colorDefinitions.map(function (colordef) { return colordef.getColorId() })
+  this.colorIds = this.colorDefinitions.map(function (colordef) {
+    return colordef.getColorId()
+  })
 }
 
 /**
+ * Return a hex string that represent this ColorSet
+ *
  * @return {string}
  */
 ColorSet.prototype.getColorHash = function () {

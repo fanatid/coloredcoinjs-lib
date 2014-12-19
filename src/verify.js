@@ -3,6 +3,10 @@ var _ = require('lodash')
 var VerifyTypeError = require('./errors').VerifyTypeError
 
 
+/**
+ * @param {function}
+ * @return {function}
+ */
 function createInstanceCheck(importFn) {
   var cls
 
@@ -14,6 +18,10 @@ function createInstanceCheck(importFn) {
   return instanceCheck
 }
 
+/**
+ * @param {string} thing
+ * @return {boolean}
+ */
 function isHexString(thing) {
   if (!(_.isString(thing) && thing.length % 2 === 0)) { return false }
 
@@ -24,6 +32,10 @@ function isHexString(thing) {
   return true
 }
 
+/**
+ * @param {string} thing
+ * @return {boolean}
+ */
 function isTxId(thing) {
   return isHexString(thing) && thing.length === 64
 }
@@ -83,6 +95,11 @@ var expected = {
   UncoloredColorDefinition: 'UncoloredColorDefinition'
 }
 
+/**
+ * @param {Object} verify
+ * @param {Object} functions
+ * @param {Object} expected
+ */
 function extendVerify(verify, functions, expected) {
   Object.keys(functions).forEach(function (name) {
     verify[name] = function () {

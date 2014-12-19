@@ -7,6 +7,7 @@ var NotImplementedError = require('./errors').NotImplementedError
 function OperationalTx() {}
 
 /**
+ * @abstract
  * @return {ColorTarget[]}
  */
 OperationalTx.prototype.getTargets = function () {
@@ -14,9 +15,36 @@ OperationalTx.prototype.getTargets = function () {
 }
 
 /**
- * @callback OperationalTx~selectCoins
+ * @callback OperationalTx~abstractEstimateRequiredFee
+ * @param {Object} extra
+ * @param {number} [extra.txIns=0]
+ * @param {number} [extra.txOuts=1]
+ * @param {number} [extra.bytes=0]
+ * @return {number}
+ */
+
+/**
+ * @typedef {Object} OperationalTx~AbstractRawCoin
+ * @property {number} colorId
+ * @property {string} txId
+ * @property {number} outIndex
+ * @property {number} value
+ */
+
+/**
+ * @callback OperationalTx~AbstractCoinToRawCoin
+ * @return {OperationalTx~AbstractRawCoin[]}
+ */
+
+/**
+ * @typedef {Object} OperationalTx~AbstractCoin
+ * @property {OperationalTx~AbstractCoinToRawCoin} toRawCoin
+ */
+
+/**
+ * @callback OperationalTx~selectCoinsCallback
  * @param {?Error} error
- * @param {{toRawCoin: function}[]} utxo
+ * @param {OperationalTx~AbstractCoin[]} utxo
  * @param {ColorValue} utxoColorValue
  */
 
@@ -28,8 +56,9 @@ OperationalTx.prototype.getTargets = function () {
  *
  * @abstract
  * @param {ColorValue} colorValue
- * @param {?{estimateRequiredFee: function}} [feeEstimator]
- * @param {OperationalTx~selectCoins} cb
+ * @param {Object} [feeEstimator]
+ * @param {OperationalTx~abstractEstimateRequiredFee} [feeEstimator.estimateRequiredFee]
+ * @param {OperationalTx~selectCoinsCallback} cb
  */
 OperationalTx.prototype.selectCoins = function () {
   throw new NotImplementedError('OperationalTx.selectCoins')
@@ -47,7 +76,7 @@ OperationalTx.prototype.getChangeAddress = function () {
 }
 
 /**
- * Returns ColorValue object representing the fee for a certain tx size
+ * Returns ColorValue representing the fee for a certain tx size
  *
  * @abstract
  * @param {number} txSize
@@ -58,7 +87,7 @@ OperationalTx.prototype.getRequiredFee = function () {
 }
 
 /**
- * Returns ColorValue object representing smallest satoshi value
+ * Returns ColorValue representing smallest satoshi value
  *  which isn't dust according to current parameters
  *
  * @abstract

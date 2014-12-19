@@ -9,7 +9,7 @@ var verify = require('./verify')
 
 
 /**
- * @typedef {Object} ColorDataRecord
+ * @typedef {Object} ColorDataStorage~Record
  * @property {number} colorId
  * @property {string} txId
  * @property {number} outIndex
@@ -48,14 +48,16 @@ function ColorDataStorage(opts) {
 inherits(ColorDataStorage, SyncStorage)
 
 /**
- * @return {ColorDataRecord[]}
+ * @private
+ * @return {ColorDataStorage~Record[]}
  */
 ColorDataStorage.prototype._getRecords = function () {
   return this.colorTxRecords
 }
 
 /**
- * @param {ColorDataRecord[]} records
+ * @private
+ * @param {ColorDataStorage~Record[]} records
  */
 ColorDataStorage.prototype._saveRecords = function (records) {
   this.colorTxRecords = records
@@ -63,15 +65,20 @@ ColorDataStorage.prototype._saveRecords = function (records) {
 }
 
 /**
+ * @private
  */
 ColorDataStorage.prototype._save2store = function () {
   this.store.set(this.colorTxsDBKey, this.colorTxRecords)
 }
 
 /**
- * @param {ColorDataRecord} data
- * @return {ColorDataRecord}
- * @throws {UniqueConstraintError} If exists and value not equal
+ * @param {Object} data
+ * @param {number} data.colorId
+ * @param {string} data.txId
+ * @param {number} data.outIndex
+ * @param {number} data.value
+ * @return {ColorDataStorage~Record}
+ * @throws {UniqueConstraintError} If same colorId, txId, outIndex exists and values not equal
  */
 ColorDataStorage.prototype.add = function (data) {
   verify.object(data)
@@ -107,7 +114,10 @@ ColorDataStorage.prototype.add = function (data) {
 }
 
 /**
- * @param {{colorId: number, txId: string, outIndex: number}} data
+ * @param {Object} data
+ * @param {number} data.colorId
+ * @param {string} data.txId
+ * @param {number} data.outIndex
  * @return {?number}
  */
 ColorDataStorage.prototype.getValue = function (data) {
@@ -125,7 +135,10 @@ ColorDataStorage.prototype.getValue = function (data) {
 }
 
 /**
- * @param {{txId: string, outIndex: number}} data
+ * @param {Object} data
+ * @param {string} data.txId
+ * @param {number} data.outIndex
+ * @return {?ColorDataStorage~Record}
  */
 ColorDataStorage.prototype.getAnyValue = function (data) {
   verify.object(data)
@@ -165,7 +178,7 @@ ColorDataStorage.prototype.remove = function (data) {
 }
 
 /**
- * Remove all colorTxs
+ * Remove all color data from store
  */
 ColorDataStorage.prototype.clear = function () {
   this.store.remove(this.colorTxsDBKey)

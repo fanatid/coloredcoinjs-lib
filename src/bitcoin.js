@@ -7,7 +7,20 @@ var verify = require('./verify')
 
 
 /**
- * @param {bitcoinjs-lib.Script} script
+ * @external bitcoinjs-lib
+ * @see {@link https://github.com/bitcoinjs/bitcoinjs-lib/ BitcoinJS library}
+ */
+
+/**
+ * @member {function} external:bitcoinjs-lib.Script
+ */
+
+/**
+ * @member {function} external:bitcoinjs-lib.Transaction
+ */
+
+/**
+ * @param {external:bitcoinjs-lib.Script} script
  * @param {Object} network
  * @param {number} network.pubKeyHash
  * @param {number} network.scriptHash
@@ -43,8 +56,9 @@ bitcoin.getAddressesFromOutputScript = function (script, network) {
 }
 
 var transactionClone = bitcoin.Transaction.prototype.clone
+
 /**
- * @return {bitcoinjs-lib.Transaction}
+ * @return {external:bitcoinjs-lib.Transaction}
  */
 bitcoin.Transaction.prototype.clone = function () {
   var self = this
@@ -69,17 +83,17 @@ bitcoin.Transaction.prototype.clone = function () {
 }
 
 /**
- * @callback Transaction~ensureInputValues
+ * @callback Transaction~ensureInputValuesCallback
  * @param {?Error} error
- * @param {bitcoinjs-lib.Transaction} tx
+ * @param {external:bitcoinjs-lib.Transaction} tx
  */
 
 /**
  * Get previous transaction for all inputs and
  *  return new transaction via callback cb
  *
- * @param {function} getTxFn
- * @param {Transaction~ensureInputValues} cb
+ * @param {getTxFn} getTxFn
+ * @param {Transaction~ensureInputValuesCallback} cb
  */
 bitcoin.Transaction.prototype.ensureInputValues = function (getTxFn, cb) {
   verify.function(getTxFn)

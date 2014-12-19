@@ -23,10 +23,10 @@ describe('ColorDefinition', function () {
   })
 
   it('fromDesc', function () {
-    expect(colordef.fromDesc).to.throw(Error)
+    expect(cclib.ColorDefinition.fromDesc).to.throw(Error)
   })
 
   it('makeComposedTx', function () {
-    expect(colordef.makeComposedTx).to.throw(Error)
+    expect(cclib.ColorDefinition.makeComposedTx).to.throw(Error)
   })
 })

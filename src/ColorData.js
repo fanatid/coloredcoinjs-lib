@@ -6,9 +6,22 @@ var bitcoin = require('./bitcoin')
 var verify = require('./verify')
 var util = require('./util')
 
+
+/**
+ * @callback getTxFnCallback
+ * @param {?Error} error
+ * @param {external:bitcoinjs-lib.Transaction} tx
+ */
+
+/**
+ * @function getTxFn
+ * @param {string} txId
+ * @param {getTxFnCallback} cb
+ */
+
+
 /**
  * @class ColorData
- *
  * @param {ColorDataStorage} storage
  */
 function ColorData(storage) {
@@ -43,18 +56,18 @@ ColorData.prototype.fetchColorValue = function (txId, outIndex, colorDefinition)
 }
 
 /**
- * @callback ColorData~scanTx
+ * @callback ColorData~scanTxCallback
  * @param {?Error} error
  */
 
 /**
  * Scan transaction to obtain color data for its outputs
  *
- * @param {Transaction} tx
+ * @param {external:bitcoinjs-lib.Transaction} tx
  * @param {?(number[])} outputIndices Save only this indices
  * @param {ColorDefinition} colorDefinition
- * @param {function} getTxFn
- * @param {ColorData~scanTx} cb
+ * @param {getTxFn} getTxFn
+ * @param {ColorData~scanTxCallback} cb
  */
 ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTxFn, cb) {
   verify.Transaction(tx)
@@ -98,7 +111,7 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
 }
 
 /**
- * @callback ColorData~getColorValue
+ * @callback ColorData~getColorValueCallback
  * @param {?Error} error
  * @param {?ColorValue} colorValue
  */
@@ -107,13 +120,13 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
  * For a given txId, outIndex and colorDefinition return ColorValue or null if
  *  colorDefinition not represented in given txOut
  *
- * @param {(string|Transaction)} txId
+ * @param {(string|external:bitcoinjs-lib.Transaction)} txId
  * @param {number} outIndex
  * @param {ColorDefinition} colorDefinition
- * @param {function} getTxFn
- * @param {ColorData~getColorValue} cb
+ * @param {getTxFn} getTxFn
+ * @param {ColorData~getColorValueCallback} cb
  */
-ColorData.prototype.getColorValue = util.makeSerial(function (txId, outIndex, colorDefinition, getTxFn, cb) {
+ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, getTxFn, cb) {
   var extraTx = {}
   if (txId instanceof bitcoin.Transaction) {
     extraTx[txId.getId()] = txId
@@ -166,20 +179,22 @@ ColorData.prototype.getColorValue = util.makeSerial(function (txId, outIndex, co
     return self.fetchColorValue(txId, outIndex, colorDefinition)
 
   }).done(function (colorValue) { cb(null, colorValue) }, function (error) { cb(error) })
-})
+}
+
+ColorData.prototype.getColorValue = util.makeSerial(ColorData.prototype.getColorValue)
 
 /**
  * @callback ColorData~getTxColorValuesCallback
  * @param {?Error} error
- * @param {(?ColorValue)[]} colorValues
+ * @param {Array.<?ColorValue>} colorValues
  */
 
 /**
- * @param {bitcoinjs-lib.Transaction} tx
+ * @param {external:bitcoinjs-lib.Transaction} tx
  * @param {ColorDefinition} colorDefinition
- * @param {function} getTxFn
+ * @param {getTxFn} getTxFn
  * @param {Object} [opts]
- * @param {boolean} [opts.save=true] Save color data for received tx
+ * @param {boolean} [opts.save=true] Save color data for current tx
  * @param {ColorData~getTxColorValuesCallback} cb
  */
 ColorData.prototype.getTxColorValues = function (tx, colorDefinition, getTxFn, opts, cb) {
@@ -221,16 +236,16 @@ ColorData.prototype.getTxColorValues = function (tx, colorDefinition, getTxFn, o
 }
 
 /**
- * @callback ColorData~getColorValuesForTx
+ * @callback ColorData~getColorValuesForTxCallback
  * @param {?Error} error
- * @param {(?ColorValue)[]} colorValues
+ * @param {Array.<?ColorValue>} colorValues
  */
 
 /**
- * @param {bitcoinjs-lib.Transaction} tx
+ * @param {external:bitcoinjs-lib.Transaction} tx
  * @param {ColorDefinition} colorDefinition
- * @param {function} getTxFn
- * @param {ColorData~getColorValuesForTx} cb
+ * @param {getTxFn} getTxFn
+ * @param {ColorData~getColorValuesForTxCallback} cb
  */
 ColorData.prototype.getColorValuesForTx = function (tx, colorDefinition, getTxFn, cb) {
   console.warn('ColorData.getColorValuesForTx deprecated for removal in 1.0.0, use ColorData.getTxColorValues')

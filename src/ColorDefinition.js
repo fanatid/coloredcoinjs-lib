@@ -46,25 +46,32 @@ ColorDefinition.prototype.getDesc = function () {
  * @param {string} desc
  * @return {ColorDefinition}
  */
-ColorDefinition.prototype.fromDesc = function () {
+ColorDefinition.fromDesc = function () {
   throw new errors.NotImplementedError('ColorDefinition.fromDesc')
 }
 
 /**
- * @callback ColorDefinition~makeComposedTx
+ * @callback ColorDefinition~transformToComposedTxCallback
  * @param {?Error} error
  * @param {ComposedTx} composedTx
  */
 
 /**
- * Create ComposedTx from OperationalTx
- *
  * @abstract
  * @param {OperationalTx} operationalTx
- * @param {ColorDefinition~makeComposedTx} cb
+ * @param {ColorDefinition~transformToComposedTxCallback} cb
  */
-ColorDefinition.prototype.makeComposedTx = function () {
+ColorDefinition.makeComposedTx = function () {
   throw new errors.NotImplementedError('ColorDefinition.makeComposedTx')
+}
+
+/**
+ * @abstract
+ * @param {OperationalTx} operationalTx
+ * @param {ColorDefinition~transformToComposedTxCallback} cb
+ */
+ColorDefinition.composeGenesisTx = function () {
+  throw new errors.NotImplementedError('ColorDefinition.composeGenesisTx')
 }
 
 

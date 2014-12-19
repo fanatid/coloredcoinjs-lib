@@ -17,14 +17,32 @@ function ComposedTx(operationalTx) {
 }
 
 /**
- * @param {{txId: string, outIndex: number, sequence: (number|undefined)}} txIn
+ * @typedef {Object} ComposedTx~Input
+ * @property {string} txId
+ * @property {number} outIndex
+ * @property {number} [sequence]
+ */
+
+/**
+ * @typedef {Object} ComposedTx~OutTarget
+ * @property {ColorTarget} target
+ */
+
+/**
+ * @typedef {Object} ComposedTx~OutScriptValue
+ * @property {string} script
+ * @property {number} value
+ */
+
+/**
+ * @param {ComposedTx~Input} txIn
  */
 ComposedTx.prototype.addTxIn = function (txIn) {
   this.addTxIns([txIn])
 }
 
 /**
- * @param {{txId: string, outIndex: number, sequence: (number|undefined)}[]} txIns
+ * @param {ComposedTx~Input[]} txIns
  */
 ComposedTx.prototype.addTxIns = function (txIns) {
   var self = this
@@ -61,23 +79,23 @@ ComposedTx.prototype.setTxInSequence = function (index, sequence) {
 }
 
 /**
- * @return {{txId: string, outIndex: number, sequence: (number|undefined)}[]}
+ * @return {ComposedTx~Input[]}
  */
 ComposedTx.prototype.getTxIns = function () {
-  return this.txIns
+  return _.cloneDeep(this.txIns)
 }
 
 /**
- * @param {({target: ColorTarget}|{script: string, value: number})} out
- * @throws {VerifyTypeError} If target is colored
+ * @param {(ComposedTx~OutTarget|ComposedTx~OutScriptValue)} out
+ * @throws {VerifyTypeError} If target represent not uncolored target
  */
 ComposedTx.prototype.addTxOut = function (out) {
   this.addTxOuts([out])
 }
 
 /**
- * @param {({target: ColorTarget}|{script: string, value: number})[]} outs
- * @throws {VerifyTypeError} If target is colored
+ * @param {Array.<(ComposedTx~OutTarget|ComposedTx~OutScriptValue)>} outs
+ * @throws {VerifyTypeError} If target represent not uncolored target
  */
 ComposedTx.prototype.addTxOuts = function (outs) {
   var self = this
@@ -109,10 +127,10 @@ ComposedTx.prototype.addTxOuts = function (outs) {
 }
 
 /**
- * @return {{script: string, data: number}[]}
+ * @return {Array.<ComposedTx~OutScriptValue>}
  */
 ComposedTx.prototype.getTxOuts = function () {
-  return this.txOuts
+  return _.cloneDeep(this.txOuts)
 }
 
 /**
@@ -149,6 +167,7 @@ ComposedTx.prototype.estimateSize = function (extra) {
  * @param {number} [extra.txIns=0]
  * @param {number} [extra.txOuts=1]
  * @param {number} [extra.bytes=0]
+ * @return {number}
  */
 ComposedTx.prototype.estimateRequiredFee = function (extra) {
   extra = _.extend({

@@ -60,12 +60,15 @@ ColorTarget.prototype.isUncolored = function () {
 /**
  * Calculate total sum of targets
  *
- * @param {{getColorValue: function}[]} targets
- * @return {number}
- * @throws {IncompatibilityColorValuesError}
+ * @param {Array.<ColorTarget>} targets
+ * @return {ColorValue}
+ * @throws {IncompatibilityColorValuesError} If ColorValues of ColorTargets are incompatible
  */
 ColorTarget.sum = function (targets) {
-  var colorValues = targets.map(function (target) { return target.getColorValue() })
+  var colorValues = targets.map(function (target) {
+    return target.getColorValue()
+  })
+
   return colorValues[0].constructor.sum(colorValues)
 }
 

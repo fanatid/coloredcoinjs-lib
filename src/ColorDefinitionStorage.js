@@ -8,7 +8,7 @@ var verify = require('./verify')
 
 
 /**
- * @typedef {Object} ColorDefinitionRecord
+ * @typedef {Object} ColorDefinitionStorage~Record
  * @property {number} id
  * @property {string} desc
  */
@@ -35,14 +35,16 @@ function ColorDefinitionStorage() {
 inherits(ColorDefinitionStorage, SyncStorage)
 
 /**
- * @return {ColorDefinitionRecord[]}
+ * @private
+ * @return {ColorDefinitionStorage~Record[]}
  */
 ColorDefinitionStorage.prototype._getRecords = function () {
   return this.colorDefinitionsRecords
 }
 
 /**
- * @param {ColorDefinitionRecord[]} records
+ * @private
+ * @param {ColorDefinitionStorage~Record[]} records
  */
 ColorDefinitionStorage.prototype._saveRecords = function (records) {
   this.colorDefinitionsRecords = records
@@ -51,7 +53,7 @@ ColorDefinitionStorage.prototype._saveRecords = function (records) {
 
 /**
  * @param {string} desc
- * @return {ColorDefinitionRecord}
+ * @return {ColorDefinitionStorage~Record}
  * @throws {UniqueConstraintError} If desc aready uses
  */
 ColorDefinitionStorage.prototype.add = function (desc) {
@@ -65,7 +67,9 @@ ColorDefinitionStorage.prototype.add = function (desc) {
       throw new errors.UniqueConstraintError('ColorDefinitionStorage: ' + desc)
     }
 
-    if (record.colorId >= newColorId) { newColorId = record.colorId + 1 }
+    if (record.colorId >= newColorId) {
+      newColorId = record.colorId + 1
+    }
   })
 
   records.push({colorId: newColorId, desc: desc})
@@ -76,7 +80,7 @@ ColorDefinitionStorage.prototype.add = function (desc) {
 
 /**
  * @param {number} colorId
- * @return {?ColorDefinitionRecord}
+ * @return {?ColorDefinitionStorage~Record}
  */
 ColorDefinitionStorage.prototype.getByColorId = function (colorId) {
   verify.number(colorId)
@@ -87,7 +91,7 @@ ColorDefinitionStorage.prototype.getByColorId = function (colorId) {
 
 /**
  * @param {string} desc
- * @return {?ColorDefinitionRecord}
+ * @return {?ColorDefinitionStorage~Record}
  */
 ColorDefinitionStorage.prototype.getByDesc = function (desc) {
   verify.string(desc)
@@ -98,14 +102,14 @@ ColorDefinitionStorage.prototype.getByDesc = function (desc) {
 }
 
 /**
- * @return {ColorDefinitionRecord[]}
+ * @return {ColorDefinitionStorage~Record[]}
  */
 ColorDefinitionStorage.prototype.getAll = function () {
   return _.cloneDeep(this._getRecords())
 }
 
 /**
- * Remove all ColorDefinitions
+ * Remove all color definitions from store
  */
 ColorDefinitionStorage.prototype.clear = function () {
   this.store.remove(this.colorDefinitionsDBKey)

@@ -40,7 +40,7 @@ UncoloredColorDefinition.prototype.getDesc = function () {
  * @param {number} colorId
  * @param {string} desc
  * @return {UncoloredColorDefinition}
- * @throws {(ColorDefinitionBadColorIdError|ColorDefinitionBadDescriptionError)}
+ * @throws {(ColorDefinitionBadColorIdError|ColorDefinitionBadDescError)}
  */
 UncoloredColorDefinition.fromDesc = function (colorId, desc) {
   verify.number(colorId)
@@ -51,23 +51,17 @@ UncoloredColorDefinition.fromDesc = function (colorId, desc) {
   }
 
   if (desc !== '') {
-    throw new errors.ColorDefinitionBadDescriptionError('Uncolored fail load: ' + desc)
+    throw new errors.ColorDefinitionBadDescError('Uncolored fail load: ' + desc)
   }
 
   return new UncoloredColorDefinition()
 }
 
 /**
- * @callback UncoloredColorDefinition~makeComposedTx
- * @param {?Error} error
- * @param {ComposedTx} composedTx
- */
-
-/**
  * Create ComposedTx from OperationalTx
  *
  * @param {OperationalTx} operationalTx
- * @param {UncoloredColorDefinition~makeComposedTx} cb
+ * @param {ColorDefinition~transformToComposedTxCallback} cb
  */
 UncoloredColorDefinition.makeComposedTx = function (operationalTx, cb) {
   verify.OperationalTx(operationalTx)
