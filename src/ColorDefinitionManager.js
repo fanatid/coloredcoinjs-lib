@@ -28,7 +28,7 @@ ColorDefinitionManager.getUncolored = function () {
  * @{link ColorDefinitionManager.getUncolored}
  */
 ColorDefinitionManager.prototype.getUncolored = function () {
-  console.warn('Instance method deprecated, use static ColorDefinitionManager.getUncolored')
+  console.warn('Instance method deprecated for removal in 1.0.0, use static ColorDefinitionManager.getUncolored')
   return ColorDefinitionManager.getUncolored()
 }
 
@@ -43,7 +43,7 @@ ColorDefinitionManager.getGenesis = function () {
  * @{link ColorDefinitionManager.getGenesis}
  */
 ColorDefinitionManager.prototype.getGenesis = function () {
-  console.warn('Instance method deprecated, use static ColorDefinitionManager.getGenesis')
+  console.warn('Instance method deprecated for removal in 1.0.0, use static ColorDefinitionManager.getGenesis')
   return ColorDefinitionManager.getGenesis()
 }
 
@@ -84,7 +84,8 @@ ColorDefinitionManager.getColorDefenitionClsForType = function (type) {
  * @{link ColorDefinitionManager.getColorDefenitionClsForType}
  */
 ColorDefinitionManager.prototype.getColorDefenitionClsForType = function (type) {
-  console.warn('Instance method deprecated, use static ColorDefinitionManager.getGenesis')
+  console.warn(
+    'Instance method deprecated for removal in 1.0.0, use static ColorDefinitionManager.getColorDefenitionClsForType')
   return ColorDefinitionManager.getColorDefenitionClsForType(type)
 }
 

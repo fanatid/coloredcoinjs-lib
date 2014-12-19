@@ -248,7 +248,7 @@ EPOBCColorDefinition.prototype.isSpecialTx = function (tx) {
 /**
  * @callback EPOBCColorDefinition~runKernel
  * @param {?Error} error
- * @param {?ColorValue[]} colorValues
+ * @param {(?ColorValue)[]} colorValues
  */
 
 /**

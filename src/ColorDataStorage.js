@@ -132,17 +132,11 @@ ColorDataStorage.prototype.getAnyValue = function (data) {
   verify.txId(data.txId)
   verify.number(data.outIndex)
 
-  var result = null
-  this._getRecords().some(function (record) {
-    if (record.txId === data.txId && record.outIndex === data.outIndex) {
-      result = record
-      return true
-    }
-
-    return false
+  var record = _.find(this._getRecords(), {
+    txId: data.txId,
+    outIndex: data.outIndex
   })
-
-  return result
+  return _.isUndefined(record) ? null : record
 }
 
 /**

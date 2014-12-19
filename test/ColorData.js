@@ -127,18 +127,6 @@ describe('ColorData', function () {
       })
     })
 
-    it('this.scanTx return error', function (done) {
-      tx1.addInput(tx2.getId(), 0, 37)
-      cData.fetchColorValue = function () { return null }
-      epobc.getAffectingInputs = function () { _.last(arguments)(null, [tx1.ins[0]]) }
-      cData.scanTx = function () { _.last(arguments)('error.scanTx') }
-      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([tx1, tx2]), function (error, colorValue) {
-        expect(error).to.equal('error.scanTx')
-        expect(colorValue).to.be.undefined
-        done()
-      })
-    })
-
     it('already in store', function (done) {
       cdStorage.add({colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15})
       cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([]), function (error, colorValue) {
