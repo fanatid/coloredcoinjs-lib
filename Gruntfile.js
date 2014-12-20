@@ -34,6 +34,23 @@ module.exports = function (grunt) {
         config: '.jscsrc'
       }
     },
+    connect: {
+      server: {
+        options: {
+          port: 8000,
+          base: '.',
+        }
+      }
+    },
+// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+    mocha_phantomjs: {
+// jscs:enable requireCamelCaseOrUpperCaseIdentifiers
+      server: {
+        options: {
+          urls: ['http://localhost:8000/test/index.html']
+        }
+      }
+    },
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
     mocha_istanbul: {
 // jscs:enable requireCamelCaseOrUpperCaseIdentifiers
@@ -99,11 +116,13 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-browserify')
   grunt.loadNpmTasks('grunt-contrib-clean')
+  grunt.loadNpmTasks('grunt-contrib-connect')
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-mocha-istanbul')
   grunt.loadNpmTasks('grunt-jscs')
+  grunt.loadNpmTasks('grunt-mocha-phantomjs')
   grunt.loadNpmTasks('grunt-mocha-test')
 
   grunt.registerTask('compile', ['browserify:production', 'uglify:production'])
@@ -111,4 +130,5 @@ module.exports = function (grunt) {
   grunt.registerTask('coverage', ['mocha_istanbul:coverage'])
   grunt.registerTask('coveralls', ['mocha_istanbul:coveralls'])
   grunt.registerTask('test', ['mochaTest'])
+  grunt.registerTask('test_phantomjs', ['compile_test', 'connect', 'mocha_phantomjs'])
 }
