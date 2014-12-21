@@ -112,13 +112,43 @@ function debounce(fn, ms, ctx) {
 
 /**
  * @param {function} fn
+ * @param {Object} [opts]
+ * @param {boolean} [opts.returnPromise=false]
  * @return {function}
  */
-function makeSerial(fn) {
+function makeSerial(fn, opts) {
+  opts = _.extend({returnPromise: false}, opts)
+
+  verify.function(fn)
+  verify.object(opts)
+  verify.boolean(opts.returnPromise)
+
   var queue = []
 
-  return function serialFunction() {
-    var self = this
+  var fn1 = function () {
+    var ctx = this
+    var args = Array.prototype.slice.call(arguments)
+
+    queue.push(Q.defer())
+    if (queue.length === 1) {
+      queue[0].resolve()
+    }
+
+    return _.last(queue).promise.then(function () {
+      return fn.apply(ctx, args)
+
+    }).finally(function () {
+      queue.shift()
+      if (queue.length > 0) {
+        queue[0].resolve()
+      }
+
+    })
+  }
+  fn1.name = fn.name + 'Serial'
+
+  var fn2 = function () {
+    var ctx = this
     var args = Array.prototype.slice.call(arguments)
 
     var originalCallback
@@ -141,7 +171,7 @@ function makeSerial(fn) {
         }
       }
 
-      fn.apply(self, args.concat([callback]))
+      fn.apply(ctx, args.concat([callback]))
 
       return deferred.promise
 
@@ -156,6 +186,9 @@ function makeSerial(fn) {
 
     }).done()
   }
+  fn2.name = fn.name + 'Serial'
+
+  return opts.returnPromise ? fn1 : fn2
 }
 
 
