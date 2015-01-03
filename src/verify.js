@@ -65,6 +65,7 @@ var functions = {
   EPOBCColorDefinition: createInstanceCheck(function () { return require('./EPOBCColorDefinition') }),
   OperationalTx: createInstanceCheck(function () { return require('./OperationalTx') }),
   Transaction: createInstanceCheck(function () { return require('./bitcoin').Transaction }),
+  TransactionBuilder: createInstanceCheck(function () { return require('./bitcoin').TransactionBuilder }),
   UncoloredColorDefinition: createInstanceCheck(function () { return require('./UncoloredColorDefinition') })
 }
 
@@ -92,6 +93,7 @@ var expected = {
   EPOBCColorDefinition: 'EPOBCColorDefinition',
   OperationalTx: 'OperationalTx',
   Transaction: 'Transaction',
+  TransactionBuilder: 'TransactionBuilder',
   UncoloredColorDefinition: 'UncoloredColorDefinition'
 }
 
