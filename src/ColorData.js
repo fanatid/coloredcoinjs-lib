@@ -250,12 +250,13 @@ ColorData.prototype.getTxColorValues = function (tx, colorDefinition, getTxFn, o
   verify.function(cb)
 
   var self = this
-  var getColorValue = Q.nbind(self.getColorValue, self)
+  var getCoinColorValue = Q.nbind(self.getCoinColorValue, self)
 
   var promise
   if (opts.save) {
     promise = Q.all(tx.outs.map(function (output, outIndex) {
-      return getColorValue({txId: tx, outIndex: outIndex}, colorDefinition, getTxFn)
+      var coin = {txId: tx, outIndex: outIndex}
+      return getCoinColorValue(coin, colorDefinition, getTxFn)
     }))
 
   } else {
@@ -264,7 +265,7 @@ ColorData.prototype.getTxColorValues = function (tx, colorDefinition, getTxFn, o
         txId: bitcoin.util.hashEncode(input.hash),
         outIndex: input.index
       }
-      return getColorValue(coin, colorDefinition, getTxFn)
+      return getCoinColorValue(coin, colorDefinition, getTxFn)
 
     })).then(function (inColorValues) {
       return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn)
@@ -315,7 +316,7 @@ ColorData.prototype.getColorValuesForTx = function (tx, colorDefinition, getTxFn
       txId: bitcoin.util.hashEncode(input.hash),
       outIndex: input.index
     }
-    return Q.ninvoke(self, 'getColorValue', coin, colorDefinition, getTxFn)
+    return Q.ninvoke(self, 'getCoinColorValue', coin, colorDefinition, getTxFn)
   })
 
   Q.all(inColorValuesPromises).then(function (inColorValues) {

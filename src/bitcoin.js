@@ -60,8 +60,8 @@ bitcoin.util.getAddressesFromScript = function (script, network) {
 }
 
 bitcoin.getAddressesFromOutputScript = function () {
-  console.warn('bitcoin.getAddressFromOutputScript deprecated for removal ' +
-               'in v1.0.0, use bitcoin.util.getAddressFromScript')
+  console.warn('bitcoin.getAddressesFromOutputScript deprecated for removal ' +
+               'in v1.0.0, use bitcoin.util.getAddressesFromScript')
 
   return bitcoin.util.getAddressesFromScript.apply(this, Array.prototype.slice.call(arguments))
 }
