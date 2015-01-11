@@ -8,21 +8,21 @@ var Transaction = cclib.bitcoin.Transaction
 var stubs = require('./stubs')
 
 
-describe('bitcoin.getAddressesFromOutputScript', function () {
+describe('bitcoin.util.getAddressesFromScript', function () {
   var script
   var addresses
 
   it('pubkeyhash', function () {
     script = 'OP_DUP OP_HASH160 e004d13bb19caa402ab2de0418a784a8e3d0ce66 OP_EQUALVERIFY OP_CHECKSIG'
     script = Script.fromASM(script)
-    addresses = bitcoin.getAddressesFromOutputScript(script, bitcoin.networks.testnet)
+    addresses = bitcoin.util.getAddressesFromScript(script, bitcoin.networks.testnet)
     expect(addresses).to.deep.equal(['n1wTRjhqpRJ6faZtc1E3Y8xaHR21fzqJ4n'])
   })
 
   it('pubkey', function () {
     script = '02114842249da6ef0d22f0b943ecbfa61ca4b256850a337063b89ebe32f27b641e OP_CHECKSIG'
     script = Script.fromASM(script)
-    addresses = bitcoin.getAddressesFromOutputScript(script, bitcoin.networks.testnet)
+    addresses = bitcoin.util.getAddressesFromScript(script, bitcoin.networks.testnet)
     expect(addresses).to.deep.equal(['n1wTRjhqpRJ6faZtc1E3Y8xaHR21fzqJ4n'])
   })
 
@@ -30,14 +30,14 @@ describe('bitcoin.getAddressesFromOutputScript', function () {
     script = 'OP_2 02130362e2687bb6d090119aec775325326ce16bb333e58887324e1c04a83b754f ' +
 '02d8ec154637422ae2b8d5fe58f375bdc74feb54164ccd57d0f91b12a0c4f8b434 OP_2 OP_CHECKMULTISIG'
     script = Script.fromASM(script)
-    addresses = bitcoin.getAddressesFromOutputScript(script, bitcoin.networks.testnet)
+    addresses = bitcoin.util.getAddressesFromScript(script, bitcoin.networks.testnet)
     expect(addresses).to.deep.equal(['n11rxder79nUtQuvNpLyUBkTTuP9acFydy', 'n2Q119tNwnCopKDn1cyLaAzNAbSSWTfWSb'])
   })
 
   it('scripthash', function () {
     script = 'OP_HASH160 e004d13bb19caa402ab2de0418a784a8e3d0ce66 OP_EQUAL'
     script = Script.fromASM(script)
-    addresses = bitcoin.getAddressesFromOutputScript(script, bitcoin.networks.testnet)
+    addresses = bitcoin.util.getAddressesFromScript(script, bitcoin.networks.testnet)
     expect(addresses).to.deep.equal(['2NDfj7y3LAkgaBRRFgfY8ko6SnHvC2gYdyb'])
   })
 })
@@ -124,6 +124,7 @@ describe('bitcoin.Transaction', function () {
       tx.ensureInputValues(stubs.getTxStub([]), function (error, newTx) {
         expect(error).to.be.null
         tx.ensured = true
+        tx.ins[0].prevTx = null
         tx.ins[0].value = 0
         expect(newTx).to.deep.equal(tx)
         done()

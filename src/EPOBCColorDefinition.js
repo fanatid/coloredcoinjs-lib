@@ -445,7 +445,7 @@ EPOBCColorDefinition.makeComposedTx = function (operationalTx, cb) {
 
     var fee = composedTx.estimateRequiredFee()
     if (uncoloredNeeded.plus(fee).getValue() <= 0) {
-      return uncoloredNeeded.neg().minus(fee)
+      return uncoloredNeeded.plus(fee).neg()
     }
 
     return Q.ninvoke(operationalTx, 'selectCoins', uncoloredNeeded, composedTx).spread(function (coins, coinsValue) {

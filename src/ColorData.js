@@ -1,5 +1,6 @@
 var Q = require('q')
 var _ = require('lodash')
+var LRU = require('lru-cache')
 
 var ColorValue = require('./ColorValue')
 var bitcoin = require('./bitcoin')
@@ -23,11 +24,20 @@ var util = require('./util')
 /**
  * @class ColorData
  * @param {ColorDataStorage} storage
+ * @param {Object} [opts]
+ * @param {number} [opts.cacheSize=100]
  */
-function ColorData(storage) {
+function ColorData(storage, opts) {
+  opts = _.extend({
+    cacheSize: 1000
+  }, opts)
+
   verify.ColorDataStorage(storage)
+  verify.object(opts)
+  verify.number(opts.cacheSize)
 
   this._storage = storage
+  this._cachedValues = LRU({max: opts.cacheSize})
 }
 
 /**
@@ -48,11 +58,12 @@ ColorData.prototype.fetchColorValue = function (txId, outIndex, colorDefinition)
     txId: txId,
     outIndex: outIndex
   })
-  if (colorValue === null) {
-    return null
+
+  if (colorValue !== null) {
+    colorValue = new ColorValue(colorDefinition, colorValue)
   }
 
-  return new ColorValue(colorDefinition, colorValue)
+  return colorValue
 }
 
 /**
@@ -83,7 +94,7 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
 
   return Q.fcall(function () {
     var inColorValues = tx.ins.map(function (input) {
-      var inputTxId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
+      var inputTxId = bitcoin.util.hashEncode(input.hash)
       return self.fetchColorValue(inputTxId, input.index, colorDefinition)
     })
 
@@ -120,26 +131,33 @@ ColorData.prototype.scanTx = function (tx, outputIndices, colorDefinition, getTx
  * For a given txId, outIndex and colorDefinition return ColorValue or null if
  *  colorDefinition not represented in given txOut
  *
- * @param {(string|external:bitcoinjs-lib.Transaction)} txId
- * @param {number} outIndex
+ * @param {Object} coin
+ * @param {(string|external:bitcoinjs-lib.Transaction)} coin.txId
+ * @param {number} coin.outIndex
  * @param {ColorDefinition} colorDefinition
  * @param {getTxFn} getTxFn
  * @param {ColorData~getColorValueCallback} cb
  */
-ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, getTxFn, cb) {
+ColorData.prototype.getCoinColorValue = function (coin, colorDefinition, getTxFn, cb) {
+  verify.object(coin)
+
   var extraTx = {}
-  if (txId instanceof bitcoin.Transaction) {
-    extraTx[txId.getId()] = txId
-    txId = txId.getId()
+  if (coin.txId instanceof bitcoin.Transaction) {
+    extraTx[coin.txId.getId()] = coin.txId
+    coin.txId = coin.txId.getId()
   }
 
-  verify.txId(txId)
-  verify.number(outIndex)
+  verify.txId(coin.txId)
+  verify.number(coin.outIndex)
   verify.ColorDefinition(colorDefinition)
   verify.function(getTxFn)
   verify.function(cb)
 
   var self = this
+  var cacheKey = [coin.txId, coin.outIndex, colorDefinition.getColorId()].join(',')
+  if (self._cachedValues.has(cacheKey)) {
+    return cb(null, self._cachedValues.get(cacheKey))
+  }
 
   return Q.fcall(function () {
     var getAffectingInputs = Q.nbind(colorDefinition.constructor.getAffectingInputs)
@@ -160,7 +178,7 @@ ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, g
           var promise = Q()
 
           inputs.forEach(function (input) {
-            var inputTxId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
+            var inputTxId = bitcoin.util.hashEncode(input.hash)
             promise = promise.then(function () {
               return processOne(inputTxId, input.index)
             })
@@ -173,15 +191,35 @@ ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, g
       })
     }
 
-    return processOne(txId, outIndex)
+    return processOne(coin.txId, coin.outIndex)
 
   }).then(function () {
-    return self.fetchColorValue(txId, outIndex, colorDefinition)
+    var colorValue = self.fetchColorValue(coin.txId, coin.outIndex, colorDefinition)
+    self._cachedValues.set(cacheKey, colorValue)
+    return colorValue
 
-  }).done(function (colorValue) { cb(null, colorValue) }, function (error) { cb(error) })
+  }).done(
+    function (colorValue) { cb(null, colorValue) },
+    function (error) { cb(error) }
+  )
 }
 
-ColorData.prototype.getColorValue = util.makeSerial(ColorData.prototype.getColorValue)
+ColorData.prototype.getCoinColorValue = util.makeSerial(ColorData.prototype.getCoinColorValue)
+
+/**
+ * @param {(string|external:bitcoinjs-lib.Transaction)} txId
+ * @param {number} outIndex
+ * @param {ColorDefinition} colorDefinition
+ * @param {getTxFn} getTxFn
+ * @param {ColorData~getColorValueCallback} cb
+ */
+ColorData.prototype.getColorValue = function (txId, outIndex, colorDefinition, getTxFn, cb) {
+  console.warn('ColorData.getColorValue deprecated for removal in v1.0.0, ' +
+               'use Colordata.getCoinColorValue')
+
+  var coin = {txId: txId, outIndex: outIndex}
+  return this.getCoinColorValue(coin, colorDefinition, getTxFn, cb)
+}
 
 /**
  * @callback ColorData~getTxColorValuesCallback
@@ -217,13 +255,16 @@ ColorData.prototype.getTxColorValues = function (tx, colorDefinition, getTxFn, o
   var promise
   if (opts.save) {
     promise = Q.all(tx.outs.map(function (output, outIndex) {
-      return getColorValue(tx, outIndex, colorDefinition, getTxFn)
+      return getColorValue({txId: tx, outIndex: outIndex}, colorDefinition, getTxFn)
     }))
 
   } else {
     promise = Q.all(tx.ins.map(function (input) {
-      var inputTxId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
-      return getColorValue(inputTxId, input.index, colorDefinition, getTxFn)
+      var coin = {
+        txId: bitcoin.util.hashEncode(input.hash),
+        outIndex: input.index
+      }
+      return getColorValue(coin, colorDefinition, getTxFn)
 
     })).then(function (inColorValues) {
       return Q.ninvoke(colorDefinition, 'runKernel', tx, inColorValues, getTxFn)
@@ -232,7 +273,19 @@ ColorData.prototype.getTxColorValues = function (tx, colorDefinition, getTxFn, o
 
   }
 
-  promise.done(function (outColorValues) { cb(null, outColorValues) }, function (error) { cb(error) })
+  promise.then(function (outColorValues) {
+    var txId = tx.getId()
+    outColorValues.forEach(function (colorValue, index) {
+      var cacheKey = [txId, index, colorDefinition.getColorId()].join(',')
+      self._cachedValues.set(cacheKey, colorValue)
+    })
+
+    return outColorValues
+
+  }).done(
+    function (outColorValues) { cb(null, outColorValues) },
+    function (error) { cb(error) }
+  )
 }
 
 /**
@@ -258,8 +311,11 @@ ColorData.prototype.getColorValuesForTx = function (tx, colorDefinition, getTxFn
   var self = this
 
   var inColorValuesPromises = tx.ins.map(function (input) {
-    var txId = Array.prototype.reverse.call(new Buffer(input.hash)).toString('hex')
-    return Q.ninvoke(self, 'getColorValue', txId, input.index, colorDefinition, getTxFn)
+    var coin = {
+      txId: bitcoin.util.hashEncode(input.hash),
+      outIndex: input.index
+    }
+    return Q.ninvoke(self, 'getColorValue', coin, colorDefinition, getTxFn)
   })
 
   Q.all(inColorValuesPromises).then(function (inColorValues) {

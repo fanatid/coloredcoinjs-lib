@@ -22,14 +22,14 @@ module.exports = function (grunt) {
       }
     },
     jshint: {
-      src: ['Gruntfile.js', 'src', 'test'],
+      src: ['Gruntfile.js', 'src/*.js', 'test/*.js'],
       options: {
         jshintrc: true,
         reporter: require('jshint-stylish')
       }
     },
     jscs: {
-      src: ['Gruntfile.js', 'src', 'test'],
+      src: ['Gruntfile.js', 'src/*.js', 'test/*.js'],
       options: {
         config: '.jscsrc'
       }

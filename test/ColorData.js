@@ -120,7 +120,8 @@ describe('ColorData', function () {
   describe('getColorValue', function () {
     it('blockchainState.getTx return error', function (done) {
       cData.fetchColorValue = function () { return null }
-      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([]), function (error, colorValue) {
+      var coin = {txId: tx1.getId(), outIndex: 0}
+      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]), function (error, colorValue) {
         expect(error).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
         expect(colorValue).to.be.undefined
         done()
@@ -129,7 +130,8 @@ describe('ColorData', function () {
 
     it('already in store', function (done) {
       cdStorage.add({colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15})
-      cData.getColorValue(tx1.getId(), 0, epobc, stubs.getTxStub([]), function (error, colorValue) {
+      var coin = {txId: tx1.getId(), outIndex: 0}
+      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]), function (error, colorValue) {
         expect(colorValue).to.be.instanceof(cclib.ColorValue)
         expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
         expect(colorValue.getValue()).to.be.equal(15)

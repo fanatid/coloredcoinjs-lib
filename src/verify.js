@@ -4,7 +4,7 @@ var VerifyTypeError = require('./errors').VerifyTypeError
 
 
 /**
- * @param {function}
+ * @param {function} importFn
  * @return {function}
  */
 function createInstanceCheck(importFn) {
