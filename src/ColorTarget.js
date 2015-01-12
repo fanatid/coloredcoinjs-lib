@@ -16,7 +16,7 @@ function ColorTarget(script, colorValue) {
 }
 
 /**
- * @return {Buffer}
+ * @return {string}
  */
 ColorTarget.prototype.getScript = function () {
   return this.script

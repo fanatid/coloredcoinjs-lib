@@ -2,6 +2,9 @@ var _ = require('lodash')
 
 var errors = require('./errors')
 var verify = require('./verify')
+var varIntSize = require('./bitcoin').bufferutils.varIntSize
+var getUncolored = require('./ColorDefinitionManager').getUncolored
+var ColorValue = require('./ColorValue')
 
 
 /**
@@ -153,11 +156,25 @@ ComposedTx.prototype.estimateSize = function (extra) {
   verify.number(extra.txOuts)
   verify.number(extra.bytes)
 
-  var size = (181 * (this.txIns.length + extra.txIns) +
-              34 * (this.txOuts.length + extra.txOuts) +
-              10 + extra.bytes)
+  // 40 -- txId, outIndex, sequence
+  // 107 -- P2PKH scriptSig length (the most common redeem script)
+  var txInSize = (40 + varIntSize(107) + 107) * (this.txIns.length + extra.txIns)
 
-  return size
+  // 8 -- output value
+  // 25 -- P2PKH length (the most common)
+  var txOutSize = this.txOuts.reduce(function (a, x) {
+    return a + (8 + varIntSize(x.script.length / 2) + x.script.length / 2)
+
+  }, (8 + varIntSize(25) + 25) * extra.txOuts)
+
+  return (
+    8 +
+    extra.bytes +
+    varIntSize(this.txIns + extra.txIns) +
+    varIntSize(this.txOuts + extra.txOuts) +
+    txInSize +
+    txOutSize
+  )
 }
 
 /**
@@ -167,24 +184,19 @@ ComposedTx.prototype.estimateSize = function (extra) {
  * @param {number} [extra.txIns=0]
  * @param {number} [extra.txOuts=1]
  * @param {number} [extra.bytes=0]
- * @return {number}
+ * @return {ColorValue}
  */
 ComposedTx.prototype.estimateRequiredFee = function (extra) {
-  extra = _.extend({
-    txIns:  0,
-    txOuts: 1,
-    bytes:  0
-  }, extra)
+  var txSize = this.estimateSize(extra)
+  var txFee = this.operationalTx.getRequiredFee(txSize)
 
-  verify.object(extra)
-  verify.number(extra.txIns)
-  verify.number(extra.txOuts)
-  verify.number(extra.bytes)
+  // https://github.com/bitcoin/bitcoin/blob/v0.9.2/src/main.cpp#L55
+  // int64_t CTransaction::nMinRelayTxFee = 1000;
+  if (txFee.getValue() < 1000) {
+    txFee = new ColorValue(getUncolored(), 1000)
+  }
 
-  var size = this.estimateSize(extra)
-  var fee = this.operationalTx.getRequiredFee(size)
-
-  return fee
+  return txFee
 }
 
 

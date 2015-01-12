@@ -6,10 +6,10 @@ var bitcoin = cclib.bitcoin
 
 describe('coloredcoinjs-lib (issuance)', function () {
   it('EPOBC', function (done) {
-    // http://tbtc.blockr.io/tx/info/b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170
+    // http://tbtc.blockr.io/tx/info/7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d
 
-    var privkey1 = bitcoin.ECKey.fromWIF('KybkeESGGzvx1qLrjk7arngeD8iRXeoxYLrbAw4hFdW9EETB1oeY')
-    var privkey2 = bitcoin.ECKey.fromWIF('L2xR4uHNeQ9HQaRWxGvKkbUScDPewXrNsbdu3U7JfCanyxWGBNp8')
+    var privkey1 = bitcoin.ECKey.fromWIF('KwKLWrr38pYmTkvGZ1LZnf3igXjx8M4GbsJGG7WYX5KyFQ4qnqMU')
+    var privkey2 = bitcoin.ECKey.fromWIF('L5hQy1HjWsz3DXSAoSfk5VtB87WvYiZ5WWwfWJG5yyQHHYqWzHrb')
 
     var colorValue = new cclib.ColorValue(cclib.ColorDefinitionManager.getGenesis(), 500000)
     var colorTarget = new cclib.ColorTarget(
@@ -22,9 +22,9 @@ describe('coloredcoinjs-lib (issuance)', function () {
       coins: [
         {
           colorId: 0,
-          txId: '5706b46de635475fb98193731d2f2faa6eda3722683dedd8d2fdd0f218a63e68',
+          txId: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
           outIndex: 1,
-          value: 5000000
+          value: 1000000
         }
       ],
       changeAddresses: {
@@ -50,12 +50,12 @@ describe('coloredcoinjs-lib (issuance)', function () {
 
       var tx = txb.build()
       expect(tx.toHex()).to.equal([
-        '0100000001683ea618f2d0fdd2d8ed3d682237da6eaa2f2f1d739381b95f4735e66db40657010000',
-        '006b483045022100e88ccc1fa4e2583681295f3fcd1393d7ec4646b1db4644ca3c66fe56023a009c',
-        '02201328100212f52b24f6409055579b49ad00fc0c8736be57675ff1f8d83ba73f74012103c5d2e8',
-        '4f7b1b2676496d5d1839a25a93a89bc951ea1830a1dd0f6e7c612154b5250000000220a107000000',
-        '00001976a9148733f3912b68afe15c3a290d12906f9ce072087288ac20aa4400000000001976a914',
-        '898b602d4734940fa9a87e998b8715f19f4dfee588ac00000000'
+        '0100000001ce4d3bbb6d3175426cbbbad3cbd02959cd589997fe9dad2794b92e5188366c03010000',
+        '006b483045022100b7911bf5831b096c837af158bd5de0671516b6439bf8a05419605345aa40c702',
+        '022053b335531ca89936aaeb8c2aa27660f225b75f39f383e9a62235941504be09f8012103671691',
+        'cbe2ac26680ed23a489a67bd3107a5dd1bc830932166626e1bc2cdec2a250000000220a107000000',
+        '00001976a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac389d0700000000001976a914',
+        '9c271ef60474f2cce2db555d92deab35d9158ffd88ac00000000'
       ].join(''))
 
       done()

@@ -1,6 +1,29 @@
+var inherits = require('util').inherits
+
 var _ = require('lodash')
 
-var verify = require('../src/index').verify
+var cclib = require('../src/index')
+var getUncolored = cclib.ColorDefinitionManager.getUncolored
+var ColorValue = cclib.ColorValue
+
+
+/**
+ * Stub for testing fee related method
+ *
+ * @class FeeOperationalTx
+ * @extends OperationalTx
+ * @param {number} feeSize
+ */
+function FeeOperationalTx(feeSize) {
+  cclib.OperationalTx.call(this)
+  this.feeSize = new ColorValue(getUncolored(), feeSize)
+}
+
+inherits(FeeOperationalTx, cclib.OperationalTx)
+
+FeeOperationalTx.prototype.getRequiredFee = function () {
+  return this.feeSize
+}
 
 
 /**
@@ -10,29 +33,24 @@ var verify = require('../src/index').verify
  * @return {function}
  */
 function getTxStub(transactions) {
-  verify.array(transactions)
-  transactions.forEach(verify.Transaction)
+  cclib.verify.array(transactions)
+  transactions.forEach(cclib.verify.Transaction)
 
-  var txMap = {}
+  var txMap = _.zipObject(transactions.map(function (tx) {
+    return [tx.getId(), tx.clone()]
+  }))
 
-  transactions.forEach(function (tx) {
-    txMap[tx.getId()] = tx.clone()
-  })
-
-  function getTx(txId, cb) {
+  return function getTx(txId, cb) {
     if (_.isUndefined(txMap[txId])) {
-      cb(new Error('notFoundTx'))
-
-    } else {
-      cb(null, txMap[txId].clone())
-
+      return cb(new Error('notFoundTx'))
     }
-  }
 
-  return getTx
+    cb(null, txMap[txId].clone())
+  }
 }
 
 
 module.exports = {
+  FeeOperationalTx: FeeOperationalTx,
   getTxStub: getTxStub
 }

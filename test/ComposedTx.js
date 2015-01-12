@@ -1,8 +1,7 @@
-var inherits = require('util').inherits
-
 var expect = require('chai').expect
 
 var cclib = require('../src/index')
+var stubs = require('./stubs')
 
 
 describe('ComposedTx', function () {
@@ -10,7 +9,6 @@ describe('ComposedTx', function () {
 
   beforeEach(function () {
     var operationalTx = new cclib.OperationalTx()
-
     tx = new cclib.ComposedTx(operationalTx)
   })
 
@@ -39,16 +37,20 @@ describe('ComposedTx', function () {
 
   it('estimateSize', function () {
     var size = tx.estimateSize({txIns: 2, txOuts: 3, bytes: 99})
-    expect(size).to.equal(573)
+    expect(size).to.equal(507)
   })
 
-  it('estimateRequiredFee', function () {
-    function TestOperationalTx() { cclib.OperationalTx.call(this) }
-    inherits(TestOperationalTx, cclib.OperationalTx)
-    TestOperationalTx.prototype.getRequiredFee = function (size) { return size * 2 }
-    var operationalTx = new TestOperationalTx()
-    tx = new cclib.ComposedTx(operationalTx)
-    var fee = tx.estimateRequiredFee()
-    expect(fee).to.equal(88)
+  it('estimateRequiredFee less than 1000', function () {
+    var opTx = new stubs.FeeOperationalTx(999)
+    tx = new cclib.ComposedTx(opTx)
+    var feeSize = tx.estimateRequiredFee().getValue()
+    expect(feeSize).to.equal(1000)
+  })
+
+  it('estimateRequiredFee more than 1000', function () {
+    var opTx = new stubs.FeeOperationalTx(1001)
+    tx = new cclib.ComposedTx(opTx)
+    var feeSize = tx.estimateRequiredFee().getValue()
+    expect(feeSize).to.equal(1001)
   })
 })
