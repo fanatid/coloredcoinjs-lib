@@ -120,8 +120,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
-  grunt.loadNpmTasks('grunt-mocha-istanbul')
   grunt.loadNpmTasks('grunt-jscs')
+  grunt.loadNpmTasks('grunt-mocha-istanbul')
   grunt.loadNpmTasks('grunt-mocha-phantomjs')
   grunt.loadNpmTasks('grunt-mocha-test')
 
@@ -129,6 +129,7 @@ module.exports = function (grunt) {
   grunt.registerTask('compile_test', ['browserify:test'])
   grunt.registerTask('coverage', ['mocha_istanbul:coverage'])
   grunt.registerTask('coveralls', ['mocha_istanbul:coveralls'])
+  grunt.registerTask('lint', ['jshint', 'jscs'])
   grunt.registerTask('test', ['mochaTest'])
   grunt.registerTask('test_phantomjs', ['compile_test', 'connect', 'mocha_phantomjs'])
 }

@@ -2,6 +2,9 @@ language: node_js
 before_install:
   - npm install -g grunt-cli
 node_js:
-  - "0.11"
   - "0.10"
-script: "grunt jshint jscs compile test_phantomjs coveralls"
+env:
+  - TEST_SUITE=compile
+  - TEST_SUITE=coveralls
+  - TEST_SUITE=lint
+script: "grunt $TEST_SUITE"
