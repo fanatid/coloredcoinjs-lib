@@ -1,62 +1,62 @@
 {
-  "name": "coloredcoinjs-lib",
-  "version": "0.3.4",
-  "description": "",
-  "main": "./src/index.js",
-  "keywords": [],
-  "contributors": [
-    {
-      "name": "Fomichev Kirill",
-      "email": "fanatid@ya.ru"
-    }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/chromaway/coloredcoinjs-lib"
-  },
-  "dependencies": {
-    "bitcoinjs-lib": "1.4.3",
-    "bs58": "2.0.1",
-    "errno": "0.1.1",
-    "localStorage": "1.0.3",
-    "lodash": "2.4.1",
-    "lru-cache": "2.5.0",
-    "q": "1.1.2",
-    "store": "1.3.17"
-  },
-  "devDependencies": {
-    "browser-request": "0.3.3",
-    "chai": "1.10.0",
-    "coveralls": "2.11.2",
-    "grunt": "0.4.5",
-    "grunt-browserify": "3.2.1",
-    "grunt-contrib-clean": "0.6.0",
-    "grunt-contrib-connect": "0.9.0",
-    "grunt-contrib-jshint": "0.10.0",
-    "grunt-contrib-uglify": "0.7.0",
-    "grunt-contrib-watch": "0.6.1",
-    "grunt-jscs": "1.1.0",
-    "grunt-mocha-istanbul": "2.2.0",
-    "grunt-mocha-phantomjs": "0.6.0",
-    "grunt-mocha-test": "0.12.6",
-    "jshint-stylish": "1.0.0",
-    "mocha": "2.1.0",
-    "request": "2.51.0"
-  },
   "browser": {
     "request": "browser-request"
-  },
+  }, 
+  "name": "coloredcoinjs-lib", 
+  "contributors": [
+    {
+      "name": "Fomichev Kirill", 
+      "email": "fanatid@ya.ru"
+    }
+  ], 
   "testling": {
-    "harness": "mocha-bdd",
-    "files": "test/*.js",
+    "files": "test/*.js", 
+    "harness": "mocha-bdd", 
     "browsers": [
-      "chrome/20..latest",
-      "firefox/21..latest",
-      "opera/15..latest",
-      "safari/latest",
-      "iphone/6..latest",
-      "ipad/6..latest",
+      "chrome/20..latest", 
+      "firefox/21..latest", 
+      "opera/15..latest", 
+      "safari/latest", 
+      "iphone/6..latest", 
+      "ipad/6..latest", 
       "android-browser/4.2..latest"
     ]
-  }
+  }, 
+  "repository": {
+    "url": "git://github.com/chromaway/coloredcoinjs-lib", 
+    "type": "git"
+  }, 
+  "version": "0.3.5", 
+  "dependencies": {
+    "bs58": "2.0.1", 
+    "lodash": "2.4.1", 
+    "bitcoinjs-lib": "1.4.3", 
+    "errno": "0.1.1", 
+    "q": "1.1.2", 
+    "localStorage": "1.0.3", 
+    "store": "1.3.17", 
+    "lru-cache": "2.5.0"
+  }, 
+  "keywords": [], 
+  "devDependencies": {
+    "mocha": "2.1.0", 
+    "grunt-mocha-phantomjs": "0.6.0", 
+    "grunt-contrib-watch": "0.6.1", 
+    "coveralls": "2.11.2", 
+    "grunt-browserify": "3.2.1", 
+    "grunt-contrib-connect": "0.9.0", 
+    "jshint-stylish": "1.0.0", 
+    "grunt-contrib-jshint": "0.10.0", 
+    "chai": "1.10.0", 
+    "grunt-mocha-test": "0.12.6", 
+    "grunt-contrib-uglify": "0.7.0", 
+    "browser-request": "0.3.3", 
+    "grunt-jscs": "1.1.0", 
+    "request": "2.51.0", 
+    "grunt-contrib-clean": "0.6.0", 
+    "grunt-mocha-istanbul": "2.2.0", 
+    "grunt": "0.4.5"
+  }, 
+  "main": "./src/index.js", 
+  "description": ""
 }
