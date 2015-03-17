@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/chromaway/coloredcoinjs-lib"
+    "url": "git://github.com/chromaway/coloredcoinjs-lib"
   },
   "dependencies": {
     "bitcoinjs-lib": "1.4.3",
