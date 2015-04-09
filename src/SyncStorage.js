@@ -39,7 +39,7 @@ var verify = require('./verify')
 function SyncStorage(opts) {
   opts = _.extend({
     globalPrefix: 'cc_',
-    store: store
+    store: store,
   }, opts)
 
   verify.object(opts)
@@ -50,7 +50,7 @@ function SyncStorage(opts) {
   verify.function(opts.store.remove)
 
   this.globalPrefix = opts.globalPrefix
-  this.store = store
+  this.store = opts.store
 }
 
 
