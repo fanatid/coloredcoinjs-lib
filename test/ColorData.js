@@ -59,10 +59,12 @@ describe('ColorData', function () {
     })
 
     it('runKernel return error', function (done) {
-      epobc.runKernel = function () { _.last(arguments)('error.runKernel') }
+      epobc.runKernel = function () {
+        _.last(arguments)(new Error('error.runKernel'))
+      }
       epobc.genesis.txId = tx1.getId()
       cData.scanTx(tx1, [], epobc, stubs.getTxStub([]), function (error) {
-        expect(error).to.equal('error.runKernel')
+        expect(error.message).to.equal('error.runKernel')
         done()
       })
     })
