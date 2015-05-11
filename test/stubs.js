@@ -33,9 +33,6 @@ FeeOperationalTx.prototype.getRequiredFee = function () {
  * @return {function}
  */
 function getTxStub(transactions) {
-  cclib.verify.array(transactions)
-  transactions.forEach(cclib.verify.Transaction)
-
   var txMap = _.zipObject(transactions.map(function (tx) {
     return [tx.getId(), tx.clone()]
   }))

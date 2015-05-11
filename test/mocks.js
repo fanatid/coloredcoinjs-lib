@@ -1,6 +1,5 @@
 var cclib = require('../lib/index')
 var Transaction = cclib.bitcoin.Transaction
-var verify = cclib.verify
 
 
 /**
@@ -13,14 +12,6 @@ var verify = cclib.verify
  * @return {transaction.Transaction}
  */
 function createTx(txId, inputs, outputs, inputSequenceIndices) {
-  verify.txId(txId)
-  verify.array(inputs)
-  inputs.forEach(verify.number)
-  verify.array(outputs)
-  outputs.forEach(verify.number)
-  verify.array(inputSequenceIndices)
-  inputSequenceIndices.forEach(verify.number)
-
   var tx = new Transaction()
 
   tx.ensured = true
