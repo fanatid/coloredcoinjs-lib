@@ -1,7 +1,7 @@
 var expect = require('chai').expect
 var bitcoin = require('bitcoinjs-lib')
 
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 var Script = cclib.bitcoin.Script
 var Transaction = cclib.bitcoin.Transaction
 

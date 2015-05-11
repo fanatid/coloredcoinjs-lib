@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 var errors = cclib.errors
 var ColorDefinition = cclib.ColorDefinition
 var ColorValue = cclib.ColorValue

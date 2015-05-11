@@ -2,7 +2,7 @@ var expect = require('chai').expect
 
 var _ = require('lodash')
 
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 var stubs = require('./stubs')
 
 

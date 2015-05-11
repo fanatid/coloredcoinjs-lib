@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 
 
 describe('ColorDefinitionStorage', function () {

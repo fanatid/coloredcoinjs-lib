@@ -2,7 +2,7 @@ var inherits = require('util').inherits
 
 var _ = require('lodash')
 
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 var getUncolored = cclib.ColorDefinitionManager.getUncolored
 var ColorValue = cclib.ColorValue
 

@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 var mocks = require('./mocks')
 var stubs = require('./stubs')

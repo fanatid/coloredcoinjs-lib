@@ -1,7 +1,7 @@
 var expect = require('chai').expect
 
-var cclib = require('../src/index')
-var util = require('../src/util')
+var cclib = require('../lib/index')
+var util = require('../lib/util')
 
 
 describe('util', function () {

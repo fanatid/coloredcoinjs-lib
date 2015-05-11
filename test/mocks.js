@@ -1,4 +1,4 @@
-var cclib = require('../src/index')
+var cclib = require('../lib/index')
 var Transaction = cclib.bitcoin.Transaction
 var verify = cclib.verify
 

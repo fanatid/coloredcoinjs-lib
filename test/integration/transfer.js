@@ -1,6 +1,6 @@
 var expect = require('chai').expect
 
-var cclib = require('../../src')
+var cclib = require('../../lib')
 var bitcoin = cclib.bitcoin
 
 
