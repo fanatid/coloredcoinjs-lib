@@ -14,4 +14,4 @@ JavaScript Colored Coins library for node.js and browsers.
 
 Code released under [the MIT license](LICENSE).
 
-Copyright 2015 Chromaway AB
+Copyright 2014-2015 Chromaway AB
