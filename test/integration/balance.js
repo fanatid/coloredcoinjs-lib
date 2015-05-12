@@ -1,8 +1,8 @@
+/* global describe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../../lib')
 var helpers = require('../helpers')
-
 
 describe('coloredcoinjs-lib (balance)', function () {
   var colorDataStorage
@@ -18,7 +18,7 @@ describe('coloredcoinjs-lib (balance)', function () {
   })
 
   it('EPOBC', function (done) {
-    var epobc = new cclib.EPOBCColorDefinition.fromDesc(
+    var epobc = cclib.EPOBCColorDefinition.fromDesc(
       1, 'epobc:b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170:0:314325')
 
     var coin = {

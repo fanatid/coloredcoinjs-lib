@@ -1,3 +1,4 @@
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
@@ -6,7 +7,6 @@ var mocks = require('./mocks')
 var stubs = require('./stubs')
 
 var fixtures = require('./fixtures/EPOBCColorDefinition')
-
 
 describe('EPOBCColorDefinition', function () {
   var epobc
@@ -27,7 +27,7 @@ describe('EPOBCColorDefinition', function () {
 
   describe('fromDesc', function () {
     it('throw error', function () {
-      function fn() { EPOBCColorDefinition.fromDesc(1, 'obc:11:2:3') }
+      function fn () { EPOBCColorDefinition.fromDesc(1, 'obc:11:2:3') }
       expect(fn).to.throw(Error)
     })
 

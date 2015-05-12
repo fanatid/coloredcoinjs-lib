@@ -1,8 +1,8 @@
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
 var ColorTarget = cclib.ColorTarget
-
 
 describe('ColorTarget', function () {
   var uncolored

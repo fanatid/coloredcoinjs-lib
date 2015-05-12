@@ -1,8 +1,8 @@
+/* global describe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
 var EPOBCColorDefinition = cclib.EPOBCColorDefinition
-
 
 describe('ColorDefinitionManager', function () {
   var cdManager

@@ -1,8 +1,8 @@
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
 var UncoloredColorDefinition = cclib.UncoloredColorDefinition
-
 
 describe('UncoloredColorDefinition', function () {
   var colordef
@@ -22,12 +22,12 @@ describe('UncoloredColorDefinition', function () {
 
   describe('fromDesc', function () {
     it('throw error (wrong colorId)', function () {
-      function fn() { UncoloredColorDefinition.fromDesc(1, '') }
+      function fn () { UncoloredColorDefinition.fromDesc(1, '') }
       expect(fn).to.throw(Error)
     })
 
     it('throw error (bad desc)', function () {
-      function fn() { UncoloredColorDefinition.fromDesc(0, '1') }
+      function fn () { UncoloredColorDefinition.fromDesc(0, '1') }
       expect(fn).to.throw(Error)
     })
 

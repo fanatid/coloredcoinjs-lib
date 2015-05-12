@@ -6,7 +6,6 @@ var cclib = require('../lib/index')
 var getUncolored = cclib.ColorDefinitionManager.getUncolored
 var ColorValue = cclib.ColorValue
 
-
 /**
  * Stub for testing fee related method
  *
@@ -14,7 +13,7 @@ var ColorValue = cclib.ColorValue
  * @extends OperationalTx
  * @param {number} feeSize
  */
-function FeeOperationalTx(feeSize) {
+function FeeOperationalTx (feeSize) {
   cclib.OperationalTx.call(this)
   this.feeSize = new ColorValue(getUncolored(), feeSize)
 }
@@ -25,19 +24,18 @@ FeeOperationalTx.prototype.getRequiredFee = function () {
   return this.feeSize
 }
 
-
 /**
  * Stub for blockchain.BlockchainStateBase.getTx
  *
  * @param {bitcoinjs-lib.Transaction[]} transactions
  * @return {function}
  */
-function getTxStub(transactions) {
+function getTxStub (transactions) {
   var txMap = _.zipObject(transactions.map(function (tx) {
     return [tx.getId(), tx.clone()]
   }))
 
-  return function getTx(txId, cb) {
+  return function getTx (txId, cb) {
     if (_.isUndefined(txMap[txId])) {
       return cb(new Error('notFoundTx'))
     }
@@ -45,7 +43,6 @@ function getTxStub(transactions) {
     cb(null, txMap[txId].clone())
   }
 }
-
 
 module.exports = {
   FeeOperationalTx: FeeOperationalTx,

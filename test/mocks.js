@@ -1,7 +1,6 @@
 var cclib = require('../lib/index')
 var Transaction = cclib.bitcoin.Transaction
 
-
 /**
  * Mock for transaction.Transaction
  *
@@ -11,7 +10,7 @@ var Transaction = cclib.bitcoin.Transaction
  * @param {number[]} inputSequenceIndices
  * @return {transaction.Transaction}
  */
-function createTx(txId, inputs, outputs, inputSequenceIndices) {
+function createTx (txId, inputs, outputs, inputSequenceIndices) {
   var tx = new Transaction()
 
   tx.ensured = true
@@ -37,7 +36,6 @@ function createTx(txId, inputs, outputs, inputSequenceIndices) {
 
   return tx
 }
-
 
 module.exports = {
   createTx: createTx

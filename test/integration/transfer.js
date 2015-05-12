@@ -1,8 +1,8 @@
+/* global describe, it */
 var expect = require('chai').expect
 
 var cclib = require('../../lib')
 var bitcoin = cclib.bitcoin
-
 
 describe('coloredcoinjs-lib (transfer)', function () {
   it('uncolored', function (done) {
@@ -67,7 +67,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
     var privkey1 = bitcoin.ECKey.fromWIF('L5hQy1HjWsz3DXSAoSfk5VtB87WvYiZ5WWwfWJG5yyQHHYqWzHrb')
     var privkey2 = bitcoin.ECKey.fromWIF('L5CRjm3Nd1uUCHNcch6NrQ3ocVUVLUNcNf2KR4TLir2noKo9J8J3')
 
-    var colordef = new cclib.EPOBCColorDefinition.fromDesc(
+    var colordef = cclib.EPOBCColorDefinition.fromDesc(
       1, 'epobc:7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d:0:318050')
     var colorValue = new cclib.ColorValue(colordef, 100000)
     var colorTarget = new cclib.ColorTarget(

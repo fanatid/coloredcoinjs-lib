@@ -1,8 +1,8 @@
+/* global describe, it */
 var expect = require('chai').expect
 
 var cclib = require('../../lib')
 var bitcoin = cclib.bitcoin
-
 
 describe('coloredcoinjs-lib (issuance)', function () {
   it('EPOBC', function (done) {

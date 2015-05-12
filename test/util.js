@@ -1,8 +1,8 @@
+/* global describe, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
 var util = require('../lib/util')
-
 
 describe('util', function () {
   it('number2bitArray', function () {
@@ -40,7 +40,7 @@ describe('util', function () {
 
   it('debounce', function (done) {
     var called = 0
-    function f() { called += 1 }
+    function f () { called += 1 }
     var df = util.debounce(f, 100)
     df()
     setTimeout(df, 30)
@@ -51,7 +51,7 @@ describe('util', function () {
   })
 
   it('makeSerial', function (done) {
-    function A() {}
+    function A () {}
     A.prototype.f = util.makeSerial(function (value, cb) {
       expect(this.constructor.name).to.equal('A')
       setTimeout(function () { cb(value * 2) }, 100)

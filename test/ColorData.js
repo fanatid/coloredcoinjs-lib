@@ -1,10 +1,10 @@
+/* global describe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 
 var _ = require('lodash')
 
 var cclib = require('../lib/index')
 var stubs = require('./stubs')
-
 
 describe('ColorData', function () {
   var cdStorage
@@ -134,6 +134,7 @@ describe('ColorData', function () {
       cdStorage.add({colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15})
       var coin = {txId: tx1.getId(), outIndex: 0}
       cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]), function (error, colorValue) {
+        expect(error).to.be.null
         expect(colorValue).to.be.instanceof(cclib.ColorValue)
         expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
         expect(colorValue.getValue()).to.be.equal(15)

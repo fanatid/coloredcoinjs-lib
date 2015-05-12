@@ -4,7 +4,6 @@ var request = Promise.promisify(require('request'))
 
 var Transaction = require('../lib/index').bitcoin.Transaction
 
-
 /**
  * @callback getTx~callback
  * @param {?Error} error
@@ -16,7 +15,7 @@ var Transaction = require('../lib/index').bitcoin.Transaction
  * @param {string} txId
  * @param {getTx~callback} cb
  */
-function getTx(isTestnet, txId, cb) {
+function getTx (isTestnet, txId, cb) {
   var host = isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io'
   var url = 'http://' + host + '/api/v1/tx/raw/' + txId
 
@@ -40,14 +39,13 @@ function getTx(isTestnet, txId, cb) {
  * @param {string} txId
  * @param {getTx~callback} cb
  */
-function getMainnetTx(txId, cb) { getTx(false, txId, cb) }
+function getMainnetTx (txId, cb) { getTx(false, txId, cb) }
 
 /**
  * @param {string} txId
  * @param {getTx~callback} cb
  */
-function getTestnetTx(txId, cb) { getTx(true, txId, cb) }
-
+function getTestnetTx (txId, cb) { getTx(true, txId, cb) }
 
 module.exports = {
   getMainnetTx: getMainnetTx,

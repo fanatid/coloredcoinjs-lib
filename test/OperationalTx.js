@@ -1,7 +1,7 @@
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
-
 
 describe('OperationalTx', function () {
   var optx

@@ -1,8 +1,8 @@
+/* global describe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
 var ColorSet = cclib.ColorSet
-
 
 describe('ColorSet', function () {
   var cdStorage

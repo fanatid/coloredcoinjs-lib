@@ -1,8 +1,8 @@
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
 
 var cclib = require('../lib/index')
 var stubs = require('./stubs')
-
 
 describe('ComposedTx', function () {
   var tx
