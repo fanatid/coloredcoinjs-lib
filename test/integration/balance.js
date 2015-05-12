@@ -25,11 +25,12 @@ describe('coloredcoinjs-lib (balance)', function () {
       txId: '694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c',
       outIndex: 0
     }
-    colorData.getCoinColorValue(coin, epobc, helpers.getTestnetTx, function (err, colorValue) {
-      expect(err).to.be.null
-      expect(colorValue).to.be.instanceof(cclib.ColorValue)
-      expect(colorValue.getValue()).to.be.equal(100000)
-      done()
-    })
+
+    colorData.getCoinColorValue(coin, epobc, helpers.getTestnetTx)
+      .then(function (colorValue) {
+        expect(colorValue).to.be.instanceof(cclib.ColorValue)
+        expect(colorValue.getValue()).to.be.equal(100000)
+      })
+      .done(done, done)
   })
 })

@@ -1,9 +1,10 @@
 /* global describe, beforeEach, afterEach, it */
+/* globals Promise:true */
 var expect = require('chai').expect
 
-var _ = require('lodash')
+var Promise = require('bluebird')
 
-var cclib = require('../lib/index')
+var cclib = require('../lib')
 var stubs = require('./stubs')
 
 describe('ColorData', function () {
@@ -52,21 +53,23 @@ describe('ColorData', function () {
         outIndex: 1,
         value: 1
       })
-      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]), function (err) {
-        expect(err).to.be.null
-        done()
-      })
+      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]))
+        .done(done, done)
     })
 
     it('runKernel return error', function (done) {
       epobc.runKernel = function () {
-        _.last(arguments)(new Error('error.runKernel'))
+        return Promise.reject(new Error('error.runKernel'))
       }
       epobc.genesis.txId = tx1.getId()
-      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]), function (err) {
-        expect(err.message).to.equal('error.runKernel')
-        done()
-      })
+      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]))
+        .then(function () {
+          throw new Error('Unexpected behaviour')
+        })
+        .catch(function (err) {
+          expect(err.message).to.equal('error.runKernel')
+        })
+        .done(done, done)
     })
 
     it('index not in outputIndices', function (done) {
@@ -80,10 +83,8 @@ describe('ColorData', function () {
         outIndex: 0,
         value: 6
       })
-      cData.scanTx(tx2, [], epobc, stubs.getTxStub([tx1]), function (err) {
-        expect(err).to.be.null
-        done()
-      })
+      cData.scanTx(tx2, [], epobc, stubs.getTxStub([tx1]))
+        .done(done, done)
     })
 
     it('ColorDataStore.add throw error', function (done) {
@@ -93,11 +94,15 @@ describe('ColorData', function () {
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
       cdStorage.add({colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6})
       cdStorage.add = function () { throw new Error('error.scanTx') }
-      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]), function (err) {
-        expect(err).to.be.instanceof(Error)
-        expect(err.message).to.equal('error.scanTx')
-        done()
-      })
+      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]))
+        .then(function () {
+          throw new Error('Unexpected behaviour')
+        })
+        .catch(function (err) {
+          expect(err).to.be.instanceof(Error)
+          expect(err.message).to.equal('error.scanTx')
+        })
+        .done(done, done)
     })
 
     it('add record', function (done) {
@@ -106,16 +111,16 @@ describe('ColorData', function () {
       tx2.addInput(tx1.getId(), 0, 51 | (2 << 6))
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
       cdStorage.add({colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6})
-      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]), function (err) {
-        expect(err).to.be.null
-        var record = cdStorage.getValue({
-          colorId: 1,
-          txId: tx2.getId(),
-          outIndex: 0
+      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]))
+        .then(function () {
+          var record = cdStorage.getValue({
+            colorId: 1,
+            txId: tx2.getId(),
+            outIndex: 0
+          })
+          expect(record).to.equal(6)
         })
-        expect(record).to.equal(6)
-        done()
-      })
+        .done(done, done)
     })
   })
 
@@ -123,23 +128,26 @@ describe('ColorData', function () {
     it('blockchainState.getTx return error', function (done) {
       cData.fetchColorValue = function () { return null }
       var coin = {txId: tx1.getId(), outIndex: 0}
-      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]), function (err, colorValue) {
-        expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
-        expect(colorValue).to.be.undefined
-        done()
-      })
+      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]))
+        .then(function () {
+          throw new Error('Unexpected behaviour')
+        })
+        .catch(function (err) {
+          expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
+        })
+        .done(done, done)
     })
 
     it('already in store', function (done) {
       cdStorage.add({colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15})
       var coin = {txId: tx1.getId(), outIndex: 0}
-      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]), function (err, colorValue) {
-        expect(err).to.be.null
-        expect(colorValue).to.be.instanceof(cclib.ColorValue)
-        expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
-        expect(colorValue.getValue()).to.be.equal(15)
-        done()
-      })
+      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]))
+        .then(function (colorValue) {
+          expect(colorValue).to.be.instanceof(cclib.ColorValue)
+          expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
+          expect(colorValue.getValue()).to.be.equal(15)
+        })
+        .done(done, done)
     })
   })
 })

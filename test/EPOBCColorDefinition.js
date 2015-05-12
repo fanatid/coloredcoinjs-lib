@@ -1,7 +1,7 @@
 /* global describe, beforeEach, it */
 var expect = require('chai').expect
 
-var cclib = require('../lib/index')
+var cclib = require('../lib')
 var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 var mocks = require('./mocks')
 var stubs = require('./stubs')
@@ -182,11 +182,14 @@ describe('EPOBCColorDefinition', function () {
   describe('runKernel', function () {
     it('ensureInputValues return error', function (done) {
       tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      epobc.runKernel(tx1, [], stubs.getTxStub([]), function (err, result) {
-        expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
-        expect(result).to.be.undefined
-        done()
-      })
+      epobc.runKernel(tx1, [], stubs.getTxStub([]))
+        .then(function () {
+          throw new Error('Unexpected behaviour')
+        })
+        .catch(function (err) {
+          expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
+        })
+        .done(done, done)
     })
 
     fixtures.runKernel.forEach(function (f) {
@@ -205,15 +208,14 @@ describe('EPOBCColorDefinition', function () {
           return cv
         })
 
-        epobc.runKernel(tx1, colorValueSet, stubs.getTxStub([]), function (err, result) {
-          expect(err).to.be.null
-          expect(result).to.be.instanceof(Array)
+        epobc.runKernel(tx1, colorValueSet, stubs.getTxStub([]))
+          .then(function (result) {
+            expect(result).to.be.instanceof(Array)
 
-          result = result.map(function (cv) { return (cv === null ? null : cv.getValue()) })
-          expect(result).to.deep.equal(f.expect)
-
-          done()
-        })
+            result = result.map(function (cv) { return (cv === null ? null : cv.getValue()) })
+            expect(result).to.deep.equal(f.expect)
+          })
+          .done(done, done)
       })
     })
   })
@@ -221,29 +223,32 @@ describe('EPOBCColorDefinition', function () {
   describe('getAffectingInputs', function () {
     it('tag is null', function (done) {
       tx1.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      EPOBCColorDefinition.getAffectingInputs(tx1, [], stubs.getTxStub([]), function (err, inputs) {
-        expect(err).to.be.null
-        expect(inputs).to.deep.equal([])
-        done()
-      })
+      EPOBCColorDefinition.getAffectingInputs(tx1, [], stubs.getTxStub([]))
+        .then(function (inputs) {
+          expect(inputs).to.deep.equal([])
+        })
+        .done(done, done)
     })
 
     it('tag.isGenesis is true', function (done) {
       tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37)
-      EPOBCColorDefinition.getAffectingInputs(tx1, [], stubs.getTxStub([]), function (err, inputs) {
-        expect(err).to.be.null
-        expect(inputs).to.deep.equal([])
-        done()
-      })
+      EPOBCColorDefinition.getAffectingInputs(tx1, [], stubs.getTxStub([]))
+        .then(function (inputs) {
+          expect(inputs).to.deep.equal([])
+        })
+        .done(done, done)
     })
 
     it('ensureInputValues return error', function (done) {
       tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      EPOBCColorDefinition.getAffectingInputs(tx1, [], stubs.getTxStub([]), function (err, inputs) {
-        expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
-        expect(inputs).to.be.undefined
-        done()
-      })
+      EPOBCColorDefinition.getAffectingInputs(tx1, [], stubs.getTxStub([]))
+        .then(function () {
+          throw new Error('Unexpected behaviour')
+        })
+        .catch(function (err) {
+          expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
+        })
+        .done(done, done)
     })
 
     it('return [tx.ins[0]]', function (done) {
@@ -251,13 +256,13 @@ describe('EPOBCColorDefinition', function () {
       tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
       tx2.addInput(tx1.getId(), 0, 51 | (2 << 6))
       tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      EPOBCColorDefinition.getAffectingInputs(tx2, [0, 0], stubs.getTxStub([tx1]), function (err, inputs) {
-        expect(err).to.be.null
-        tx2.ins[0].prevTx = tx1
-        tx2.ins[0].value = 11
-        expect(inputs).to.deep.equal([tx2.ins[0]])
-        done()
-      })
+      EPOBCColorDefinition.getAffectingInputs(tx2, [0, 0], stubs.getTxStub([tx1]))
+        .then(function (inputs) {
+          tx2.ins[0].prevTx = tx1
+          tx2.ins[0].value = 11
+          expect(inputs).to.deep.equal([tx2.ins[0]])
+        })
+        .done(done, done)
     })
   })
 })

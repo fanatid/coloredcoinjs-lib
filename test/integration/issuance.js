@@ -33,32 +33,30 @@ describe('coloredcoinjs-lib (issuance)', function () {
       fee: 0
     })
 
-    cclib.EPOBCColorDefinition.composeGenesisTx(opTx, function (err, composedTx) {
-      if (err) throw err
-      expect(err).to.be.null
-      expect(composedTx).to.be.instanceof(cclib.ComposedTx)
+    cclib.EPOBCColorDefinition.composeGenesisTx(opTx)
+      .then(function (composedTx) {
+        expect(composedTx).to.be.instanceof(cclib.ComposedTx)
 
-      var txb = new bitcoin.TransactionBuilder()
-      composedTx.getTxIns().forEach(function (txIn) {
-        txb.addInput(txIn.txId, txIn.outIndex, txIn.sequence)
+        var txb = new bitcoin.TransactionBuilder()
+        composedTx.getTxIns().forEach(function (txIn) {
+          txb.addInput(txIn.txId, txIn.outIndex, txIn.sequence)
+        })
+        composedTx.getTxOuts().forEach(function (txOut) {
+          txb.addOutput(bitcoin.Script.fromHex(txOut.script), txOut.value)
+        })
+
+        txb.sign(0, privkey1)
+
+        var tx = txb.build()
+        expect(tx.toHex()).to.equal([
+          '0100000001ce4d3bbb6d3175426cbbbad3cbd02959cd589997fe9dad2794b92e5188366c03010000',
+          '006b483045022100b7911bf5831b096c837af158bd5de0671516b6439bf8a05419605345aa40c702',
+          '022053b335531ca89936aaeb8c2aa27660f225b75f39f383e9a62235941504be09f8012103671691',
+          'cbe2ac26680ed23a489a67bd3107a5dd1bc830932166626e1bc2cdec2a250000000220a107000000',
+          '00001976a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac389d0700000000001976a914',
+          '9c271ef60474f2cce2db555d92deab35d9158ffd88ac00000000'
+        ].join(''))
       })
-      composedTx.getTxOuts().forEach(function (txOut) {
-        txb.addOutput(bitcoin.Script.fromHex(txOut.script), txOut.value)
-      })
-
-      txb.sign(0, privkey1)
-
-      var tx = txb.build()
-      expect(tx.toHex()).to.equal([
-        '0100000001ce4d3bbb6d3175426cbbbad3cbd02959cd589997fe9dad2794b92e5188366c03010000',
-        '006b483045022100b7911bf5831b096c837af158bd5de0671516b6439bf8a05419605345aa40c702',
-        '022053b335531ca89936aaeb8c2aa27660f225b75f39f383e9a62235941504be09f8012103671691',
-        'cbe2ac26680ed23a489a67bd3107a5dd1bc830932166626e1bc2cdec2a250000000220a107000000',
-        '00001976a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac389d0700000000001976a914',
-        '9c271ef60474f2cce2db555d92deab35d9158ffd88ac00000000'
-      ].join(''))
-
-      done()
-    })
+      .done(done, done)
   })
 })

@@ -1,7 +1,7 @@
 /* global describe, it */
 var expect = require('chai').expect
 
-var cclib = require('../lib/index')
+var cclib = require('../lib')
 var util = require('../lib/util')
 
 describe('util', function () {

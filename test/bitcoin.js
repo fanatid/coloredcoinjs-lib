@@ -2,7 +2,7 @@
 var expect = require('chai').expect
 var bitcoin = require('bitcoinjs-lib')
 
-var cclib = require('../lib/index')
+var cclib = require('../lib')
 var Script = cclib.bitcoin.Script
 var Transaction = cclib.bitcoin.Transaction
 
@@ -112,45 +112,48 @@ describe('bitcoin.Transaction', function () {
   describe('ensureInputValues', function () {
     it('already ensured', function (done) {
       tx.ensured = true
-      tx.ensureInputValues(stubs.getTxStub([]), function (err, newTx) {
-        expect(err).to.be.null
-        expect(newTx).to.deep.equal(tx)
-        done()
-      })
+      tx.ensureInputValues(stubs.getTxStub([]))
+        .then(function (newTx) {
+          expect(newTx).to.deep.equal(tx)
+        })
+        .done(done, done)
     })
 
     it('isCoinbase is true', function (done) {
       tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      tx.ensureInputValues(stubs.getTxStub([]), function (err, newTx) {
-        expect(err).to.be.null
-        tx.ensured = true
-        tx.ins[0].prevTx = null
-        tx.ins[0].value = 0
-        expect(newTx).to.deep.equal(tx)
-        done()
-      })
+      tx.ensureInputValues(stubs.getTxStub([]))
+        .then(function (newTx) {
+          tx.ensured = true
+          tx.ins[0].prevTx = null
+          tx.ins[0].value = 0
+          expect(newTx).to.deep.equal(tx)
+        })
+        .done(done, done)
     })
 
     it('bs.getTx return err', function (done) {
       tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-      tx.ensureInputValues(stubs.getTxStub([]), function (err, newTx) {
-        expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
-        expect(newTx).to.be.undefined
-        done()
-      })
+      tx.ensureInputValues(stubs.getTxStub([]))
+        .then(function () {
+          throw new Error('Unexpected behaviour')
+        })
+        .catch(function (err) {
+          expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
+        })
+        .done(done, done)
     })
 
     it('successful get prevTx', function (done) {
       tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
       tx2.addInput(tx.getId(), 0, 4294967295)
-      tx2.ensureInputValues(stubs.getTxStub([tx]), function (err, newTx) {
-        expect(err).to.be.null
-        tx2.ensured = true
-        tx2.ins[0].prevTx = tx.clone()
-        tx2.ins[0].value = tx2.ins[0].prevTx.outs[0].value
-        expect(newTx).to.deep.equal(tx2)
-        done()
-      })
+      tx2.ensureInputValues(stubs.getTxStub([tx]))
+        .then(function (newTx) {
+          tx2.ensured = true
+          tx2.ins[0].prevTx = tx.clone()
+          tx2.ins[0].value = tx2.ins[0].prevTx.outs[0].value
+          expect(newTx).to.deep.equal(tx2)
+        })
+        .done(done, done)
     })
   })
 })
