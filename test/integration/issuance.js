@@ -33,9 +33,9 @@ describe('coloredcoinjs-lib (issuance)', function () {
       fee: 0
     })
 
-    cclib.EPOBCColorDefinition.composeGenesisTx(opTx, function (error, composedTx) {
-      if (error) throw error
-      expect(error).to.be.null
+    cclib.EPOBCColorDefinition.composeGenesisTx(opTx, function (err, composedTx) {
+      if (err) throw err
+      expect(err).to.be.null
       expect(composedTx).to.be.instanceof(cclib.ComposedTx)
 
       var txb = new bitcoin.TransactionBuilder()

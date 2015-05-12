@@ -112,8 +112,8 @@ describe('bitcoin.Transaction', function () {
   describe('ensureInputValues', function () {
     it('already ensured', function (done) {
       tx.ensured = true
-      tx.ensureInputValues(stubs.getTxStub([]), function (error, newTx) {
-        expect(error).to.be.null
+      tx.ensureInputValues(stubs.getTxStub([]), function (err, newTx) {
+        expect(err).to.be.null
         expect(newTx).to.deep.equal(tx)
         done()
       })
@@ -121,8 +121,8 @@ describe('bitcoin.Transaction', function () {
 
     it('isCoinbase is true', function (done) {
       tx.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      tx.ensureInputValues(stubs.getTxStub([]), function (error, newTx) {
-        expect(error).to.be.null
+      tx.ensureInputValues(stubs.getTxStub([]), function (err, newTx) {
+        expect(err).to.be.null
         tx.ensured = true
         tx.ins[0].prevTx = null
         tx.ins[0].value = 0
@@ -131,10 +131,10 @@ describe('bitcoin.Transaction', function () {
       })
     })
 
-    it('bs.getTx return error', function (done) {
+    it('bs.getTx return err', function (done) {
       tx.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 4294967295)
-      tx.ensureInputValues(stubs.getTxStub([]), function (error, newTx) {
-        expect(error).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
+      tx.ensureInputValues(stubs.getTxStub([]), function (err, newTx) {
+        expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
         expect(newTx).to.be.undefined
         done()
       })
@@ -143,8 +143,8 @@ describe('bitcoin.Transaction', function () {
     it('successful get prevTx', function (done) {
       tx.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
       tx2.addInput(tx.getId(), 0, 4294967295)
-      tx2.ensureInputValues(stubs.getTxStub([tx]), function (error, newTx) {
-        expect(error).to.be.null
+      tx2.ensureInputValues(stubs.getTxStub([tx]), function (err, newTx) {
+        expect(err).to.be.null
         tx2.ensured = true
         tx2.ins[0].prevTx = tx.clone()
         tx2.ins[0].value = tx2.ins[0].prevTx.outs[0].value

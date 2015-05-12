@@ -33,8 +33,8 @@ describe('coloredcoinjs-lib (transfer)', function () {
       fee: 0
     })
 
-    cclib.UncoloredColorDefinition.makeComposedTx(opTx, function (error, composedTx) {
-      expect(error).to.be.null
+    cclib.UncoloredColorDefinition.makeComposedTx(opTx, function (err, composedTx) {
+      expect(err).to.be.null
       expect(composedTx).to.be.instanceof(cclib.ComposedTx)
 
       var txb = new bitcoin.TransactionBuilder()
@@ -98,8 +98,8 @@ describe('coloredcoinjs-lib (transfer)', function () {
       fee: 0
     })
 
-    cclib.EPOBCColorDefinition.makeComposedTx(opTx, function (error, composedTx) {
-      expect(error).to.be.null
+    cclib.EPOBCColorDefinition.makeComposedTx(opTx, function (err, composedTx) {
+      expect(err).to.be.null
       expect(composedTx).to.be.instanceof(cclib.ComposedTx)
 
       var txb = new bitcoin.TransactionBuilder()
