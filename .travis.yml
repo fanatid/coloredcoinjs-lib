@@ -1,10 +1,8 @@
 language: node_js
-before_install:
-  - npm install -g grunt-cli
 node_js:
   - "0.10"
 env:
-  - TEST_SUITE=compile
+  - TEST_SUITE=build
   - TEST_SUITE=coveralls
   - TEST_SUITE=lint
-script: "grunt $TEST_SUITE"
+script: "npm run $TEST_SUITE"

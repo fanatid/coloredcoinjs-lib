@@ -4,3 +4,4 @@ node_modules
 coloredcoinlib.js
 coloredcoinlib.test.js
 coloredcoinlib.min.js
+npm-debug.log
