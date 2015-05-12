@@ -80,7 +80,9 @@
     "uglify": "uglify -s coloredcoinlib.js -o coloredcoinlib.min.js"
   },
   "browser": {
-    "request": "browser-request"
+    "request": "browser-request",
+    "./lib/storage/definitions/sqlite.js": "./lib/storage/definitions/sqlite-browser.js",
+    "./lib/storage/data/sqlite.js": "./lib/storage/data/sqlite-browser.js"
   },
   "standard": {
     "ignore": [
