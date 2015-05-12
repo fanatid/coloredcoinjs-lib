@@ -38,18 +38,6 @@ describe('util', function () {
     })
   })
 
-  it('debounce', function (done) {
-    var called = 0
-    function f () { called += 1 }
-    var df = util.debounce(f, 100)
-    df()
-    setTimeout(df, 30)
-    setTimeout(function () {
-      expect(called).to.equal(1)
-      done()
-    }, 150)
-  })
-
   it('makeSerial', function (done) {
     function A () {}
     A.prototype.f = util.makeSerial(function (value, cb) {
