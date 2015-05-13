@@ -1,7 +1,7 @@
 /* global describe, it */
 var expect = require('chai').expect
 
-var cclib = require('../lib')
+var cclib = require('../')
 
 describe('SyncStorage', function () {
   it('store is defined', function () {

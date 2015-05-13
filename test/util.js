@@ -1,8 +1,8 @@
 /* global describe, it */
 var expect = require('chai').expect
 
-var cclib = require('../lib')
-var util = require('../lib/util')
+var cclib = require('../')
+var util = cclib.util
 
 describe('util', function () {
   it('number2bitArray', function () {

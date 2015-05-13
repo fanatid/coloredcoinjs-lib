@@ -1,7 +1,7 @@
 /* global describe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 
-var cclib = require('../../lib')
+var cclib = require('../../')
 var helpers = require('../helpers')
 
 describe('coloredcoinjs-lib (balance)', function () {

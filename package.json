@@ -1,7 +1,7 @@
 {
   "name": "coloredcoinjs-lib",
   "version": "0.3.6",
-  "main": "./lib/index.js",
+  "main": "./index.js",
   "description": "Colored coin JavaScript library for Bitcoin",
   "author": "Fomichev Kirill <fanatid@ya.ru>",
   "contributors": [
@@ -67,15 +67,15 @@
   },
   "scripts": {
     "build": "npm run compile && npm run uglify",
-    "compile:test": "browserify test/*.js test/**/*.js >coloredcoinlib.test.js",
-    "compile": "browserify lib/index.js -s coloredcoinlib -o coloredcoinlib.js",
+    "compile:test": "find test/ -type f -name \"*.js\" | xargs browserify -o coloredcoinlib.test.js",
+    "compile": "browserify index.js -s coloredcoinlib -o coloredcoinlib.js",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "coverage": "istanbul cover _mocha -- test/*.js test/**/*.js",
+    "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha --",
     "clean": "rm -f coloredcoinlib.js coloredcoinlib.min.js coloredcoinlib.test.js",
     "karma": "./node_modules/karma/bin/karma start karma.conf.js",
     "lint": "standard",
     "test": "npm run test:node && npm run test:browser",
-    "test:node": "istanbul test mocha -- --reporter spec test/*.js test/**/*.js",
+    "test:node": "find test/ -type f -name \"*.js\" | xargs istanbul test mocha -- --reporter spec",
     "test:browser": "npm run compile:test && npm run karma",
     "uglify": "uglify -s coloredcoinlib.js -o coloredcoinlib.min.js"
   },

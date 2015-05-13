@@ -1,7 +1,7 @@
 /* global describe, it */
 var expect = require('chai').expect
 
-var cclib = require('../../lib')
+var cclib = require('../../')
 var bitcoin = cclib.bitcoin
 
 describe('coloredcoinjs-lib (transfer)', function () {

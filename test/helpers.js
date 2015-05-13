@@ -2,7 +2,7 @@
 var Promise = require('bluebird')
 var request = Promise.promisify(require('request'))
 
-var Transaction = require('../lib').bitcoin.Transaction
+var Transaction = require('../').bitcoin.Transaction
 
 /**
  * @callback getTx~callback

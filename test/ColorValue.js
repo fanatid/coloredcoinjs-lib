@@ -1,7 +1,7 @@
 /* global describe, beforeEach, it */
 var expect = require('chai').expect
 
-var cclib = require('../lib')
+var cclib = require('../')
 var errors = cclib.errors
 var ColorDefinition = cclib.ColorDefinition
 var ColorValue = cclib.ColorValue

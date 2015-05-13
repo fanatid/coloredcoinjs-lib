@@ -4,7 +4,7 @@ var expect = require('chai').expect
 
 var Promise = require('bluebird')
 
-var cclib = require('../lib')
+var cclib = require('../')
 var stubs = require('./stubs')
 
 describe('ColorData', function () {

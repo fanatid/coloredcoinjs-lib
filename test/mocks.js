@@ -1,4 +1,4 @@
-var cclib = require('../lib')
+var cclib = require('../')
 var Transaction = cclib.bitcoin.Transaction
 
 /**
