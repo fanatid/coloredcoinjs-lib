@@ -3,15 +3,15 @@ var expect = require('chai').expect
 
 var cclib = require('../../../')
 
-describe('storage.definition.Interface', function () {
+describe('storage.data.Interface', function () {
   var storage
 
   beforeEach(function () {
-    storage = new cclib.storage.definition.Interface()
+    storage = new cclib.storage.data.Interface()
   })
 
   it('inherits AbstractStorage', function () {
-    expect(storage).to.be.instanceof(cclib.storage.definition.Interface)
+    expect(storage).to.be.instanceof(cclib.storage.data.Interface)
     expect(storage).to.be.instanceof(cclib.storage._AbstractStorage)
   })
 
@@ -22,8 +22,22 @@ describe('storage.definition.Interface', function () {
     })
   })
 
-  it('#get', function (done) {
-    storage.get().asCallback(function (err) {
+  it('#getColorValues', function (done) {
+    storage.getColorValues().asCallback(function (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+      done()
+    })
+  })
+
+  it('#isColoredOutput', function (done) {
+    storage.isColoredOutput().asCallback(function (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+      done()
+    })
+  })
+
+  it('#removeOutput', function (done) {
+    storage.removeOutput().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
