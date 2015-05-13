@@ -10,20 +10,24 @@ describe('storage.definition.Interface', function () {
     storage = new cclib.storage.definition.Interface()
   })
 
+  it('isAvailable', function () {
+    expect(cclib.storage.definition.Interface.isAvailable()).to.be.false
+  })
+
   it('inherits AbstractStorage', function () {
     expect(storage).to.be.instanceof(cclib.storage.definition.Interface)
     expect(storage).to.be.instanceof(cclib.storage._AbstractStorage)
   })
 
-  it('#add', function (done) {
-    storage.add().asCallback(function (err) {
+  it('#resolve', function (done) {
+    storage.resolve().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
   })
 
-  it('#get', function (done) {
-    storage.get().asCallback(function (err) {
+  it('#getByColorId', function (done) {
+    storage.getByColorId().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })

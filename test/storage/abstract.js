@@ -2,13 +2,16 @@
 var expect = require('chai').expect
 
 var cclib = require('../../')
-var AbstractStorage = cclib.storage._AbstractStorage
 
 describe('storage._AbstractStorage', function () {
   var storage
 
   beforeEach(function () {
-    storage = new AbstractStorage()
+    storage = new cclib.storage._AbstractStorage()
+  })
+
+  it('isAvailable', function () {
+    expect(cclib.storage._AbstractStorage.isAvailable()).to.be.false
   })
 
   it('success', function (done) {

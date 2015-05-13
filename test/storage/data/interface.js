@@ -10,6 +10,10 @@ describe('storage.data.Interface', function () {
     storage = new cclib.storage.data.Interface()
   })
 
+  it('isAvailable', function () {
+    expect(cclib.storage.data.Interface.isAvailable()).to.be.false
+  })
+
   it('inherits AbstractStorage', function () {
     expect(storage).to.be.instanceof(cclib.storage.data.Interface)
     expect(storage).to.be.instanceof(cclib.storage._AbstractStorage)
