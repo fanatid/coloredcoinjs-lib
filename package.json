@@ -40,13 +40,15 @@
   },
   "dependencies": {
     "bitcoinjs-lib": "=1.4.3",
+    "bitcore": "~0.12.5",
     "bluebird": "=2.9.25",
     "bs58": "=2.0.1",
     "errno": "=0.1.1",
     "localStorage": "=1.0.3",
     "lodash": "=3.8.0",
     "lru-cache": "=2.6.2",
-    "make-concurrent": "~0.0.2",
+    "make-concurrent": "~0.0.3",
+    "ready-mixin": "~0.0.3",
     "store": "=1.3.17"
   },
   "devDependencies": {
@@ -69,8 +71,8 @@
     "build": "npm run compile && npm run uglify",
     "compile:test": "find test/ -type f -name \"*.js\" | xargs browserify -o coloredcoinlib.test.js",
     "compile": "browserify index.js -s coloredcoinlib -o coloredcoinlib.js",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha --",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "clean": "rm -f coloredcoinlib.js coloredcoinlib.min.js coloredcoinlib.test.js",
     "karma": "./node_modules/karma/bin/karma start karma.conf.js",
     "lint": "standard",
