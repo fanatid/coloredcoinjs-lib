@@ -4,7 +4,7 @@ var cclib = module.exports
 cclib.storage = {}
 cclib.storage._AbstractStorage = require('./lib/storage/abstract')
 cclib.storage.data = require('./lib/storage/data')
-cclib.storage.definition = require('./lib/storage/definition')
+cclib.storage.definitions = require('./lib/storage/definitions')
 
 /* @todo Make like upper */
 require('lodash').extend(cclib, {

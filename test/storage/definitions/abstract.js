@@ -3,15 +3,15 @@ var expect = require('chai').expect
 
 var cclib = require('../../../')
 
-describe('storage.definition.Abstract', function () {
+describe('storage.definitions.Abstract', function () {
   var storage
 
   beforeEach(function () {
-    storage = new cclib.storage.definition.Abstract()
+    storage = new cclib.storage.definitions.Abstract()
   })
 
   it('isAvailable', function () {
-    expect(cclib.storage.definition.Abstract.isAvailable()).to.be.false
+    expect(cclib.storage.definitions.Abstract.isAvailable()).to.be.false
   })
 
   it('#resolve', function (done) {

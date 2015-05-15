@@ -3,6 +3,6 @@ var cclib = require('../../../')
 
 require('./implementation')({
   describe: describe,
-  StorageCls: cclib.storage.definition.Memory,
+  StorageCls: cclib.storage.definitions.Memory,
   storageOpts: {}
 })

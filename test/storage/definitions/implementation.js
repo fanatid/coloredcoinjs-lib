@@ -12,7 +12,7 @@ module.exports = function (opts) {
     ldescribe = xdescribe
   }
 
-  ldescribe('storage.definition.' + opts.StorageCls.name, function () {
+  ldescribe('storage.definitions.' + opts.StorageCls.name, function () {
     var storage
 
     beforeEach(function (done) {
