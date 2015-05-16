@@ -14,13 +14,8 @@ describe('storage.data.Interface', function () {
     expect(cclib.storage.data.Interface.isAvailable()).to.be.false
   })
 
-  it('inherits AbstractStorage', function () {
-    expect(storage).to.be.instanceof(cclib.storage.data.Interface)
-    expect(storage).to.be.instanceof(cclib.storage._AbstractStorage)
-  })
-
-  it('#add', function (done) {
-    storage.add().asCallback(function (err) {
+  it('#addColorValue', function (done) {
+    storage.addColorValue().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
