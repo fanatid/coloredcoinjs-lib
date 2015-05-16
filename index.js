@@ -3,6 +3,7 @@ var cclib = module.exports
 // storage (data and definitions)
 cclib.storage = {}
 cclib.storage._AbstractStorage = require('./lib/storage/abstract')
+cclib.storage._providers = require('./lib/storage/providers')
 cclib.storage.data = require('./lib/storage/data')
 cclib.storage.definitions = require('./lib/storage/definitions')
 
