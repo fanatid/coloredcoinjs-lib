@@ -63,6 +63,27 @@ module.exports = function (opts) {
             done()
           })
       })
+
+      it('output exists, specific color id exists', function (done) {
+        storage.addColorValue(record)
+          .then(function () {
+            return storage.getColorValues(record.txId, record.outIndex, record.colorId)
+          })
+          .asCallback(function (err, value) {
+            expect(err).to.be.null
+            expect(value).to.equal(record.value)
+            done()
+          })
+      })
+
+      it('output exists, specific color id not exists', function (done) {
+        return storage.getColorValues(record.txId, record.outIndex, record.colorId)
+          .asCallback(function (err, value) {
+            expect(err).to.be.null
+            expect(value).to.be.null
+            done()
+          })
+      })
     })
 
     describe('#isColoredOutput', function () {

@@ -2,7 +2,7 @@
 var cclib = require('../../../')
 
 require('./implementation')({
-  describe: describe.skip,
+  describe: describe,
   StorageCls: cclib.storage.data.SQLite,
   storageOpts: {
     filename: ':memory:'
