@@ -1,5 +1,6 @@
 /* global describe, beforeEach, it */
 var expect = require('chai').expect
+var _ = require('lodash')
 
 var cclib = require('../../../')
 
@@ -19,6 +20,7 @@ describe('storage.definitions.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 
   it('#get', function (done) {
@@ -26,6 +28,7 @@ describe('storage.definitions.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 
   it('#clear', function (done) {
@@ -33,5 +36,6 @@ describe('storage.definitions.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 })

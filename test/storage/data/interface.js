@@ -1,5 +1,6 @@
 /* global describe, beforeEach, it */
 var expect = require('chai').expect
+var _ = require('lodash')
 
 var cclib = require('../../../')
 
@@ -19,6 +20,7 @@ describe('storage.data.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 
   it('#getColorValues', function (done) {
@@ -26,6 +28,7 @@ describe('storage.data.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 
   it('#isColoredOutput', function (done) {
@@ -33,6 +36,7 @@ describe('storage.data.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 
   it('#removeOutput', function (done) {
@@ -40,6 +44,7 @@ describe('storage.data.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 
   it('#clear', function (done) {
@@ -47,5 +52,6 @@ describe('storage.data.Interface', function () {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
+    .done(_.noop, _.noop)
   })
 })

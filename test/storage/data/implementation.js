@@ -1,5 +1,6 @@
 /* global describe, xdescribe, beforeEach, afterEach, it */
 var expect = require('chai').expect
+var _ = require('lodash')
 
 var random = require('bitcore').crypto.Random
 
@@ -37,6 +38,7 @@ module.exports = function (opts) {
             expect(err).to.be.instanceof(Error)
             done()
           })
+          .done(_.noop, _.noop)
       })
     })
 
@@ -46,22 +48,20 @@ module.exports = function (opts) {
           .then(function () {
             return storage.getColorValues(record.txId, record.outIndex)
           })
-          .asCallback(function (err, data) {
-            expect(err).to.be.null
+          .then(function (data) {
             var obj = {}
             obj[record.colorId] = record.value
             expect(data).to.deep.equal(obj)
-            done()
           })
+          .done(done, done)
       })
 
       it('output not exists', function (done) {
         storage.getColorValues(record.txId, record.outIndex)
-          .asCallback(function (err, data) {
-            expect(err).to.be.null
+          .then(function (data) {
             expect(data).to.deep.equal({})
-            done()
           })
+          .done(done, done)
       })
 
       it('output exists, specific color id exists', function (done) {
@@ -69,20 +69,18 @@ module.exports = function (opts) {
           .then(function () {
             return storage.getColorValues(record.txId, record.outIndex, record.colorId)
           })
-          .asCallback(function (err, value) {
-            expect(err).to.be.null
+          .then(function (value) {
             expect(value).to.equal(record.value)
-            done()
           })
+          .done(done, done)
       })
 
       it('output exists, specific color id not exists', function (done) {
         return storage.getColorValues(record.txId, record.outIndex, record.colorId)
-          .asCallback(function (err, value) {
-            expect(err).to.be.null
+          .then(function (value) {
             expect(value).to.be.null
-            done()
           })
+          .done(done, done)
       })
     })
 
@@ -92,20 +90,18 @@ module.exports = function (opts) {
           .then(function () {
             return storage.isColoredOutput(record.txId, record.outIndex)
           })
-          .asCallback(function (err, isColored) {
-            expect(err).to.be.null
+          .then(function (isColored) {
             expect(isColored).to.be.true
-            done()
           })
+          .done(done, done)
       })
 
       it('false', function (done) {
         storage.isColoredOutput(record.txId, record.outIndex)
-          .asCallback(function (err, isColored) {
-            expect(err).to.be.null
+          .then(function (isColored) {
             expect(isColored).to.be.false
-            done()
           })
+          .done(done, done)
       })
     })
 
@@ -124,11 +120,10 @@ module.exports = function (opts) {
           .then(function () {
             return storage.getColorValues(record.txId, record.outIndex)
           })
-          .asCallback(function (err, data) {
-            expect(err).to.be.null
+          .then(function (data) {
             expect(data).to.deep.equal({})
-            done()
           })
+          .done(done, done)
       })
     })
   })

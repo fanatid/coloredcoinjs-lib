@@ -7,7 +7,7 @@ var Promise = require('bluebird')
 var cclib = require('../')
 var EPOBCColorDefinition = cclib.EPOBCColorDefinition
 
-describe.only('ColorDefinitionManager', function () {
+describe('ColorDefinitionManager', function () {
   var cdManager
   var cdStorage
   var epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
@@ -62,33 +62,30 @@ describe.only('ColorDefinitionManager', function () {
   describe('getByColorId', function () {
     it('return null', function (done) {
       cdManager.getByColorId(10)
-        .asCallback(function (err, cdef) {
-          expect(err).to.be.null
+        .then(function (cdef) {
           expect(cdef).to.be.null
-          done()
         })
+        .done(done, done)
     })
 
     it('return uncolred', function (done) {
       cdManager.getByColorId(0)
-        .asCallback(function (err, cdef) {
-          expect(err).to.be.null
+        .then(function (cdef) {
           expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
-          done()
         })
+        .done(done, done)
     })
 
     it('return ColorDefinition', function (done) {
       cdStorage.resolve(epobcDesc1, true)
         .then(function (record) {
           return cdManager.getByColorId(record.id)
-            .asCallback(function (err, cdef) {
-              expect(err).to.be.null
+            .then(function (cdef) {
               expect(cdef.getDesc()).to.equal(record.desc)
               expect(cdef.getColorId()).to.equal(record.id)
-              done()
             })
         })
+        .done(done, done)
     })
   })
 
@@ -133,11 +130,10 @@ describe.only('ColorDefinitionManager', function () {
   describe('getAllColorDefinitions', function () {
     it('return empty Array', function (done) {
       cdManager.getAllColorDefinitions()
-        .asCallback(function (err, cdefs) {
-          expect(err).to.be.null
+        .then(function (cdefs) {
           expect(cdefs).to.deep.equal([])
-          done()
         })
+        .done(done, done)
     })
 
     it('return 2 items', function (done) {
@@ -148,12 +144,11 @@ describe.only('ColorDefinitionManager', function () {
       .then(function () {
         return cdManager.getAllColorDefinitions()
       })
-      .asCallback(function (err, cdefs) {
-        expect(err).to.be.null
+      .then(function (cdefs) {
         var result = _.invoke(cdefs, 'getDesc').sort()
         expect(result).to.deep.equal([epobcDesc1, epobcDesc2].sort())
-        done()
       })
+      .done(done, done)
     })
   })
 })

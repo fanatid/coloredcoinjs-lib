@@ -1,7 +1,7 @@
 /* global describe, beforeEach, afterEach, it */
 /* globals Promise:true */
 var expect = require('chai').expect
-
+var _ = require('lodash')
 var Promise = require('bluebird')
 
 var cclib = require('../')
@@ -100,6 +100,7 @@ describe('ColorData', function () {
           expect(err.message).to.equal('error.scanTx')
           done()
         })
+        .done(_.noop, _.noop)
     })
 
     it('add record', function (done) {
