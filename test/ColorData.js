@@ -95,14 +95,11 @@ describe('ColorData', function () {
       cdStorage.add({colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6})
       cdStorage.add = function () { throw new Error('error.scanTx') }
       cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]))
-        .then(function () {
-          throw new Error('Unexpected behaviour')
-        })
-        .catch(function (err) {
+        .asCallback(function (err) {
           expect(err).to.be.instanceof(Error)
           expect(err.message).to.equal('error.scanTx')
+          done()
         })
-        .done(done, done)
     })
 
     it('add record', function (done) {

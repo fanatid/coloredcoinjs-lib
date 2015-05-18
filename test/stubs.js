@@ -40,7 +40,7 @@ function getTxStub (transactions) {
       return cb(new Error('notFoundTx'))
     }
 
-    cb(null, txMap[txId].clone())
+    cb(null, txMap[txId].toHex())
   }
 }
 

@@ -1,8 +1,4 @@
-/* globals Promise:true */
-var Promise = require('bluebird')
-var request = Promise.promisify(require('request'))
-
-var Transaction = require('../').bitcoin.Transaction
+var transactions = require('./fixtures/transactions.json')
 
 /**
  * @callback getTx~callback
@@ -11,43 +7,20 @@ var Transaction = require('../').bitcoin.Transaction
  */
 
 /**
- * @param {boolean} isTestnet
- * @param {string} txId
+ * @param {string} txid
  * @param {getTx~callback} cb
  */
-function getTx (isTestnet, txId, cb) {
-  var host = isTestnet ? 'tbtc.blockr.io' : 'btc.blockr.io'
-  var url = 'http://' + host + '/api/v1/tx/raw/' + txId
+function getTx (txid, cb) {
+  var err = null
+  var rawtx = transactions[txid]
 
-  return request(url)
-    .spread(function (response, body) {
-      if (response.statusCode !== 200) {
-        throw new Error('Request error: ' + response.statusMessage)
-      }
+  if (rawtx === undefined) {
+    err = new Error('Transaction not found!')
+  }
 
-      var result = JSON.parse(body)
-      if (result.status !== 'success') {
-        throw new Error(result.message || 'Bad data')
-      }
-
-      return Transaction.fromHex(result.data.tx.hex)
-    })
-    .asCallback(cb)
+  cb(err, rawtx)
 }
 
-/**
- * @param {string} txId
- * @param {getTx~callback} cb
- */
-function getMainnetTx (txId, cb) { getTx(false, txId, cb) }
-
-/**
- * @param {string} txId
- * @param {getTx~callback} cb
- */
-function getTestnetTx (txId, cb) { getTx(true, txId, cb) }
-
 module.exports = {
-  getMainnetTx: getMainnetTx,
-  getTestnetTx: getTestnetTx
+  getTx: getTx
 }

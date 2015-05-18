@@ -26,7 +26,7 @@ describe('coloredcoinjs-lib (balance)', function () {
       outIndex: 0
     }
 
-    colorData.getCoinColorValue(coin, epobc, helpers.getTestnetTx)
+    colorData.getCoinColorValue(coin, epobc, helpers.getTx)
       .then(function (colorValue) {
         expect(colorValue).to.be.instanceof(cclib.ColorValue)
         expect(colorValue.getValue()).to.be.equal(100000)
