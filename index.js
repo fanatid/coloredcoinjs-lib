@@ -21,7 +21,6 @@ require('lodash').extend(cclib, {
   GenesisColorDefinition: require('./lib/GenesisColorDefinition'),
   UncoloredColorDefinition: require('./lib/UncoloredColorDefinition'),
   EPOBCColorDefinition: require('./lib/EPOBCColorDefinition'),
-  ColorDefinitionStorage: require('./lib/ColorDefinitionStorage'),
   ColorDefinitionManager: require('./lib/ColorDefinitionManager'),
 
   /** Color Data */

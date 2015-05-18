@@ -4,7 +4,7 @@ var expect = require('chai').expect
 var cclib = require('../')
 var ColorSet = cclib.ColorSet
 
-describe('ColorSet', function () {
+describe.skip('ColorSet', function () {
   var cdStorage
   var cdManager
   var colorSet
