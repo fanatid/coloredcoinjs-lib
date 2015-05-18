@@ -59,41 +59,11 @@ describe('ColorDefinitionManager', function () {
     })
   })
 
-  describe('getByColorId', function () {
-    it('return null', function (done) {
-      cdManager.getByColorId(10)
-        .then(function (cdef) {
-          expect(cdef).to.be.null
-        })
-        .done(done, done)
-    })
-
-    it('return uncolred', function (done) {
-      cdManager.getByColorId(0)
-        .then(function (cdef) {
-          expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
-        })
-        .done(done, done)
-    })
-
-    it('return ColorDefinition', function (done) {
-      cdStorage.resolve(epobcDesc1, true)
-        .then(function (record) {
-          return cdManager.getByColorId(record.id)
-            .then(function (cdef) {
-              expect(cdef.getDesc()).to.equal(record.desc)
-              expect(cdef.getColorId()).to.equal(record.id)
-            })
-        })
-        .done(done, done)
-    })
-  })
-
-  describe('resolveByDesc', function () {
+  describe('resolve', function () {
     it('record is not null', function (done) {
-      cdStorage.resolve(epobcDesc1, true)
+      cdStorage.resolve(epobcDesc1)
         .then(function (record) {
-          return cdManager.resolveByDesc(epobcDesc1)
+          return cdManager.resolve(record.desc)
             .then(function (cdef) {
               expect(cdef.getColorId()).to.equal(record.id)
               expect(cdef.getDesc()).to.equal(record.desc)
@@ -103,7 +73,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('record is null, autoAdd is false', function (done) {
-      cdManager.resolveByDesc(epobcDesc1, false)
+      cdManager.resolve(epobcDesc1, {autoAdd: false})
         .then(function (cdef) {
           expect(cdef).to.be.null
         })
@@ -111,7 +81,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('return uncolored', function (done) {
-      cdManager.resolveByDesc('')
+      cdManager.resolve('')
         .then(function (cdef) {
           expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
         })
@@ -119,7 +89,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('add new record', function (done) {
-      cdManager.resolveByDesc(epobcDesc1)
+      cdManager.resolve(epobcDesc1)
         .then(function (cdef) {
           expect(cdef.getDesc()).to.equal(epobcDesc1)
         })
@@ -127,9 +97,37 @@ describe('ColorDefinitionManager', function () {
     })
   })
 
-  describe('getAllColorDefinitions', function () {
+  describe('get', function () {
+    it('return null', function (done) {
+      cdManager.get({id: 10})
+        .then(function (cdef) {
+          expect(cdef).to.be.null
+        })
+        .done(done, done)
+    })
+
+    it('return uncolred', function (done) {
+      cdManager.get({id: 0})
+        .then(function (cdef) {
+          expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
+        })
+        .done(done, done)
+    })
+
+    it('return ColorDefinition', function (done) {
+      cdStorage.resolve(epobcDesc1)
+        .then(function (record) {
+          return cdManager.get({id: record.id})
+            .then(function (cdef) {
+              expect(cdef.getDesc()).to.equal(record.desc)
+              expect(cdef.getColorId()).to.equal(record.id)
+            })
+        })
+        .done(done, done)
+    })
+
     it('return empty Array', function (done) {
-      cdManager.getAllColorDefinitions()
+      cdManager.get()
         .then(function (cdefs) {
           expect(cdefs).to.deep.equal([])
         })
@@ -138,11 +136,11 @@ describe('ColorDefinitionManager', function () {
 
     it('return 2 items', function (done) {
       Promise.all([
-        cdManager.resolveByDesc(epobcDesc1),
-        cdManager.resolveByDesc(epobcDesc2)
+        cdManager.resolve(epobcDesc1),
+        cdManager.resolve(epobcDesc2)
       ])
       .then(function () {
-        return cdManager.getAllColorDefinitions()
+        return cdManager.get()
       })
       .then(function (cdefs) {
         var result = _.invoke(cdefs, 'getDesc').sort()

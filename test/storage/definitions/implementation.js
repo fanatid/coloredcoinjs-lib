@@ -26,7 +26,7 @@ module.exports = function (opts) {
 
     describe('#resolve', function () {
       it('return null', function (done) {
-        storage.resolve('...', false)
+        storage.resolve('...', {autoAdd: false})
           .then(function (record) {
             expect(record).to.be.null
           })
@@ -77,7 +77,7 @@ module.exports = function (opts) {
       })
 
       it('by id', function (done) {
-        storage.get(records[0].id)
+        storage.get({id: records[0].id})
           .then(function (record) {
             expect(record).to.deep.equal(records[0])
           })
