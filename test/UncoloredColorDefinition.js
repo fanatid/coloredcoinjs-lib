@@ -16,8 +16,8 @@ describe('UncoloredColorDefinition', function () {
     expect(colordef).to.be.instanceof(UncoloredColorDefinition)
   })
 
-  it('getColorType', function () {
-    expect(colordef.getColorType()).to.equal('uncolored')
+  it('getColorCode', function () {
+    expect(colordef.getColorCode()).to.equal('uncolored')
   })
 
   describe('fromDesc', function () {

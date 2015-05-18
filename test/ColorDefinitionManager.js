@@ -47,14 +47,14 @@ describe('ColorDefinitionManager', function () {
     })
   })
 
-  describe('getColorDefenitionClsForType', function () {
+  describe('getColorDefenitionClsForCode', function () {
     it('return null', function () {
-      var cdcls = cclib.ColorDefinitionManager.getColorDefenitionClsForType('x')
+      var cdcls = cclib.ColorDefinitionManager.getColorDefenitionClsForCode('x')
       expect(cdcls).to.be.null
     })
 
     it('return EPOBCColorDefinition constructor', function () {
-      var cdcls = cclib.ColorDefinitionManager.getColorDefenitionClsForType('epobc')
+      var cdcls = cclib.ColorDefinitionManager.getColorDefenitionClsForCode('epobc')
       expect(cdcls).to.equal(EPOBCColorDefinition)
     })
   })

@@ -14,8 +14,8 @@ describe('ColorDefinition', function () {
     expect(colordef.getColorId()).to.equal(1)
   })
 
-  it('getColorType', function () {
-    expect(colordef.getColorType).to.throw(Error)
+  it('getColorCode', function () {
+    expect(colordef.getColorCode).to.throw(Error)
   })
 
   it('getDesc', function () {
