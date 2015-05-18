@@ -37,12 +37,3 @@ require('lodash').extend(cclib, {
   SimpleOperationalTx: require('./lib/SimpleOperationalTx'),
   ComposedTx: require('./lib/ComposedTx')
 })
-
-Object.defineProperty(module.exports, 'verify', {
-  configurable: false,
-  enumerable: true,
-  get: function () {
-    console.warning('Verify will be removed from v1.0.0 beta!')
-    return require('./lib/verify')
-  }
-})
