@@ -4,7 +4,7 @@ var expect = require('chai').expect
 var cclib = require('../../')
 var bitcoin = cclib.bitcoin
 
-describe('coloredcoinjs-lib (transfer)', function () {
+describe.skip('coloredcoinjs-lib (transfer)', function () {
   it('uncolored', function (done) {
     // http://tbtc.blockr.io/tx/info/87dec49cc16846b0b28a985102bec306c8266b0694ffdf0392a036e3f8646b3e
 

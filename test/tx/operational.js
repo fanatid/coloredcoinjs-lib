@@ -1,9 +1,9 @@
 /* global describe, beforeEach, it */
 var expect = require('chai').expect
 
-var cclib = require('../')
+var cclib = require('../../')
 
-describe('OperationalTx', function () {
+describe.skip('OperationalTx', function () {
   var optx
 
   beforeEach(function () {

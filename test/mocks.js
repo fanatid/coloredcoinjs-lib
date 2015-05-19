@@ -1,5 +1,5 @@
 var cclib = require('../')
-var Transaction = cclib.bitcoin.Transaction
+var Transaction = require('../lib/bitcoin').Transaction
 
 /**
  * Mock for transaction.Transaction

@@ -4,7 +4,7 @@ var expect = require('chai').expect
 var cclib = require('../../')
 var helpers = require('../helpers')
 
-describe('coloredcoinjs-lib (balance)', function () {
+describe.skip('coloredcoinjs-lib (balance)', function () {
   var colorDataStorage
   var colorData
 

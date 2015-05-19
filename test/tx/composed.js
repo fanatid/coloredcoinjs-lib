@@ -1,10 +1,10 @@
 /* global describe, beforeEach, it */
 var expect = require('chai').expect
 
-var cclib = require('../')
-var stubs = require('./stubs')
+var cclib = require('../../')
+var stubs = require('../stubs')
 
-describe('ComposedTx', function () {
+describe.skip('ComposedTx', function () {
   var tx
 
   beforeEach(function () {

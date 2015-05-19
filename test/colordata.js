@@ -7,7 +7,7 @@ var Promise = require('bluebird')
 var cclib = require('../')
 var stubs = require('./stubs')
 
-describe('ColorData', function () {
+describe.skip('ColorData', function () {
   var cdStorage
   var epobc
   var tx1

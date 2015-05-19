@@ -3,7 +3,7 @@ var inherits = require('util').inherits
 var _ = require('lodash')
 
 var cclib = require('../')
-var getUncolored = cclib.ColorDefinitionManager.getUncolored
+var getUncolored = cclib.definitions.Manager.getUncolored
 var ColorValue = cclib.ColorValue
 
 /**
@@ -18,7 +18,7 @@ function FeeOperationalTx (feeSize) {
   this.feeSize = new ColorValue(getUncolored(), feeSize)
 }
 
-inherits(FeeOperationalTx, cclib.OperationalTx)
+inherits(FeeOperationalTx, cclib.tx.Operational)
 
 FeeOperationalTx.prototype.getRequiredFee = function () {
   return this.feeSize

@@ -6,8 +6,8 @@ var errors = cclib.errors
 var ColorDefinition = cclib.ColorDefinition
 var ColorValue = cclib.ColorValue
 
-describe('ColorValue', function () {
-  var uncoloredColorDefinition = cclib.ColorDefinitionManager.getUncolored()
+describe.skip('ColorValue', function () {
+  var uncoloredColorDefinition = cclib.definitions.Manager.getUncolored()
   var cv1
   var cv2
 

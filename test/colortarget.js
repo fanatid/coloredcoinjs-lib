@@ -4,7 +4,7 @@ var expect = require('chai').expect
 var cclib = require('../')
 var ColorTarget = cclib.ColorTarget
 
-describe('ColorTarget', function () {
+describe.skip('ColorTarget', function () {
   var uncolored
   var cv1
   var ct1

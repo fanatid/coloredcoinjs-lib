@@ -4,7 +4,8 @@ var expect = require('chai').expect
 var cclib = require('../')
 var util = cclib.util
 
-describe('util', function () {
+/** @todo Move to other files */
+describe.skip('util', function () {
   it('number2bitArray', function () {
     var bits = util.number2bitArray(54648432)
     expect(bits).to.deep.equal(
