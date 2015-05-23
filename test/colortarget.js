@@ -51,14 +51,14 @@ describe('ColorTarget', function () {
     expect(cclib.ColorTarget.sum([ctarget, octarget])).to.deep.equal(result)
   })
 
-  describe('groupTargetsByColor', function () {
+  describe('groupByColorId', function () {
     it('given array of targets haven\'t TargetCls instance', function () {
       var targets = [{
         isUncolored: _.constant(true),
         getColorDefinition: _.constant(new cclib.definitions.Genesis())
       }]
       var fn = function () {
-        cclib.ColorTarget.groupTargetsByColor(targets, cclib.definitions.EPOBC)
+        cclib.ColorTarget.groupByColorId(targets, cclib.definitions.EPOBC)
       }
       expect(fn).to.throw(Error)
     })
@@ -84,7 +84,7 @@ describe('ColorTarget', function () {
       expected[uncoloredCDef.getColorId()] = [target1]
       expected[genesisCDef.getColorId()] = [target2]
 
-      var result = cclib.ColorTarget.groupTargetsByColor(
+      var result = cclib.ColorTarget.groupByColorId(
         [target1, target2], cclib.definitions.Genesis)
 
       expect(result).to.deep.equal(expected)

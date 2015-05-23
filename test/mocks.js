@@ -1,4 +1,3 @@
-var cclib = require('../')
 var Transaction = require('../lib/bitcoin').Transaction
 
 /**
