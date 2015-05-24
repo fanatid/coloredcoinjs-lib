@@ -5,7 +5,6 @@ var _ = require('lodash')
 var Promise = require('bluebird')
 
 var cclib = require('../')
-var stubs = require('./stubs')
 
 describe.skip('ColorData', function () {
   var cdStorage

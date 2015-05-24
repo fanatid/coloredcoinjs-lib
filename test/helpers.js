@@ -1,4 +1,26 @@
+var inherits = require('util').inherits
+
+var cclib = require('../')
+
 var transactions = require('./fixtures/transactions.json')
+
+/**
+ * @class FixedFeeOperationalTx
+ * @extends OperationalTx
+ * @param {number} feeSize
+ */
+function FixedFeeOperationalTx (feeSize) {
+  cclib.tx.Operational.call(this)
+
+  var cdef = new cclib.definitions.Uncolored()
+  this._feeSize = new cclib.ColorValue(cdef, feeSize)
+}
+
+inherits(FixedFeeOperationalTx, cclib.tx.Operational)
+
+FixedFeeOperationalTx.prototype.getRequiredFee = function () {
+  return this._feeSize
+}
 
 /**
  * @callback getTx~callback
@@ -10,7 +32,7 @@ var transactions = require('./fixtures/transactions.json')
  * @param {string} txid
  * @param {getTx~callback} cb
  */
-function getTx (txid, cb) {
+function getTxFn (txid, cb) {
   var err = null
   var rawtx = transactions[txid]
 
@@ -22,5 +44,6 @@ function getTx (txid, cb) {
 }
 
 module.exports = {
-  getTx: getTx
+  FixedFeeOperationalTx: FixedFeeOperationalTx,
+  getTxFn: getTxFn
 }

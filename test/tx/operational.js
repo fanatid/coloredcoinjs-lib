@@ -1,20 +1,46 @@
 /* global describe, beforeEach, it */
 var _ = require('lodash')
 var expect = require('chai').expect
+var random = require('bitcore').crypto.Random
 
 var cclib = require('../../')
 
 describe('tx.Operational', function () {
   var optx
+  var ctarget
 
   beforeEach(function () {
     optx = new cclib.tx.Operational()
+    var cdef = new cclib.definitions.Uncolored()
+    var value = _.random(1, 10)
+    var cvalue = new cclib.ColorValue(cdef, value)
+    var script = random.getRandomBuffer(5).toString('hex')
+    ctarget = new cclib.ColorTarget(script, cvalue)
   })
 
-  it.skip('addTarget', function () {})
-  it.skip('addTargets', function () {})
-  it.skip('getTargets', function () {})
-  it.skip('isMonoColor', function () {})
+  it('addTarget/addTargets/getTargets', function () {
+    expect(optx.getTargets()).to.have.length(0)
+    optx.addTarget(ctarget)
+    expect(optx.getTargets()).to.have.length(1)
+    optx.addTargets([ctarget, ctarget])
+    expect(optx.getTargets()).to.have.length(3)
+  })
+
+  it('isMonoColor return true', function () {
+    expect(optx.isMonoColor()).to.be.true
+    optx.addTargets([ctarget, ctarget])
+    expect(optx.isMonoColor()).to.be.true
+  })
+
+  it('isMonoColor return false', function () {
+    var cdef = new cclib.definitions.Genesis()
+    var value = _.random(1, 10)
+    var cvalue = new cclib.ColorValue(cdef, value)
+    var script = random.getRandomBuffer(5).toString('hex')
+    var ctarget2 = new cclib.ColorTarget(script, cvalue)
+    optx.addTargets([ctarget, ctarget2])
+    expect(optx.isMonoColor()).to.be.false
+  })
 
   it('selectCoins', function (done) {
     optx.selectCoins()
@@ -26,7 +52,7 @@ describe('tx.Operational', function () {
   })
 
   it('getChangeAddress', function (done) {
-    optx.selectCoins()
+    optx.getChangeAddress()
       .asCallback(function (err) {
         expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
         done()
@@ -34,12 +60,21 @@ describe('tx.Operational', function () {
       .done(_.noop, _.noop)
   })
 
-  it.skip('getRequiredFee', function () {
-    expect(optx.getRequiredFee).to.throw(Error)
+  it('getRequiredFee (default fee-per-kilobyte)', function () {
+    var result = optx.getRequiredFee(_.random(1, 10000))
+    expect(result).to.be.instanceof(cclib.ColorValue)
+    expect(result.getColorDefinition().getColorCode()).to.equal('uncolored')
   })
 
-  it.skip('getDustThreshold', function () {
-    expect(optx.getDustThreshold).to.throw(Error)
+  it('getRequiredFee (certain fee-per-kilobyte)', function () {
+    var result = optx.getRequiredFee(_.random(1, 10000), 0)
+    expect(result).to.be.instanceof(cclib.ColorValue)
+    expect(result.getColorDefinition().getColorCode()).to.equal('uncolored')
+    expect(result.getValue()).to.equal(0)
+  })
+
+  it('getDustThreshold', function () {
+    expect(optx.getDustThreshold()).to.be.instanceof(cclib.ColorValue)
   })
 
   it('makeComposedTx', function () {

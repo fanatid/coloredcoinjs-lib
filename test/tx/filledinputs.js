@@ -4,7 +4,7 @@ var bitcore = require('bitcore')
 
 var cclib = require('../../')
 
-var stubs = require('../stubs')
+var getTxFn = require('../helpers').getTxFn
 var transactions = require('../fixtures/transactions.json')
 
 describe('tx.FilledInputs', function () {
@@ -15,7 +15,7 @@ describe('tx.FilledInputs', function () {
     var tx = bitcore.Transaction(transactions[txid])
 
     beforeEach(function (done) {
-      fitx = new cclib.tx.FilledInputs(tx, stubs.getTxFn)
+      fitx = new cclib.tx.FilledInputs(tx, getTxFn)
       fitx.ready.done(done, done)
     })
 
@@ -45,7 +45,7 @@ describe('tx.FilledInputs', function () {
     var tx = bitcore.Transaction(transactions[txid])
 
     beforeEach(function (done) {
-      fitx = new cclib.tx.FilledInputs(tx, stubs.getTxFn)
+      fitx = new cclib.tx.FilledInputs(tx, getTxFn)
       fitx.ready.done(done, done)
     })
 

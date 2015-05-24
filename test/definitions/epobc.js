@@ -4,7 +4,6 @@ var expect = require('chai').expect
 var cclib = require('../../')
 var EPOBCColorDefinition = cclib.definitions.EPOBC
 var mocks = require('../mocks')
-var stubs = require('../stubs')
 
 var fixtures = require('../fixtures/definitions.json').epobc
 
@@ -12,6 +11,17 @@ describe.skip('EPOBCColorDefinition', function () {
   var epobc
   var tx1
   var tx2
+
+  it('number2bitArray', function () {
+    var bits = util.number2bitArray(54648432)
+    expect(bits).to.deep.equal(
+      [0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0])
+  })
+
+  it('bitArray2number', function () {
+    var bits = [0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0]
+    expect(util.bitArray2number(bits)).to.equal(54648432)
+  })
 
   beforeEach(function () {
     epobc = new EPOBCColorDefinition(1,
