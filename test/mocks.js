@@ -1,4 +1,4 @@
-var Transaction = require('../lib/bitcoin').Transaction
+// var Transaction = require('../lib/bitcoin').Transaction
 
 /**
  * Mock for transaction.Transaction

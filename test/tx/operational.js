@@ -1,36 +1,48 @@
 /* global describe, beforeEach, it */
+var _ = require('lodash')
 var expect = require('chai').expect
 
 var cclib = require('../../')
 
-describe.skip('OperationalTx', function () {
+describe('tx.Operational', function () {
   var optx
 
   beforeEach(function () {
-    optx = new cclib.OperationalTx()
+    optx = new cclib.tx.Operational()
   })
 
-  it('getTargets', function () {
-    expect(optx.getTargets).to.throw(Error)
+  it.skip('addTarget', function () {})
+  it.skip('addTargets', function () {})
+  it.skip('getTargets', function () {})
+  it.skip('isMonoColor', function () {})
+
+  it('selectCoins', function (done) {
+    optx.selectCoins()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
-  it('selectCoins', function () {
-    expect(optx.selectCoins).to.throw(Error)
+  it('getChangeAddress', function (done) {
+    optx.selectCoins()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
-  it('getChangeAddress', function () {
-    expect(optx.getChangeAddress).to.throw(Error)
-  })
-
-  it('getRequiredFee', function () {
+  it.skip('getRequiredFee', function () {
     expect(optx.getRequiredFee).to.throw(Error)
   })
 
-  it('getDustThreshold', function () {
+  it.skip('getDustThreshold', function () {
     expect(optx.getDustThreshold).to.throw(Error)
   })
 
   it('makeComposedTx', function () {
-    expect(optx.makeComposedTx()).to.be.instanceof(cclib.ComposedTx)
+    expect(optx.makeComposedTx()).to.be.instanceof(cclib.tx.Composed)
   })
 })
