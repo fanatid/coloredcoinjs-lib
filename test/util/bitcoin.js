@@ -8,7 +8,8 @@ describe('util.bitcoin', function () {
   describe('script2addresses', function () {
     var network = bitcore.Networks.testnet
 
-    function checkScript (script, addresses) {
+    function checkScript (asm, addresses) {
+      var script = bitcore.Script(asm)
       var result = cclib.util.bitcoin.script2addresses(script, network)
       expect(result).to.deep.equal(addresses)
     }

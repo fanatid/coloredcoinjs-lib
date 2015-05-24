@@ -1,10 +1,10 @@
 var inherits = require('util').inherits
 
-var _ = require('lodash')
-
 var cclib = require('../')
 var getUncolored = cclib.definitions.Manager.getUncolored
 var ColorValue = cclib.ColorValue
+
+var transactions = require('./fixtures/transactions.json')
 
 /**
  * Stub for testing fee related method
@@ -25,26 +25,27 @@ FeeOperationalTx.prototype.getRequiredFee = function () {
 }
 
 /**
- * Stub for blockchain.BlockchainStateBase.getTx
- *
- * @param {bitcoinjs-lib.Transaction[]} transactions
- * @return {function}
+ * @callback getTxFn~callback
+ * @param {?Error} error
+ * @param {string} rawTx
  */
-function getTxStub (transactions) {
-  var txMap = _.zipObject(transactions.map(function (tx) {
-    return [tx.getId(), tx.clone()]
-  }))
 
-  return function getTx (txId, cb) {
-    if (_.isUndefined(txMap[txId])) {
-      return cb(new Error('notFoundTx'))
-    }
+/**
+ * @param {string} txid
+ * @param {getTxFn~callback} cb
+ */
+function getTxFn (txid, cb) {
+  var err = null
+  var rawtx = transactions[txid]
 
-    cb(null, txMap[txId].toHex())
+  if (rawtx === undefined) {
+    err = new Error('Transaction not found!')
   }
+
+  cb(err, rawtx)
 }
 
 module.exports = {
   FeeOperationalTx: FeeOperationalTx,
-  getTxStub: getTxStub
+  getTxFn: getTxFn
 }

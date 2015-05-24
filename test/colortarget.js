@@ -54,8 +54,8 @@ describe('ColorTarget', function () {
   describe('groupByColorId', function () {
     it('given array of targets haven\'t TargetCls instance', function () {
       var targets = [{
-        isUncolored: _.constant(true),
-        getColorDefinition: _.constant(new cclib.definitions.Genesis())
+        getColorDefinition: _.constant(new cclib.definitions.Genesis()),
+        isUncolored: _.constant(false)
       }]
       var fn = function () {
         cclib.ColorTarget.groupByColorId(targets, cclib.definitions.EPOBC)
