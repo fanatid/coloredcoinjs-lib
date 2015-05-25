@@ -1,66 +1,60 @@
 /* global describe, it */
 var expect = require('chai').expect
+var bitcore = require('bitcore')
 
 var cclib = require('../../')
-var bitcoin = cclib.bitcoin
 
-describe.skip('coloredcoinjs-lib (transfer)', function () {
+describe('coloredcoinjs-lib (transfer)', function () {
   it('uncolored', function (done) {
     // http://tbtc.blockr.io/tx/info/87dec49cc16846b0b28a985102bec306c8266b0694ffdf0392a036e3f8646b3e
 
-    var privkey1 = bitcoin.ECKey.fromWIF('KzBABteLmKTgTXLjtcQrGGy6fHbNDQpqPC8CFA8U96aecRFZMCob')
-    var privkey2 = bitcoin.ECKey.fromWIF('L3wxNWHsPZUd8XJhxbVvR2r3f98TJksYBRTYY9SfXf2w2Crn83n1')
+    var pk1 = bitcore.PrivateKey(
+      'cQY9eoeCCP9wcxp1H2DydbUAHWtmsrvXTEGfMaayeDEesAJFnNNm', 'testnet')
+    var pk2 = bitcore.PrivateKey(
+      'cUJwqRHipdAtHxmyM1K3nMM7HNRryCyEFTc1eZuB2mgwGwxtuaYg', 'testnet')
 
-    var colorValue = new cclib.ColorValue(cclib.ColorDefinitionManager.getUncolored(), 100000)
-    var colorTarget = new cclib.ColorTarget(
-      privkey2.pub.getAddress(bitcoin.networks.testnet).toOutputScript().toHex(), colorValue)
+    var cvalue = new cclib.ColorValue(new cclib.definitions.Uncolored(), 100000)
+    var ctarget = new cclib.ColorTarget(
+      bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
 
-    var opTx = new cclib.SimpleOperationalTx({
+    var optx = new cclib.tx.SimpleOperational({
       targets: [
-        colorTarget
+        ctarget
       ],
-      coins: [
-        {
-          colorId: 0,
-          txId: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
-          outIndex: 0,
+      coins: {
+        0: [{
+          txid: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
+          vout: 0,
           value: 1000000
-        }
-      ],
+        }]
+      },
       changeAddresses: {
-        0: privkey1.pub.getAddress(bitcoin.networks.testnet).toBase58Check()
+        0: pk1.toAddress().toString()
       },
       fee: 0
     })
 
-    cclib.UncoloredColorDefinition.makeComposedTx(opTx)
-      .then(function (composedTx) {
-        expect(composedTx).to.be.instanceof(cclib.ComposedTx)
+    cclib.definitions.Uncolored.makeComposedTx(optx)
+      .then(function (comptx) {
+        expect(comptx).to.be.instanceof(cclib.tx.Composed)
 
-        var txb = new bitcoin.TransactionBuilder()
-        composedTx.getTxIns().forEach(function (txIn) {
-          txb.addInput(txIn.txId, txIn.outIndex, txIn.sequence)
-        })
-        composedTx.getTxOuts().forEach(function (txOut) {
-          txb.addOutput(bitcoin.Script.fromHex(txOut.script), txOut.value)
-        })
+        expect(comptx.getInputs()).to.deep.equal([{
+          txid: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
+          vout: 0
+        }])
 
-        txb.sign(0, privkey1)
-
-        var tx = txb.build()
-        expect(tx.toHex()).to.equal([
-          '01000000017bd11575c2be2a44ee914b43ac4f6b36976e3e0bcb66d87beff8c903b0c25686000000',
-          '006a47304402205e0284000c7c6f08b0453355e556027240cc93a3a8be3d146073b9c0d6f9d19e02',
-          '2022b297a6d4059eecaa253aa99eb563bc5eef54698771436e20e60b1fc1da7f9d012103d1d49595',
-          '9464c1567e1edbbdcab7f7533d8b4a2a4ff231b1a8346effe99181c2ffffffff02a0860100000000',
-          '001976a914123ef9cb4a62af063cb30e2513cc01e40bed92e588acb8b70d00000000001976a914bc',
-          '60037ba68202e8037dbb61fb65eb71619c56a988ac00000000'
-        ].join(''))
+        expect(comptx.getOutputs()).to.deep.equal([{
+          script: '76a914123ef9cb4a62af063cb30e2513cc01e40bed92e588ac',
+          value: 100000
+        }, {
+          script: '76a914bc60037ba68202e8037dbb61fb65eb71619c56a988ac',
+          value: 899000
+        }])
       })
       .done(done, done)
   })
 
-  it('EPOBC', function (done) {
+  it.skip('EPOBC', function (done) {
     // http://tbtc.blockr.io/tx/info/87b2e65e7fec95c2ba5d84f5e61779d64df8ca17f2e0f2dd86e56d65c882dce6
 
     var privkey1 = bitcoin.ECKey.fromWIF('L5hQy1HjWsz3DXSAoSfk5VtB87WvYiZ5WWwfWJG5yyQHHYqWzHrb')
