@@ -1,4 +1,5 @@
 /* global describe, beforeEach, it */
+var _ = require('lodash')
 var expect = require('chai').expect
 
 var cclib = require('../../')
@@ -49,10 +50,32 @@ describe('definitions.Uncolored', function () {
     })
   })
 
-  it.skip('makeComposedTx', function () {})
+  it('runKernel', function (done) {
+    cdef.runKernel()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
 
-  it('composeGenesisTx', function () {
-    expect(Uncolored.composeGenesisTx).to.throw(
-      cclib.errors.NotImplementedError)
+  it('static getAffectingInputs', function (done) {
+    Uncolored.getAffectingInputs()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it.skip('static makeComposedTx', function (done) {})
+
+  it('static composeGenesisTx', function (done) {
+    Uncolored.composeGenesisTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 })

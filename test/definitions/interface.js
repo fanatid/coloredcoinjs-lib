@@ -1,4 +1,5 @@
 /* global describe, beforeEach, it */
+var _ = require('lodash')
 var expect = require('chai').expect
 
 var cclib = require('../../')
@@ -33,13 +34,39 @@ describe('definitions.Interface', function () {
       cclib.errors.NotImplementedError)
   })
 
-  it('static makeComposedTx', function () {
-    expect(Interface.makeComposedTx).to.throw(
-      cclib.errors.NotImplementedError)
+  it('runKernel', function (done) {
+    cdef.runKernel()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
-  it('static composeGenesisTx', function () {
-    expect(Interface.composeGenesisTx).to.throw(
-      cclib.errors.NotImplementedError)
+  it('static getAffectingInputs', function (done) {
+    Interface.getAffectingInputs()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it('static makeComposedTx', function (done) {
+    Interface.makeComposedTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it('static composeGenesisTx', function (done) {
+    Interface.composeGenesisTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 })

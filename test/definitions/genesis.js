@@ -1,4 +1,5 @@
 /* global describe, beforeEach, it */
+var _ = require('lodash')
 var expect = require('chai').expect
 
 var cclib = require('../../')
@@ -40,13 +41,39 @@ describe('definitions.Genesis', function () {
     expect(fn).to.throw(cclib.errors.NotImplementedError)
   })
 
-  it('static makeComposedTx', function () {
-    var fn = Genesis.makeComposedTx.bind(Genesis)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+  it('runKernel', function (done) {
+    cdef.runKernel()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
-  it('static composeGenesisTx', function () {
-    var fn = Genesis.composeGenesisTx.bind(Genesis)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+  it('static getAffectingInputs', function (done) {
+    Genesis.getAffectingInputs()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it('static makeComposedTx', function (done) {
+    Genesis.makeComposedTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it('static composeGenesisTx', function (done) {
+    Genesis.composeGenesisTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 })
