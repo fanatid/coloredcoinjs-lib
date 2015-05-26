@@ -49,7 +49,7 @@ function getTxFnStub (transactions) {
  * @return {string}
  */
 function getRandomAddress () {
-  return bitcore.PrivateKey.fromRandom(bitcore.Networks.testnet).toAddress()
+  return bitcore.PrivateKey.fromRandom('testnet').toAddress()
 }
 
 /**

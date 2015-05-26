@@ -13,8 +13,8 @@ module.exports = function (opts) {
   ldescribe('storage.data.' + opts.StorageCls.name, function () {
     var storage
     var record = {
-      txId: random.getRandomBuffer(32).toString('hex'),
-      outIndex: 0,
+      txid: random.getRandomBuffer(32).toString('hex'),
+      vout: 0,
       colorId: 0,
       value: 10
     }
@@ -46,7 +46,7 @@ module.exports = function (opts) {
       it('output exists', function (done) {
         storage.addColorValue(record)
           .then(function () {
-            return storage.getColorValues(record.txId, record.outIndex)
+            return storage.getColorValues(record.txid, record.vout)
           })
           .then(function (data) {
             var obj = {}
@@ -57,7 +57,7 @@ module.exports = function (opts) {
       })
 
       it('output not exists', function (done) {
-        storage.getColorValues(record.txId, record.outIndex)
+        storage.getColorValues(record.txid, record.vout)
           .then(function (data) {
             expect(data).to.deep.equal({})
           })
@@ -67,7 +67,7 @@ module.exports = function (opts) {
       it('output exists, specific color id exists', function (done) {
         storage.addColorValue(record)
           .then(function () {
-            return storage.getColorValues(record.txId, record.outIndex, record.colorId)
+            return storage.getColorValues(record.txid, record.vout, record.colorId)
           })
           .then(function (value) {
             expect(value).to.equal(record.value)
@@ -76,7 +76,7 @@ module.exports = function (opts) {
       })
 
       it('output exists, specific color id not exists', function (done) {
-        return storage.getColorValues(record.txId, record.outIndex, record.colorId)
+        return storage.getColorValues(record.txid, record.vout, record.colorId)
           .then(function (value) {
             expect(value).to.be.null
           })
@@ -88,7 +88,7 @@ module.exports = function (opts) {
       it('true', function (done) {
         storage.addColorValue(record)
           .then(function () {
-            return storage.isColoredOutput(record.txId, record.outIndex)
+            return storage.isColoredOutput(record.txid, record.vout)
           })
           .then(function (isColored) {
             expect(isColored).to.be.true
@@ -97,7 +97,7 @@ module.exports = function (opts) {
       })
 
       it('false', function (done) {
-        storage.isColoredOutput(record.txId, record.outIndex)
+        storage.isColoredOutput(record.txid, record.vout)
           .then(function (isColored) {
             expect(isColored).to.be.false
           })
@@ -109,16 +109,16 @@ module.exports = function (opts) {
       it('add/get/delete/get', function (done) {
         storage.addColorValue(record)
           .then(function () {
-            return storage.getColorValues(record.txId, record.outIndex)
+            return storage.getColorValues(record.txid, record.vout)
           })
           .then(function (data) {
             var obj = {}
             obj[record.colorId] = record.value
             expect(data).to.deep.equal(obj)
-            return storage.removeOutput(record.txId, record.outIndex)
+            return storage.removeOutput(record.txid, record.vout)
           })
           .then(function () {
-            return storage.getColorValues(record.txId, record.outIndex)
+            return storage.getColorValues(record.txid, record.vout)
           })
           .then(function (data) {
             expect(data).to.deep.equal({})

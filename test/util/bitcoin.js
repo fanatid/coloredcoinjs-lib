@@ -6,11 +6,9 @@ var cclib = require('../../')
 
 describe('util.bitcoin', function () {
   describe('script2addresses', function () {
-    var network = bitcore.Networks.testnet
-
     function checkScript (asm, addresses) {
       var script = bitcore.Script(asm)
-      var result = cclib.util.bitcoin.script2addresses(script, network)
+      var result = cclib.util.bitcoin.script2addresses(script, 'testnet')
       expect(result).to.deep.equal(addresses)
     }
 
