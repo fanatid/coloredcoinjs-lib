@@ -39,15 +39,14 @@
     "node": "=0.10.x"
   },
   "dependencies": {
-    "bitcoinjs-lib": "=1.4.3",
     "bitcore": "=0.12.5",
     "bluebird": "=2.9.25",
     "bs58": "=2.0.1",
     "errno": "=0.1.1",
     "lodash": "=3.8.0",
     "lru-cache": "=2.6.2",
-    "make-concurrent": "=0.0.3",
-    "ready-mixin": "=0.0.3",
+    "make-concurrent": "=0.0.4",
+    "ready-mixin": "=0.0.4",
     "sqlite3": "=3.0.8"
   },
   "devDependencies": {

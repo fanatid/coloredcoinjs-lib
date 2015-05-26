@@ -5,9 +5,8 @@ var _ = require('lodash')
 var Promise = require('bluebird')
 
 var cclib = require('../../')
-var EPOBCColorDefinition = cclib.definitions.EPOBC
 
-describe.skip('ColorDefinitionManager', function () {
+describe('ColorDefinitionManager', function () {
   var cdManager
   var cdStorage
   var epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
@@ -16,50 +15,54 @@ describe.skip('ColorDefinitionManager', function () {
   beforeEach(function (done) {
     cdStorage = new cclib.storage.definitions.Memory()
     cdStorage.ready.done(done, done)
-    cdManager = new cclib.ColorDefinitionManager(cdStorage)
+    cdManager = new cclib.definitions.Manager(cdStorage)
   })
 
   afterEach(function (done) {
     cdStorage.clear().done(done, done)
   })
 
-  describe('getUncolored', function () {
-    it('is UncoloredColorDefinition', function () {
-      var cdef = cclib.ColorDefinitionManager.getUncolored()
-      expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
-    })
-
-    it('colorId is 0', function () {
-      var cdef = cclib.ColorDefinitionManager.getUncolored()
-      expect(cdef.getColorId()).to.equal(0)
-    })
+  it('getUncolored', function () {
+    var cdef = cclib.definitions.Manager.getUncolored()
+    expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
+    expect(cdef).to.deep.equal(new cclib.definitions.Uncolored())
   })
 
-  describe('getGenesis', function () {
-    it('is GenesisColorDefinition', function () {
-      var cdef = cclib.ColorDefinitionManager.getGenesis()
-      expect(cdef).to.be.instanceof(cclib.GenesisColorDefinition)
-    })
-
-    it('colorId is -1', function () {
-      var cdef = cclib.ColorDefinitionManager.getGenesis()
-      expect(cdef.getColorId()).to.equal(-1)
-    })
+  it('getGenesis', function () {
+    var cdef = cclib.definitions.Manager.getGenesis()
+    expect(cdef).to.be.instanceof(cclib.definitions.Genesis)
+    expect(cdef).to.deep.equal(new cclib.definitions.Genesis())
   })
 
-  describe('getColorDefenitionClsForCode', function () {
+  describe('registerColorDefinition/getColorDefenitionClsForCode', function () {
+    it('already registered', function () {
+      var fn = function () {
+        cclib.definitions.Manager.registerColorDefinition(
+          cclib.definitions.EPOBC)
+      }
+      expect(fn).to.throw(cclib.errors.ColorDefinitionAlreadyRegisteredError)
+    })
+
     it('return null', function () {
-      var cdcls = cclib.ColorDefinitionManager.getColorDefenitionClsForCode('x')
+      var cdcls = cclib.definitions.Manager.getColorDefenitionClsForCode('x')
       expect(cdcls).to.be.null
     })
 
-    it('return EPOBCColorDefinition constructor', function () {
-      var cdcls = cclib.ColorDefinitionManager.getColorDefenitionClsForCode('epobc')
-      expect(cdcls).to.equal(EPOBCColorDefinition)
+    it('return registered color definition', function () {
+      var cdcls = cclib.definitions.Manager.getColorDefenitionClsForCode('epobc')
+      expect(cdcls).to.equal(cclib.definitions.EPOBC)
     })
   })
 
   describe('resolve', function () {
+    it('add new record', function (done) {
+      cdManager.resolve(epobcDesc1)
+        .then(function (cdef) {
+          expect(cdef.getDesc()).to.equal(epobcDesc1)
+        })
+        .done(done, done)
+    })
+
     it('record is not null', function (done) {
       cdStorage.resolve(epobcDesc1)
         .then(function (record) {
@@ -83,15 +86,7 @@ describe.skip('ColorDefinitionManager', function () {
     it('return uncolored', function (done) {
       cdManager.resolve('')
         .then(function (cdef) {
-          expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
-        })
-        .done(done, done)
-    })
-
-    it('add new record', function (done) {
-      cdManager.resolve(epobcDesc1)
-        .then(function (cdef) {
-          expect(cdef.getDesc()).to.equal(epobcDesc1)
+          expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
         })
         .done(done, done)
     })
@@ -109,7 +104,7 @@ describe.skip('ColorDefinitionManager', function () {
     it('return uncolred', function (done) {
       cdManager.get({id: 0})
         .then(function (cdef) {
-          expect(cdef).to.be.instanceof(cclib.UncoloredColorDefinition)
+          expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
         })
         .done(done, done)
     })
