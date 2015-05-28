@@ -42,7 +42,7 @@
     "bitcore": "=0.12.5",
     "bluebird": "=2.9.25",
     "bs58": "=2.0.1",
-    "errno": "=0.1.1",
+    "error-system": "=0.1.0",
     "lodash": "=3.8.0",
     "make-concurrent": "=0.0.4",
     "ready-mixin": "=0.0.4",

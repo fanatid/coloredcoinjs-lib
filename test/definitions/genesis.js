@@ -19,12 +19,12 @@ describe('definitions.Genesis', function () {
 
   it('static getColorCode', function () {
     var fn = Genesis.getColorCode.bind(Genesis)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+    expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
   it('getColorCode', function () {
     var fn = cdef.getColorCode.bind(cdef)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+    expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
   it('getColorId', function () {
@@ -33,18 +33,18 @@ describe('definitions.Genesis', function () {
 
   it('getDesc', function () {
     var fn = cdef.getDesc.bind(cdef)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+    expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
   it('static fromDesc', function () {
     var fn = Genesis.fromDesc.bind(Genesis)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+    expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
   it('runKernel', function (done) {
     cdef.runKernel()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -53,7 +53,7 @@ describe('definitions.Genesis', function () {
   it('static getAffectingInputs', function (done) {
     Genesis.getAffectingInputs()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -62,7 +62,7 @@ describe('definitions.Genesis', function () {
   it('static makeComposedTx', function (done) {
     Genesis.makeComposedTx()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -71,7 +71,7 @@ describe('definitions.Genesis', function () {
   it('static composeGenesisTx', function (done) {
     Genesis.composeGenesisTx()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)

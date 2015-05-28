@@ -17,7 +17,7 @@ describe('storage.data.Interface', function () {
 
   it('#add', function (done) {
     storage.add().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
       done()
     })
     .done(_.noop, _.noop)
@@ -25,7 +25,7 @@ describe('storage.data.Interface', function () {
 
   it('#get', function (done) {
     storage.get().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
       done()
     })
     .done(_.noop, _.noop)
@@ -33,7 +33,7 @@ describe('storage.data.Interface', function () {
 
   it('#remove', function (done) {
     storage.remove().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
       done()
     })
     .done(_.noop, _.noop)
@@ -41,7 +41,7 @@ describe('storage.data.Interface', function () {
 
   it('#clear', function (done) {
     storage.clear().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
       done()
     })
     .done(_.noop, _.noop)

@@ -45,7 +45,7 @@ describe('tx.Operational', function () {
   it('selectCoins', function (done) {
     optx.selectCoins()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -54,7 +54,7 @@ describe('tx.Operational', function () {
   it('getChangeAddress', function (done) {
     optx.getChangeAddress()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)

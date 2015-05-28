@@ -46,13 +46,13 @@ describe('ColorValue', function () {
   it('checkCompatibility not throw', function () {
     var cv2 = new ColorValue(uncoloredCDef, 0)
     var fn = function () { cv1.checkCompatibility(cv2) }
-    expect(fn).to.not.throw(errors.IncompatibilityColorValuesError)
+    expect(fn).to.not.throw(errors.IncompatibilityError)
   })
 
   it('checkCompatibility throw error', function () {
     var cv2 = new ColorValue(genesisCDef, 0)
     var fn = function () { cv1.checkCompatibility(cv2) }
-    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
+    expect(fn).to.throw(errors.IncompatibilityError)
   })
 
   it('plus with compatibility', function () {
@@ -64,7 +64,7 @@ describe('ColorValue', function () {
   it('plus with not compatibility', function () {
     var cv2 = new ColorValue(genesisCDef, 1)
     var fn = function () { cv1.plus(cv2) }
-    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
+    expect(fn).to.throw(errors.IncompatibilityError)
   })
 
   it('neg', function () {
@@ -80,7 +80,7 @@ describe('ColorValue', function () {
   it('minus with not compatibility', function () {
     var cv2 = new ColorValue(genesisCDef, 1)
     var fn = function () { cv1.minus(cv2) }
-    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
+    expect(fn).to.throw(errors.IncompatibilityError)
   })
 
   it('sum with compatibility', function () {
@@ -97,6 +97,6 @@ describe('ColorValue', function () {
   it('sum with not compatibility', function () {
     var cv2 = new ColorValue(genesisCDef, 1)
     var fn = function () { ColorValue.sum([cv1, cv2]) }
-    expect(fn).to.throw(errors.IncompatibilityColorValuesError)
+    expect(fn).to.throw(errors.IncompatibilityError)
   })
 })

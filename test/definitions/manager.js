@@ -46,7 +46,7 @@ describe('ColorDefinitionManager', function () {
         cclib.definitions.Manager.registerColorDefinition(
           cclib.definitions.EPOBC)
       }
-      expect(fn).to.throw(cclib.errors.ColorDefinitionAlreadyRegisteredError)
+      expect(fn).to.throw(cclib.errors.ColorDefinition.AlreadyRegistered)
     })
 
     it('return null', function () {

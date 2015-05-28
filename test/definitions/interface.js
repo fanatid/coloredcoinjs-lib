@@ -13,12 +13,12 @@ describe('definitions.Interface', function () {
   })
 
   it('static getColorCode', function () {
-    expect(Interface.getColorCode).to.throw(cclib.errors.NotImplementedError)
+    expect(Interface.getColorCode).to.throw(cclib.errors.NotImplemented)
   })
 
   it('getColorCode', function () {
     var fn = cdef.getColorCode.bind(cdef)
-    expect(fn).to.throw(cclib.errors.NotImplementedError)
+    expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
   it('colorId', function () {
@@ -26,23 +26,23 @@ describe('definitions.Interface', function () {
   })
 
   it('desc', function () {
-    expect(cdef.getDesc).to.throw(cclib.errors.NotImplementedError)
+    expect(cdef.getDesc).to.throw(cclib.errors.NotImplemented)
   })
 
   it('static fromDesc', function () {
     expect(Interface.fromDesc).to.throw(
-      cclib.errors.NotImplementedError)
+      cclib.errors.NotImplemented)
   })
 
   it('isGenesis', function () {
     expect(cdef.isGenesis.bind(cdef)).to.throw(
-      cclib.errors.NotImplementedError)
+      cclib.errors.NotImplemented)
   })
 
   it('runKernel', function (done) {
     cdef.runKernel()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -51,7 +51,7 @@ describe('definitions.Interface', function () {
   it('static getAffectingInputs', function (done) {
     Interface.getAffectingInputs()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -60,7 +60,7 @@ describe('definitions.Interface', function () {
   it('static makeComposedTx', function (done) {
     Interface.makeComposedTx()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -69,7 +69,7 @@ describe('definitions.Interface', function () {
   it('static composeGenesisTx', function (done) {
     Interface.composeGenesisTx()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)

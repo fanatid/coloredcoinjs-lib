@@ -36,12 +36,12 @@ describe('definitions.Uncolored', function () {
   describe('fromDesc', function () {
     it('fail, wrong color id', function () {
       function fn () { Uncolored.fromDesc(1, '') }
-      expect(fn).to.throw(cclib.errors.ColorDefinitionBadColorIdError)
+      expect(fn).to.throw(cclib.errors.ColorDefinition.IncorrectColorId)
     })
 
     it('fail, wrong description', function () {
       function fn () { Uncolored.fromDesc(0, 'xxx') }
-      expect(fn).to.throw(cclib.errors.ColorDefinitionBadDescError)
+      expect(fn).to.throw(cclib.errors.ColorDefinition.IncorrectDesc)
     })
 
     it('successful', function () {
@@ -53,7 +53,7 @@ describe('definitions.Uncolored', function () {
   it('runKernel', function (done) {
     cdef.runKernel()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -62,7 +62,7 @@ describe('definitions.Uncolored', function () {
   it('static getAffectingInputs', function (done) {
     Uncolored.getAffectingInputs()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
@@ -73,7 +73,7 @@ describe('definitions.Uncolored', function () {
   it('static composeGenesisTx', function (done) {
     Uncolored.composeGenesisTx()
       .asCallback(function (err) {
-        expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
         done()
       })
       .done(_.noop, _.noop)
