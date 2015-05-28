@@ -32,6 +32,7 @@ cclib.tx.SimpleOperational = require('./lib/tx/simpleoperational')
 // util
 cclib.util = {}
 cclib.util.bitcoin = require('./lib/util/bitcoin')
+cclib.util.transactions = require('./lib/util/transactions')
 
 // dependencies
 cclib.deps = {}

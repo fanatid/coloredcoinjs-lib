@@ -1,4 +1,5 @@
 var _ = require('lodash')
+var timers = require('timers')
 var inherits = require('util').inherits
 var bitcore = require('bitcore')
 
@@ -27,22 +28,11 @@ FixedFeeOperationalTx.prototype.getRequiredFee = function () {
  * @return {getTxFn}
  */
 function getTxFnStub (transactions) {
-  if (_.isArray(transactions)) {
-    transactions = _.zipObject(transactions.map(function (tx) {
-      return [tx.id, tx.toString()]
-    }))
-  }
-
-  return function getTxFn (txid, cb) {
-    var err = null
-    var rawtx = transactions[txid]
-
-    if (rawtx === undefined) {
-      err = new Error('Transaction not found!')
-    }
-
-    cb(err, rawtx)
-  }
+  return cclib.util.transactions.extendGetTxFn(function (txid, cb) {
+    timers.setImmediate(function () {
+      cb(new Error(txid + ' not found'))
+    })
+  }, transactions)
 }
 
 /**
@@ -109,7 +99,7 @@ module.exports = {
   FixedFeeOperationalTx: FixedFeeOperationalTx,
 
   getTxFnStub: getTxFnStub,
-  getTxFn: getTxFnStub(require('./fixtures/transactions.json')),
+  getTxFn: getTxFnStub(require('./fixtures/transactions')),
 
   getRandomAddress: getRandomAddress,
   createRunKernelEnv: createRunKernelEnv
