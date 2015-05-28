@@ -2,6 +2,7 @@
 /* global describe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 var _ = require('lodash')
+var events = require('events')
 var Promise = require('bluebird')
 
 var cclib = require('../../')
@@ -20,6 +21,11 @@ describe('ColorDefinitionManager', function () {
 
   afterEach(function (done) {
     cdStorage.clear().done(done, done)
+  })
+
+  it('inherit EventEmitter', function () {
+    expect(cdManager).to.be.instanceof(cclib.definitions.Manager)
+    expect(cdManager).to.be.instanceof(events.EventEmitter)
   })
 
   it('getUncolored', function () {
@@ -63,13 +69,27 @@ describe('ColorDefinitionManager', function () {
         .done(done, done)
     })
 
+    it('generate event on adding new defintion', function (done) {
+      cdManager.on('new', function (cdef) {
+        expect(cdef).to.be.instanceof(cclib.definitions.Interface)
+        expect(cdef.getDesc()).to.equal(epobcDesc1)
+        done()
+      })
+
+      cdManager.resolve(epobcDesc1)
+        .then(function (cdef) {
+          expect(cdef.getDesc()).to.equal(epobcDesc1)
+        })
+        .done(_.noop, done)
+    })
+
     it('record is not null', function (done) {
       cdStorage.resolve(epobcDesc1)
-        .then(function (record) {
-          return cdManager.resolve(record.desc)
+        .then(function (data) {
+          return cdManager.resolve(data.record.desc)
             .then(function (cdef) {
-              expect(cdef.getColorId()).to.equal(record.id)
-              expect(cdef.getDesc()).to.equal(record.desc)
+              expect(cdef.getColorId()).to.equal(data.record.id)
+              expect(cdef.getDesc()).to.equal(data.record.desc)
             })
         })
         .done(done, done)
@@ -111,11 +131,11 @@ describe('ColorDefinitionManager', function () {
 
     it('return ColorDefinition', function (done) {
       cdStorage.resolve(epobcDesc1)
-        .then(function (record) {
-          return cdManager.get({id: record.id})
+        .then(function (data) {
+          return cdManager.get({id: data.record.id})
             .then(function (cdef) {
-              expect(cdef.getDesc()).to.equal(record.desc)
-              expect(cdef.getColorId()).to.equal(record.id)
+              expect(cdef.getDesc()).to.equal(data.record.desc)
+              expect(cdef.getColorId()).to.equal(data.record.id)
             })
         })
         .done(done, done)

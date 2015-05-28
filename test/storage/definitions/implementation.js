@@ -27,8 +27,8 @@ module.exports = function (opts) {
     describe('#resolve', function () {
       it('return null', function (done) {
         storage.resolve('...', {autoAdd: false})
-          .then(function (record) {
-            expect(record).to.be.null
+          .then(function (data) {
+            expect(data).to.deep.equal({record: null, new: null})
           })
           .done(done, done)
       })
@@ -36,8 +36,9 @@ module.exports = function (opts) {
       it('create new record', function (done) {
         var desc = random.getRandomBuffer(5).toString('hex')
         storage.resolve(desc)
-          .then(function (record) {
-            expect(record).to.deep.equal({id: 1, desc: desc})
+          .then(function (data) {
+            expect(data).to.deep.equal(
+              {record: {id: 1, desc: desc}, new: true})
           })
           .done(done, done)
       })
@@ -46,15 +47,16 @@ module.exports = function (opts) {
         var colorId
         var desc = random.getRandomBuffer(5).toString('hex')
         storage.resolve(desc)
-          .then(function (record) {
-            expect(record).to.be.an('object')
-            expect(record.id).to.be.a('number')
-            expect(record.desc).to.equal(desc)
-            colorId = record.id
+          .then(function (data) {
+            expect(data).to.have.deep.property('record.id').and.to.be.a('Number')
+            expect(data).to.have.deep.property('record.desc', desc)
+            expect(data).to.have.property('new', true)
+            colorId = data.record.id
             return storage.resolve(desc)
           })
-          .then(function (record) {
-            expect(record).to.deep.equal({id: colorId, desc: desc})
+          .then(function (data) {
+            expect(data).to.deep.equal(
+              {record: {id: colorId, desc: desc}, new: false})
           })
           .done(done, done)
       })
@@ -71,15 +73,15 @@ module.exports = function (opts) {
         ])
         .then(function (result) {
           expect(result).to.have.length(3)
-          records = result
+          records = _.pluck(result, 'record')
         })
         .done(done, done)
       })
 
       it('by id', function (done) {
         storage.get({id: records[0].id})
-          .then(function (record) {
-            expect(record).to.deep.equal(records[0])
+          .then(function (data) {
+            expect(data).to.deep.equal(records[0])
           })
           .done(done, done)
       })
