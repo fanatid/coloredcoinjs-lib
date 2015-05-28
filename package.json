@@ -44,7 +44,6 @@
     "bs58": "=2.0.1",
     "errno": "=0.1.1",
     "lodash": "=3.8.0",
-    "lru-cache": "=2.6.2",
     "make-concurrent": "=0.0.4",
     "ready-mixin": "=0.0.4",
     "sqlite3": "=3.0.8"

@@ -34,6 +34,11 @@ describe('definitions.Interface', function () {
       cclib.errors.NotImplementedError)
   })
 
+  it('isGenesis', function () {
+    expect(cdef.isGenesis.bind(cdef)).to.throw(
+      cclib.errors.NotImplementedError)
+  })
+
   it('runKernel', function (done) {
     cdef.runKernel()
       .asCallback(function (err) {

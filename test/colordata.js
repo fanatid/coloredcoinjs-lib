@@ -1,150 +1,192 @@
 /* global describe, beforeEach, afterEach, it */
-/* globals Promise:true */
 var expect = require('chai').expect
 var _ = require('lodash')
-var Promise = require('bluebird')
+var bitcore = require('bitcore')
 
 var cclib = require('../')
 
-describe.skip('ColorData', function () {
+var helpers = require('./helpers')
+
+describe('ColorData', function () {
   var cdStorage
   var epobc
-  var tx1
-  var tx2
-  var cData
+  var cdata
 
-  beforeEach(function () {
-    cdStorage = new cclib.ColorDataStorage()
-    epobc = new cclib.EPOBCColorDefinition(1,
-      {txId: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', outIndex: 0, height: 0})
-    tx1 = new cclib.bitcoin.Transaction()
-    tx2 = new cclib.bitcoin.Transaction()
-    cData = new cclib.ColorData(cdStorage)
-  })
-
-  afterEach(function () {
-    cdStorage.clear()
-  })
-
-  describe('fetchColorValue', function () {
-    var colorValue
-    var txId = '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff'
-
-    it('return null', function () {
-      colorValue = cData.fetchColorValue(txId, 0, epobc)
-      expect(colorValue).to.be.null
+  beforeEach(function (done) {
+    cdStorage = new cclib.storage.data.Memory()
+    cdStorage.ready.done(done, done)
+    epobc = new cclib.definitions.EPOBC(1, {
+      txid: bitcore.crypto.Random.getRandomBuffer(32).toString('hex'),
+      vout: 0,
+      height: 0
     })
-
-    it('return ColorValue instance', function () {
-      cdStorage.add({colorId: epobc.getColorId(), txId: txId, outIndex: 0, value: 10})
-      colorValue = cData.fetchColorValue(txId, 0, epobc)
-      expect(colorValue).to.be.instanceof(cclib.ColorValue)
-      expect(colorValue.getValue()).to.equal(10)
-    })
+    cdata = new cclib.ColorData(cdStorage)
   })
 
-  describe('scanTx', function () {
-    it('ColorDataStore not empty', function (done) {
-      tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 1, 37)
-      cdStorage.add({
-        colorId: 1,
-        txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
-        outIndex: 1,
-        value: 1
-      })
-      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]))
+  afterEach(function (done) {
+    cdStorage.clear().done(done, done)
+  })
+
+  describe('_getColorValue', function () {
+    var txid = bitcore.crypto.Random.getRandomBuffer(32).toString('hex')
+
+    it('return null', function (done) {
+      cdata._getColorValue(txid, 0, epobc)
+        .then(function (cvalue) {
+          expect(cvalue).to.be.null
+        })
         .done(done, done)
     })
 
-    it('runKernel return error', function (done) {
-      epobc.runKernel = function () {
-        return Promise.reject(new Error('error.runKernel'))
+    it('return ColorValue instance', function (done) {
+      var data = {txid: txid, vout: 0, colorId: epobc.getColorId(), value: 10}
+      cdStorage.addColorValue(data)
+        .then(function () {
+          return cdata._getColorValue(txid, 0, epobc)
+        })
+        .then(function (cvalue) {
+          expect(cvalue).to.be.instanceof(cclib.ColorValue)
+          expect(cvalue.getValue()).to.equal(10)
+        })
+        .done(done, done)
+    })
+  })
+
+  describe('getTxColorValues', function () {
+    it('not a color tx', function (done) {
+      var tx = new bitcore.Transaction()
+      tx.uncheckedAddInput(bitcore.Transaction.Input({
+        prevTxId: new Buffer(32),
+        outputIndex: 0,
+        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
+      }))
+      tx.addOutput(bitcore.Transaction.Output({
+        satoshis: _.random(1, 1000),
+        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
+      }))
+
+      cdata.getTxColorValues(tx, epobc, helpers.getTxFnStub([]))
+        .then(function (result) {
+          expect(result).to.deep.equal({inputs: [null], outputs: [null]})
+        })
+        .done(done, done)
+    })
+
+    it('genesis tx', function (done) {
+      var tx = new bitcore.Transaction()
+      tx._getHash = function () {
+        var hash = new Buffer(epobc._genesis.txid, 'hex')
+        return Array.prototype.reverse.call(hash)
       }
-      epobc.genesis.txId = tx1.getId()
-      cData.scanTx(tx1, [], epobc, stubs.getTxStub([]))
-        .then(function () {
-          throw new Error('Unexpected behaviour')
-        })
-        .catch(function (err) {
-          expect(err.message).to.equal('error.runKernel')
+      tx.uncheckedAddInput(bitcore.Transaction.Input({
+        prevTxId: new Buffer(32),
+        outputIndex: 0,
+        sequenceNumber: 37 | (2 << 6),
+        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
+      }))
+      tx.addOutput(bitcore.Transaction.Output({
+        satoshis: 11,
+        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
+      }))
+
+      cdata.getTxColorValues(tx, epobc, helpers.getTxFnStub([]))
+        .then(function (result) {
+          var ovalue = new cclib.ColorValue(epobc, 7)
+          expect(result).to.deep.equal({inputs: [null], outputs: [ovalue]})
         })
         .done(done, done)
     })
 
-    it('index not in outputIndices', function (done) {
-      tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2 << 6))
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-      tx2.addInput(tx1.getId(), 0, 51 | (2 << 6))
-      tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      cdStorage.add({
-        colorId: 1,
-        txId: '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
-        outIndex: 0,
-        value: 6
-      })
-      cData.scanTx(tx2, [], epobc, stubs.getTxStub([tx1]))
-        .done(done, done)
-    })
+    it('transfer tx', function (done) {
+      var tx1 = new bitcore.Transaction()
+      tx1.uncheckedAddInput(bitcore.Transaction.Input({
+        prevTxId: new Buffer(32),
+        outputIndex: 0,
+        sequenceNumber: 37 | (2 << 6),
+        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
+      }))
+      tx1.addOutput(bitcore.Transaction.Output({
+        satoshis: 11,
+        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
+      }))
+      epobc._genesis.txid = tx1.id
 
-    it('ColorDataStore.add throw error', function (done) {
-      tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2 << 6))
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-      tx2.addInput(tx1.getId(), 0, 51 | (2 << 6))
-      tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      cdStorage.add({colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6})
-      cdStorage.add = function () { throw new Error('error.scanTx') }
-      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]))
-        .asCallback(function (err) {
-          expect(err).to.be.instanceof(Error)
-          expect(err.message).to.equal('error.scanTx')
-          done()
-        })
-        .done(_.noop, _.noop)
-    })
+      var tx2 = new bitcore.Transaction()
+      tx2.uncheckedAddInput(bitcore.Transaction.Input({
+        prevTxId: tx1.id,
+        outputIndex: 0,
+        sequenceNumber: 51 | (2 << 6),
+        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
+      }))
+      tx2.addOutput(bitcore.Transaction.Output({
+        satoshis: 10,
+        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
+      }))
 
-    it('add record', function (done) {
-      tx1.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 37 | (2 << 6))
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 11)
-      tx2.addInput(tx1.getId(), 0, 51 | (2 << 6))
-      tx2.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 10)
-      cdStorage.add({colorId: 1, txId: tx1.getId(), outIndex: 0, value: 6})
-      cData.scanTx(tx2, [0], epobc, stubs.getTxStub([tx1]))
-        .then(function () {
-          var record = cdStorage.getValue({
-            colorId: 1,
-            txId: tx2.getId(),
-            outIndex: 0
-          })
-          expect(record).to.equal(6)
+      cdata.getTxColorValues(tx2, epobc, helpers.getTxFnStub([tx1]))
+        .then(function (result) {
+          var incval = new cclib.ColorValue(epobc, 7)
+          var outcval = new cclib.ColorValue(epobc, 6)
+          expect(result).to.deep.equal({inputs: [incval], outputs: [outcval]})
         })
         .done(done, done)
     })
   })
 
-  describe('getColorValue', function () {
-    it('blockchainState.getTx return error', function (done) {
-      cData.fetchColorValue = function () { return null }
-      var coin = {txId: tx1.getId(), outIndex: 0}
-      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]))
-        .then(function () {
-          throw new Error('Unexpected behaviour')
-        })
-        .catch(function (err) {
-          expect(err).to.be.instanceof(Error).with.to.have.property('message', 'notFoundTx')
-        })
-        .done(done, done)
-    })
+  describe('getOutputColorValue', function () {
+    it('transfer tx', function (done) {
+      var tx1 = new bitcore.Transaction()
+      tx1.uncheckedAddInput(bitcore.Transaction.Input({
+        prevTxId: new Buffer(32),
+        outputIndex: 0,
+        sequenceNumber: 37 | (2 << 6),
+        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
+      }))
+      tx1.addOutput(bitcore.Transaction.Output({
+        satoshis: 11,
+        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
+      }))
+      epobc._genesis.txid = tx1.id
 
-    it('already in store', function (done) {
-      cdStorage.add({colorId: epobc.getColorId(), txId: tx1.getId(), outIndex: 0, value: 15})
-      var coin = {txId: tx1.getId(), outIndex: 0}
-      cData.getCoinColorValue(coin, epobc, stubs.getTxStub([]))
-        .then(function (colorValue) {
-          expect(colorValue).to.be.instanceof(cclib.ColorValue)
-          expect(colorValue.getColorId()).to.be.equal(epobc.getColorId())
-          expect(colorValue.getValue()).to.be.equal(15)
+      var tx2 = new bitcore.Transaction()
+      tx2.uncheckedAddInput(bitcore.Transaction.Input({
+        prevTxId: tx1.id,
+        outputIndex: 0,
+        sequenceNumber: 51 | (2 << 6),
+        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
+      }))
+      tx2.addOutput(bitcore.Transaction.Output({
+        satoshis: 10,
+        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
+      }))
+
+      cdata.getOutputColorValue(tx2, 0, epobc, helpers.getTxFnStub([tx1]))
+        .then(function (cvalue) {
+          expect(cvalue).to.be.instanceof(cclib.ColorValue)
+          expect(cvalue.getValue()).to.be.equal(6)
         })
         .done(done, done)
     })
+  })
+
+  it('remove color values', function (done) {
+    var txid = bitcore.crypto.Random.getRandomBuffer(32).toString('hex')
+    var data = {txid: txid, vout: 0, colorId: epobc.getColorId(), value: 10}
+    cdStorage.addColorValue(data)
+      .then(function () {
+        return cdata._getColorValue(txid, 0, epobc)
+      })
+      .then(function (cvalue) {
+        expect(cvalue).to.be.instanceof(cclib.ColorValue)
+        expect(cvalue.getValue()).to.equal(10)
+        return cdata.removeColorValues(txid, 0)
+      })
+      .then(function () {
+        return cdata._getColorValue(txid, 0, epobc)
+      })
+      .then(function (cvalue) {
+        expect(cvalue).to.be.null
+      })
+      .done(done, done)
   })
 })
