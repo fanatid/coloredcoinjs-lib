@@ -40,7 +40,7 @@ describe('ColorData', function () {
 
     it('return ColorValue instance', function (done) {
       var data = {txid: txid, vout: 0, colorId: epobc.getColorId(), value: 10}
-      cdStorage.addColorValue(data)
+      cdStorage.add(data)
         .then(function () {
           return cdata._getColorValue(txid, 0, epobc)
         })
@@ -172,7 +172,7 @@ describe('ColorData', function () {
   it('remove color values', function (done) {
     var txid = bitcore.crypto.Random.getRandomBuffer(32).toString('hex')
     var data = {txid: txid, vout: 0, colorId: epobc.getColorId(), value: 10}
-    cdStorage.addColorValue(data)
+    cdStorage.add(data)
       .then(function () {
         return cdata._getColorValue(txid, 0, epobc)
       })

@@ -15,32 +15,24 @@ describe('storage.data.Interface', function () {
     expect(cclib.storage.data.Interface.isAvailable()).to.be.false
   })
 
-  it('#addColorValue', function (done) {
-    storage.addColorValue().asCallback(function (err) {
+  it('#add', function (done) {
+    storage.add().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
     .done(_.noop, _.noop)
   })
 
-  it('#getColorValues', function (done) {
-    storage.getColorValues().asCallback(function (err) {
+  it('#get', function (done) {
+    storage.get().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
     .done(_.noop, _.noop)
   })
 
-  it('#isColoredOutput', function (done) {
-    storage.isColoredOutput().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
-      done()
-    })
-    .done(_.noop, _.noop)
-  })
-
-  it('#removeOutput', function (done) {
-    storage.removeOutput().asCallback(function (err) {
+  it('#remove', function (done) {
+    storage.remove().asCallback(function (err) {
       expect(err).to.be.instanceof(cclib.errors.NotImplementedError)
       done()
     })
