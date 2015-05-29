@@ -40,23 +40,28 @@ describe('ColorDefinitionManager', function () {
     expect(cdef).to.deep.equal(new cclib.definitions.Genesis())
   })
 
-  describe('registerColorDefinition/getColorDefenitionClsForCode', function () {
+  describe('ColorDefinitions: register, get all, get by code', function () {
     it('already registered', function () {
       var fn = function () {
-        cclib.definitions.Manager.registerColorDefinition(
+        cclib.definitions.Manager.registerColorDefinitionClass(
           cclib.definitions.EPOBC)
       }
       expect(fn).to.throw(cclib.errors.ColorDefinition.AlreadyRegistered)
     })
 
     it('return null', function () {
-      var cdcls = cclib.definitions.Manager.getColorDefenitionClsForCode('x')
+      var cdcls = cclib.definitions.Manager.getColorDefinitionClass('x')
       expect(cdcls).to.be.null
     })
 
     it('return registered color definition', function () {
-      var cdcls = cclib.definitions.Manager.getColorDefenitionClsForCode('epobc')
+      var cdcls = cclib.definitions.Manager.getColorDefinitionClass('epobc')
       expect(cdcls).to.equal(cclib.definitions.EPOBC)
+    })
+
+    it('return array of registered color definitions', function () {
+      var classes = cclib.definitions.Manager.getColorDefinitionClasses()
+      expect(classes).to.deep.equal([cclib.definitions.EPOBC])
     })
   })
 
