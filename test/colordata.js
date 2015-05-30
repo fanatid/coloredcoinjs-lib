@@ -65,7 +65,7 @@ describe('ColorData', function () {
         script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
       }))
 
-      cdata.getTxColorValues(tx, epobc, helpers.getTxFnStub([]))
+      cdata.getTxColorValues(tx, null, epobc, helpers.getTxFnStub([]))
         .then(function (result) {
           expect(result).to.deep.equal({inputs: [null], outputs: [null]})
         })
@@ -89,7 +89,7 @@ describe('ColorData', function () {
         script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
       }))
 
-      cdata.getTxColorValues(tx, epobc, helpers.getTxFnStub([]))
+      cdata.getTxColorValues(tx, null, epobc, helpers.getTxFnStub([]))
         .then(function (result) {
           var ovalue = new cclib.ColorValue(epobc, 7)
           expect(result).to.deep.equal({inputs: [null], outputs: [ovalue]})
@@ -123,7 +123,7 @@ describe('ColorData', function () {
         script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
       }))
 
-      cdata.getTxColorValues(tx2, epobc, helpers.getTxFnStub([tx1]))
+      cdata.getTxColorValues(tx2, [0], epobc, helpers.getTxFnStub([tx1]))
         .then(function (result) {
           var incval = new cclib.ColorValue(epobc, 7)
           var outcval = new cclib.ColorValue(epobc, 6)
