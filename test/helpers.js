@@ -24,6 +24,43 @@ FixedFeeOperationalTx.prototype.getRequiredFee = function () {
 }
 
 /**
+ * @param {bitcore.Transaction} tx
+ * @param {string|Buffer} hash
+ * @param {number} vout
+ * @param {number} sequence
+ * @param {string} [address]
+ * @return {bitcore.Transaction}
+ */
+function addInput (tx, hash, vout, sequence, address) {
+  if (_.isString(hash)) {
+    hash = new Buffer(hash, 'hex')
+  }
+  address = address || getRandomAddress()
+
+  return tx.uncheckedAddInput(bitcore.Transaction.Input({
+    prevTxId: new Buffer(hash),
+    outputIndex: vout,
+    sequenceNumber: sequence,
+    script: bitcore.Script.fromAddress(address)
+  }))
+}
+
+/**
+ * @param {bitcore.Transaction} tx
+ * @param {number} value
+ * @param {string} [address]
+ * @return {bitcore.Transaction}
+ */
+function addOutput (tx, value, address) {
+  address = address || getRandomAddress()
+
+  return tx.addOutput(bitcore.Transaction.Output({
+    satoshis: value,
+    script: bitcore.Script.buildPublicKeyHashOut(address)
+  }))
+}
+
+/**
  * @param {bitcore.Transaction[]} transactions
  * @return {getTxFn}
  */
@@ -97,6 +134,10 @@ function createRunKernelEnv (txid, inputs, outputs, sequence) {
 
 module.exports = {
   FixedFeeOperationalTx: FixedFeeOperationalTx,
+  tx: {
+    addInput: addInput,
+    addOutput: addOutput
+  },
 
   getTxFnStub: getTxFnStub,
   getTxFn: getTxFnStub(require('./fixtures/transactions')),

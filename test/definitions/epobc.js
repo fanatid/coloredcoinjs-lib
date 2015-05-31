@@ -108,8 +108,12 @@ describe('definitions.EPOBC', function () {
     height: _.random(100000, 400000)
   }
   var epobc
+  var tx1
+  var tx2
 
   beforeEach(function () {
+    tx1 = new bitcore.Transaction()
+    tx2 = new bitcore.Transaction()
     epobc = new EPOBC(1, genesis)
   })
 
@@ -135,65 +139,6 @@ describe('definitions.EPOBC', function () {
       var items = [genesis.txid, genesis.vout, genesis.height]
       expect(epobc.getDesc()).to.equal('epobc:' + items.join(':'))
     })
-  })
-
-  describe('_getXferAffectingInputs', function () {
-/*
-    var affectingInputs
-
-    it.skip('valueWop equal 0 for tx.outs', function () {
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-      affectingInputs = EPOBCColorDefinition._getXferAffectingInputs(tx1, 0, 1)
-      expect(affectingInputs).to.deep.equal([])
-    })
-
-    it.skip('outValueWop equal 0 for tx.outs', function () {
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 0)
-      affectingInputs = EPOBCColorDefinition._getXferAffectingInputs(tx1, 0, 1)
-      expect(affectingInputs).to.deep.equal([])
-    })
-
-    it.skip('prevTag is null', function () {
-      tx2.addInput('0000000000000000000000000000000000000000000000000000000000000000', 4294967295, 4294967295)
-      tx1.addInput(tx2.getId(), 0, 4294967295)
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-      tx1.ins[0].prevTx = tx2
-      affectingInputs = EPOBCColorDefinition._getXferAffectingInputs(tx1, 0, 0)
-      expect(affectingInputs).to.deep.equal([])
-    })
-
-    it.skip('valueWop equal 0 for tx.ins[0].value', function () {
-      tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      tx1.addInput(tx2.getId(), 0, 4294967295)
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-      tx1.ins[0].prevTx = tx2
-      tx1.ins[0].value = 0
-      affectingInputs = EPOBCColorDefinition._getXferAffectingInputs(tx1, 0, 0)
-      expect(affectingInputs).to.deep.equal([])
-    })
-
-    it.skip('isAffectingInput is true', function () {
-      tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      tx1.addInput(tx2.getId(), 0, 4294967295)
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-      tx1.ins[0].prevTx = tx2
-      tx1.ins[0].value = 2
-      affectingInputs = EPOBCColorDefinition._getXferAffectingInputs(tx1, 0, 0)
-      expect(affectingInputs).to.deep.equal([0])
-    })
-
-    it.skip('isAffectingInput is false', function () {
-      tx2.addInput('0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff', 0, 51)
-      tx1.addInput(tx2.getId(), 0, 4294967295)
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-      tx1.addOutput('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 1)
-      tx1.ins[0].prevTx = tx2
-      tx1.ins[0].value = 1
-      affectingInputs = EPOBCColorDefinition._getXferAffectingInputs(tx1, 0, 1)
-      expect(affectingInputs).to.deep.equal([])
-    })
-*/
   })
 
   describe('runKernel', function () {
@@ -263,29 +208,11 @@ describe('definitions.EPOBC', function () {
     })
 
     it('return affecting index', function (done) {
-      var tx1 = new bitcore.Transaction()
-      tx1.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: new Buffer(32),
-        outputIndex: 0,
-        sequenceNumber: 37 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx1.addOutput(bitcore.Transaction.Output({
-        satoshis: 11,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+      helpers.tx.addOutput(tx1, 11)
 
-      var tx2 = new bitcore.Transaction()
-      tx2.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: tx1.id,
-        outputIndex: 0,
-        sequenceNumber: 51 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx2.addOutput(bitcore.Transaction.Output({
-        satoshis: 10,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
+      helpers.tx.addOutput(tx2, 10)
 
       EPOBC.getAffectingInputs(tx2, [0], helpers.getTxFnStub([tx1]))
         .then(function (indices) {

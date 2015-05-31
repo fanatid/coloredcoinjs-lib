@@ -8,11 +8,15 @@ var cclib = require('../')
 var helpers = require('./helpers')
 
 describe('ColorData', function () {
+  var tx1
+  var tx2
   var cdStorage
   var epobc
   var cdata
 
   beforeEach(function (done) {
+    tx1 = new bitcore.Transaction()
+    tx2 = new bitcore.Transaction()
     cdStorage = new cclib.storage.data.Memory()
     cdStorage.ready.done(done, done)
     epobc = new cclib.definitions.EPOBC(1, {
@@ -54,18 +58,10 @@ describe('ColorData', function () {
 
   describe('getTxColorValues', function () {
     it('not a color tx', function (done) {
-      var tx = new bitcore.Transaction()
-      tx.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: new Buffer(32),
-        outputIndex: 0,
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx.addOutput(bitcore.Transaction.Output({
-        satoshis: _.random(1, 1000),
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
+      helpers.tx.addOutput(tx1, _.random(1, 1000))
 
-      cdata.getTxColorValues(tx, null, epobc, helpers.getTxFnStub([]))
+      cdata.getTxColorValues(tx1, null, epobc, helpers.getTxFnStub([]))
         .then(function (result) {
           expect(result).to.deep.equal({inputs: [null], outputs: [null]})
         })
@@ -73,23 +69,11 @@ describe('ColorData', function () {
     })
 
     it('genesis tx', function (done) {
-      var tx = new bitcore.Transaction()
-      tx._getHash = function () {
-        var hash = new Buffer(epobc._genesis.txid, 'hex')
-        return Array.prototype.reverse.call(hash)
-      }
-      tx.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: new Buffer(32),
-        outputIndex: 0,
-        sequenceNumber: 37 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx.addOutput(bitcore.Transaction.Output({
-        satoshis: 11,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+      helpers.tx.addOutput(tx1, 11)
+      epobc._genesis.txid = tx1.id
 
-      cdata.getTxColorValues(tx, null, epobc, helpers.getTxFnStub([]))
+      cdata.getTxColorValues(tx1, null, epobc, helpers.getTxFnStub([]))
         .then(function (result) {
           var ovalue = new cclib.ColorValue(epobc, 7)
           expect(result).to.deep.equal({inputs: [null], outputs: [ovalue]})
@@ -98,30 +82,12 @@ describe('ColorData', function () {
     })
 
     it('transfer tx', function (done) {
-      var tx1 = new bitcore.Transaction()
-      tx1.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: new Buffer(32),
-        outputIndex: 0,
-        sequenceNumber: 37 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx1.addOutput(bitcore.Transaction.Output({
-        satoshis: 11,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+      helpers.tx.addOutput(tx1, 11)
       epobc._genesis.txid = tx1.id
 
-      var tx2 = new bitcore.Transaction()
-      tx2.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: tx1.id,
-        outputIndex: 0,
-        sequenceNumber: 51 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx2.addOutput(bitcore.Transaction.Output({
-        satoshis: 10,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
+      helpers.tx.addOutput(tx2, 10)
 
       cdata.getTxColorValues(tx2, [0], epobc, helpers.getTxFnStub([tx1]))
         .then(function (result) {
@@ -135,30 +101,12 @@ describe('ColorData', function () {
 
   describe('getOutputColorValue', function () {
     it('transfer tx', function (done) {
-      var tx1 = new bitcore.Transaction()
-      tx1.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: new Buffer(32),
-        outputIndex: 0,
-        sequenceNumber: 37 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx1.addOutput(bitcore.Transaction.Output({
-        satoshis: 11,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+      helpers.tx.addOutput(tx1, 11)
       epobc._genesis.txid = tx1.id
 
-      var tx2 = new bitcore.Transaction()
-      tx2.uncheckedAddInput(bitcore.Transaction.Input({
-        prevTxId: tx1.id,
-        outputIndex: 0,
-        sequenceNumber: 51 | (2 << 6),
-        script: bitcore.Script.fromAddress(helpers.getRandomAddress())
-      }))
-      tx2.addOutput(bitcore.Transaction.Output({
-        satoshis: 10,
-        script: bitcore.Script.buildPublicKeyHashOut(helpers.getRandomAddress())
-      }))
+      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
+      helpers.tx.addOutput(tx2, 10)
 
       cdata.getOutputColorValue(tx2, 0, epobc, helpers.getTxFnStub([tx1]))
         .then(function (cvalue) {
