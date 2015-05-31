@@ -58,7 +58,6 @@
     "karma-detect-browsers": "^2.0.0",
     "karma-firefox-launcher": "^0.1.6",
     "karma-mocha": "^0.1.10",
-    "localStorage": "^1.0.3",
     "mocha": "^2.2.5",
     "standard": "^4.0.0",
     "uglifyify": "^3.0.1"
@@ -77,9 +76,9 @@
     "test:browser": "npm run compile:test && npm run karma"
   },
   "browser": {
-    "./lib/storage/data/sqlite.js": "./lib/storage/data/sqlite-browser.js",
-    "./lib/storage/definitions/sqlite.js": "./lib/storage/definitions/sqlite-browser.js",
-    "./lib/storage/providers/sqlite.js": "./lib/storage/providers/sqlite-browser.js"
+    "./lib/storage/data/index.js": "./lib/storage/data/index-browser.js",
+    "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js",
+    "./lib/storage/providers/index.js": "./lib/storage/providers/index-browser.js"
   },
   "standard": {
     "ignore": [

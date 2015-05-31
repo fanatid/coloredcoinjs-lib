@@ -18,7 +18,7 @@ cclib.definitions.EPOBC = require('./lib/definitions/epobc')
 
 // storage (data and definitions)
 cclib.storage = {}
-cclib.storage._providers = require('./lib/storage/providers')
+cclib.storage.providers = require('./lib/storage/providers')
 cclib.storage.data = require('./lib/storage/data')
 cclib.storage.definitions = require('./lib/storage/definitions')
 

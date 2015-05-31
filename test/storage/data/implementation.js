@@ -4,6 +4,10 @@ var _ = require('lodash')
 var random = require('bitcore').crypto.Random
 
 module.exports = function (opts) {
+  if (opts.StorageCls === undefined) {
+    return
+  }
+
   var ldescribe = opts.describe || describe
   if (!opts.StorageCls.isAvailable()) {
     ldescribe = xdescribe
