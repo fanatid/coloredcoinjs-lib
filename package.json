@@ -1,27 +1,7 @@
 {
   "name": "coloredcoinjs-lib",
   "version": "0.3.6",
-  "main": "./index.js",
-  "description": "Colored coin JavaScript library for Bitcoin",
-  "author": "Fomichev Kirill <fanatid@ya.ru>",
-  "contributors": [
-    {
-      "name": "Fabian Barkhau",
-      "email": "fabian.barkhau@gmail.com"
-    },
-    {
-      "name": "Alex Mizrahi",
-      "email": "alex.mizrahi@gmail.com"
-    }
-  ],
-  "repository": {
-    "url": "git://github.com/chromaway/coloredcoinjs-lib",
-    "type": "git"
-  },
-  "bugs": {
-    "url": "https://github.com/chromaway/coloredcoinjs-lib/issues"
-  },
-  "license": "MIT",
+  "description": "Colored coin JavaScript library for Bitcoin.",
   "keywords": [
     "bitcoin",
     "coloredcoins",
@@ -29,14 +9,48 @@
     "coins",
     "epobc"
   ],
+  "bugs": {
+    "url": "https://github.com/chromaway/coloredcoinjs-lib/issues"
+  },
+  "license": "MIT",
+  "author": "Chromaway AB",
+  "contributors": [
+    {
+      "name": "Alex Mizrahi",
+      "email": "alex.mizrahi@gmail.com"
+    },
+    {
+      "name": "Fabian Barkhau",
+      "email": "fabian.barkhau@gmail.com"
+    },
+    {
+      "name": "Kirill Fomichev",
+      "email": "fanatid@ya.ru"
+    }
+  ],
   "files": [
-    "index.js",
     "lib",
+    "index.js",
     "LICENSE",
     "README.md"
   ],
-  "engines": {
-    "node": "=0.10.x"
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chromaway/coloredcoinjs-lib.git"
+  },
+  "scripts": {
+    "compile": "browserify index.js -s cclib -o cclib.js -g [ uglifyify --no-sourcemap ]",
+    "compile:debug": "browserify index.js -s cclib -o cclib.js -d",
+    "compile:test": "find test/ -type f -name \"*.js\" | xargs browserify -o cclib.test.js",
+    "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha --",
+    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
+    "clean": "rm -f cclib.js cclib.test.js",
+    "karma": "./node_modules/karma/bin/karma start karma.conf.js",
+    "lint": "standard",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "find test/ -type f -name \"*.js\" | xargs istanbul test mocha -- --reporter spec",
+    "test:browser": "npm run compile:test && npm run karma"
   },
   "dependencies": {
     "bitcore": "=0.12.7",
@@ -62,18 +76,8 @@
     "standard": "^4.0.0",
     "uglifyify": "^3.0.1"
   },
-  "scripts": {
-    "compile": "browserify index.js -s coloredcoinlib -o coloredcoinlib.js -g [ uglifyify --no-sourcemap ]",
-    "compile:debug": "browserify index.js -s coloredcoinlib -o coloredcoinlib.js -d",
-    "compile:test": "find test/ -type f -name \"*.js\" | xargs browserify -o coloredcoinlib.test.js",
-    "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha --",
-    "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "clean": "rm -f coloredcoinlib.js coloredcoinlib.test.js",
-    "karma": "./node_modules/karma/bin/karma start karma.conf.js",
-    "lint": "standard",
-    "test": "npm run test:node && npm run test:browser",
-    "test:node": "find test/ -type f -name \"*.js\" | xargs istanbul test mocha -- --reporter spec",
-    "test:browser": "npm run compile:test && npm run karma"
+  "engines": {
+    "node": "=0.10.x"
   },
   "browser": {
     "./lib/storage/data/index.js": "./lib/storage/data/index-browser.js",
@@ -82,9 +86,8 @@
   },
   "standard": {
     "ignore": [
-      "coloredcoinlib.js",
-      "coloredcoinlib.min.js",
-      "coloredcoinlib.test.js"
+      "cclib.js",
+      "cclib.test.js"
     ]
   }
 }

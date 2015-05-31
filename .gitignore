@@ -1,7 +1,6 @@
 coverage
 node_modules
 
-coloredcoinlib.js
-coloredcoinlib.test.js
-coloredcoinlib.min.js
+cclib.js
+cclib.test.js
 npm-debug.log

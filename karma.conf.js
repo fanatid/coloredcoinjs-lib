@@ -13,7 +13,7 @@ module.exports = function (config) {
       }
     },
     singleRun: true,
-    files: ['coloredcoinlib.test.js'],
+    files: ['cclib.test.js'],
     plugins: [
       'karma-mocha',
       'karma-chrome-launcher',
