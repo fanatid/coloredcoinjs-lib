@@ -65,7 +65,7 @@ function addOutput (tx, value, address) {
  * @return {getTxFn}
  */
 function getTxFnStub (transactions) {
-  return cclib.util.transactions.extendGetTxFn(function (txid, cb) {
+  return cclib.util.tx.extendGetTxFn(function (txid, cb) {
     timers.setImmediate(function () {
       cb(new Error(txid + ' not found'))
     })

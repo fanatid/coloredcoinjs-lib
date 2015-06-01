@@ -32,15 +32,12 @@ cclib.tx.SimpleOperational = require('./lib/tx/simpleoperational')
 
 // util
 cclib.util = {}
-cclib.util.bitcoin = require('./lib/util/bitcoin')
-cclib.util.transactions = require('./lib/util/transactions')
+cclib.util.const = require('./lib/util/const')
+cclib.util.tx = require('./lib/util/tx')
 
 // dependencies
 cclib.deps = {}
 cclib.deps.bitcore = require('bitcore')
 cclib.deps.bluebird = require('bluebird')
 cclib.deps.bs58 = require('bs58')
-cclib.deps.errorSystem = require('error-system')
 cclib.deps.lodash = require('lodash')
-cclib.deps.makeConcurrent = require('make-concurrent')
-cclib.deps.readyMixin = require('ready-mixin')

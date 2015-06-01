@@ -46,7 +46,7 @@ describe('definitions.EPOBC._Tag', function () {
   it('fromTx for coinbase tx', function () {
     var tx = {
       inputs: [{
-        prevTxId: new Buffer(cclib.util.bitcoin.zeroHash, 'hex'),
+        prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
         outputIndex: 4294967295
       }]
     }
@@ -182,7 +182,7 @@ describe('definitions.EPOBC', function () {
     it('tag is null', function (done) {
       var tx = {
         inputs: [{
-          prevTxId: new Buffer(cclib.util.bitcoin.zeroHash, 'hex'),
+          prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
           sequenceNumber: 4294967295
         }]
       }
