@@ -1,12 +1,13 @@
 var cclib = module.exports
 
+// library errors
+cclib.errors = require('./lib/errors')
+
 //
 cclib.ColorData = require('./lib/colordata')
 cclib.ColorSet = require('./lib/colorset')
 cclib.ColorTarget = require('./lib/colortarget')
 cclib.ColorValue = require('./lib/colorvalue')
-
-cclib.errors = require('./lib/errors')
 
 // color definitions
 cclib.definitions = {}
@@ -37,5 +38,9 @@ cclib.util.transactions = require('./lib/util/transactions')
 // dependencies
 cclib.deps = {}
 cclib.deps.bitcore = require('bitcore')
-cclib.deps.Promise = require('bluebird')
-cclib.deps._ = require('lodash')
+cclib.deps.bluebird = require('bluebird')
+cclib.deps.bs58 = require('bs58')
+cclib.deps.errorSystem = require('error-system')
+cclib.deps.lodash = require('lodash')
+cclib.deps.makeConcurrent = require('make-concurrent')
+cclib.deps.readyMixin = require('ready-mixin')
