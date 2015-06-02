@@ -18,32 +18,18 @@ describe('ColorSet', function () {
     cdstorage.clear().done(done, done)
   })
 
-  it('getColorHash', function (done) {
+  it('getColorHash', function () {
     var cdescs = [
       '',
       'epobc:b95323a763fa507110a89ab857af8e949810cf1e67e91104cd64222a04ccd0bb:0:180679'
     ]
     var cset = new cclib.ColorSet(cdmanager, cdescs)
-    cset.ready
-      .then(function () {
-        return cset.getColorHash()
-      })
-      .then(function (chash) {
-        expect(chash).to.deep.equal('6xgXQgnviwX5Lk')
-      })
-      .done(done, done)
+    expect(cset.getColorHash()).to.deep.equal('6xgXQgnviwX5Lk')
   })
 
-  it('getColorDescs', function (done) {
+  it('getColorDescs', function () {
     var cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
-    cset.ready
-      .then(function () {
-        return cset.getColorDescs()
-      })
-      .then(function (cdescs) {
-        expect(cdescs).to.deep.equal([cdef.getDesc()])
-      })
-      .done(done, done)
+    expect(cset.getColorDescs()).to.deep.equal([cdef.getDesc()])
   })
 
   it('getColorDefinitions', function (done) {
