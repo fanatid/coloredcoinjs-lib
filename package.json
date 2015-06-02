@@ -76,9 +76,6 @@
     "standard": "^4.0.0",
     "uglifyify": "^3.0.1"
   },
-  "engines": {
-    "node": "=0.10.x"
-  },
   "browser": {
     "./lib/storage/data/index.js": "./lib/storage/data/index-browser.js",
     "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js",
