@@ -17,7 +17,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
     var ctarget = new cclib.ColorTarget(
       bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
 
-    var optx = new cclib.tx.SimpleOperational({
+    var optx = new cclib.tx.SimpleOperationalTx({
       targets: [
         ctarget
       ],
@@ -36,7 +36,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
 
     cclib.definitions.Uncolored.makeComposedTx(optx)
       .then(function (comptx) {
-        expect(comptx).to.be.instanceof(cclib.tx.Composed)
+        expect(comptx).to.be.instanceof(cclib.tx.ComposedTx)
 
         expect(comptx.getInputs()).to.deep.equal([{
           txid: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
@@ -68,7 +68,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
     var ctarget = new cclib.ColorTarget(
       bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
 
-    var optx = new cclib.tx.SimpleOperational({
+    var optx = new cclib.tx.SimpleOperationalTx({
       targets: [
         ctarget
       ],
@@ -93,7 +93,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
 
     cclib.definitions.EPOBC.makeComposedTx(optx)
       .then(function (comptx) {
-        expect(comptx).to.be.instanceof(cclib.tx.Composed)
+        expect(comptx).to.be.instanceof(cclib.tx.ComposedTx)
 
         expect(comptx.getInputs()).to.deep.equal([{
           txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',

@@ -5,12 +5,12 @@ var random = require('bitcore').crypto.Random
 
 var cclib = require('../../')
 
-describe('tx.Operational', function () {
+describe('tx.OperationalTx', function () {
   var optx
   var ctarget
 
   beforeEach(function () {
-    optx = new cclib.tx.Operational()
+    optx = new cclib.tx.OperationalTx()
     var cdef = new cclib.definitions.Uncolored()
     var value = _.random(1, 10)
     var cvalue = new cclib.ColorValue(cdef, value)
@@ -78,6 +78,6 @@ describe('tx.Operational', function () {
   })
 
   it('makeComposedTx', function () {
-    expect(optx.makeComposedTx()).to.be.instanceof(cclib.tx.Composed)
+    expect(optx.makeComposedTx()).to.be.instanceof(cclib.tx.ComposedTx)
   })
 })

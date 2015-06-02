@@ -5,11 +5,11 @@ var expect = require('chai').expect
 var cclib = require('../../')
 var FixedFeeOperationalTx = require('../helpers').FixedFeeOperationalTx
 
-describe('tx.Composed', function () {
+describe('tx.ComposedTx', function () {
   var tx
 
   beforeEach(function () {
-    var optx = new cclib.tx.Operational()
+    var optx = new cclib.tx.OperationalTx()
     tx = optx.makeComposedTx()
   })
 

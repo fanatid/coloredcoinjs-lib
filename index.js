@@ -25,10 +25,10 @@ cclib.storage.definitions = require('./lib/storage/definitions')
 
 // tx
 cclib.tx = {}
-cclib.tx.FilledInputs = require('./lib/tx/filledinputs')
-cclib.tx.Composed = require('./lib/tx/composed')
-cclib.tx.Operational = require('./lib/tx/operational')
-cclib.tx.SimpleOperational = require('./lib/tx/simpleoperational')
+cclib.tx.FilledInputsTx = require('./lib/tx/filledinputs')
+cclib.tx.ComposedTx = require('./lib/tx/composed')
+cclib.tx.OperationalTx = require('./lib/tx/operational')
+cclib.tx.SimpleOperationalTx = require('./lib/tx/simpleoperational')
 
 // util
 cclib.util = {}

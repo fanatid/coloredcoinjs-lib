@@ -7,7 +7,7 @@ var cclib = require('../../')
 var getTxFn = require('../helpers').getTxFn
 var transactions = require('../fixtures/transactions.json')
 
-describe('tx.FilledInputs', function () {
+describe('tx.FilledInputsTx', function () {
   var fitx
 
   describe('isCoinbase', function () {
@@ -15,7 +15,7 @@ describe('tx.FilledInputs', function () {
     var tx = bitcore.Transaction(transactions[txid])
 
     beforeEach(function (done) {
-      fitx = new cclib.tx.FilledInputs(tx, getTxFn)
+      fitx = new cclib.tx.FilledInputsTx(tx, getTxFn)
       fitx.ready.done(done, done)
     })
 
@@ -45,7 +45,7 @@ describe('tx.FilledInputs', function () {
     var tx = bitcore.Transaction(transactions[txid])
 
     beforeEach(function (done) {
-      fitx = new cclib.tx.FilledInputs(tx, getTxFn)
+      fitx = new cclib.tx.FilledInputsTx(tx, getTxFn)
       fitx.ready.done(done, done)
     })
 
