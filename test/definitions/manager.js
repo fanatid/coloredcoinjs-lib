@@ -75,17 +75,26 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('generate event on adding new defintion', function (done) {
+      var deferred = Promise.defer()
+
       cdManager.on('new', function (cdef) {
-        expect(cdef).to.be.instanceof(cclib.definitions.Interface)
-        expect(cdef.getDesc()).to.equal(epobcDesc1)
-        done()
+        Promise.try(function () {
+          expect(cdef).to.be.instanceof(cclib.definitions.Interface)
+          expect(cdef.getDesc()).to.equal(epobcDesc1)
+        })
+        .done(function () { deferred.resolve() },
+              function (err) { deferred.reject(err) })
       })
 
       cdManager.resolve(epobcDesc1)
         .then(function (cdef) {
           expect(cdef.getDesc()).to.equal(epobcDesc1)
+          return deferred.promise
         })
-        .done(_.noop, done)
+        .finally(function () {
+          cdManager.removeAllListeners()
+        })
+        .done(done, done)
     })
 
     it('record is not null', function (done) {
