@@ -104,7 +104,7 @@ describe('definitions.EPOBC._Tag', function () {
 describe('definitions.EPOBC', function () {
   var genesis = {
     txid: new Buffer(32).toString('hex'),
-    vout: _.random(0, 10),
+    oidx: _.random(0, 10),
     height: _.random(100000, 400000)
   }
   var epobc
@@ -136,7 +136,7 @@ describe('definitions.EPOBC', function () {
 
   describe('getDesc', function () {
     it('#1', function () {
-      var items = [genesis.txid, genesis.vout, genesis.height]
+      var items = [genesis.txid, genesis.oidx, genesis.height]
       expect(epobc.getDesc()).to.equal('epobc:' + items.join(':'))
     })
   })

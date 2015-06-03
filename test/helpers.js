@@ -26,12 +26,12 @@ FixedFeeOperationalTx.prototype.getRequiredFee = function () {
 /**
  * @param {bitcore.Transaction} tx
  * @param {string|Buffer} hash
- * @param {number} vout
+ * @param {number} oidx
  * @param {number} sequence
  * @param {string} [address]
  * @return {bitcore.Transaction}
  */
-function addInput (tx, hash, vout, sequence, address) {
+function addInput (tx, hash, oidx, sequence, address) {
   if (_.isString(hash)) {
     hash = new Buffer(hash, 'hex')
   }
@@ -39,7 +39,7 @@ function addInput (tx, hash, vout, sequence, address) {
 
   return tx.uncheckedAddInput(bitcore.Transaction.Input({
     prevTxId: new Buffer(hash),
-    outputIndex: vout,
+    outputIndex: oidx,
     sequenceNumber: sequence,
     script: bitcore.Script.fromAddress(address)
   }))

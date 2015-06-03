@@ -16,7 +16,7 @@ describe('tx.ComposedTx', function () {
   it('addInput/addInputs/setInputSequence/getInputs', function () {
     var input = {
       txid: '06a480de0293ce9c2d8c76e15ac3b2f61f5bf7a47d139527ce335bf55b000e8f',
-      vout: 0
+      oidx: 0
     }
     tx.addInput(input)
     tx.addInputs([input, input])

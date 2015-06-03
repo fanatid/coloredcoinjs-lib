@@ -17,7 +17,7 @@ module.exports = function (opts) {
     var storage
     var record = {
       txid: random.getRandomBuffer(32).toString('hex'),
-      vout: 2,
+      oidx: 2,
       colorId: 1,
       value: 10
     }
@@ -61,15 +61,15 @@ module.exports = function (opts) {
       it('output exists', function (done) {
         return storage.get({txid: record.txid})
           .then(function (data) {
-            var obj = _.set({}, record.vout, {})
-            _.set(obj[record.vout], record.colorId, record.value)
+            var obj = _.set({}, record.oidx, {})
+            _.set(obj[record.oidx], record.colorId, record.value)
             expect(data).to.deep.equal(obj)
           })
           .done(done, done)
       })
 
-      it('output exists, specific vout', function (done) {
-        return storage.get({txid: record.txid, vout: record.vout})
+      it('output exists, specific oidx', function (done) {
+        return storage.get({txid: record.txid, oidx: record.oidx})
           .then(function (data) {
             var obj = _.set({}, record.colorId, record.value)
             expect(data).to.deep.equal(obj)
@@ -77,8 +77,8 @@ module.exports = function (opts) {
           .done(done, done)
       })
 
-      it('output exists, specific vout with specific colorId', function (done) {
-        return storage.get({txid: record.txid, vout: record.vout, colorId: record.colorId})
+      it('output exists, specific oidx with specific colorId', function (done) {
+        return storage.get({txid: record.txid, oidx: record.oidx, colorId: record.colorId})
           .then(function (value) {
             expect(value).to.equal(record.value)
           })
@@ -88,7 +88,7 @@ module.exports = function (opts) {
       it('output exists, specific colorId', function (done) {
         return storage.get({txid: record.txid, colorId: record.colorId})
           .then(function (data) {
-            var obj = _.set({}, record.vout, record.value)
+            var obj = _.set({}, record.oidx, record.value)
             expect(data).to.deep.equal(obj)
           })
           .done(done, done)
@@ -99,7 +99,7 @@ module.exports = function (opts) {
       it('add/get/delete/get', function (done) {
         storage.add(record)
           .then(function () {
-            return storage.get({txid: record.txid, vout: record.vout, colorId: record.colorId})
+            return storage.get({txid: record.txid, oidx: record.oidx, colorId: record.colorId})
           })
           .then(function (value) {
             expect(value).to.equal(record.value)

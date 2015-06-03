@@ -24,7 +24,7 @@ describe('coloredcoinjs-lib (issuance)', function () {
       coins: {
         0: [{
           txid: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
-          vout: 1,
+          oidx: 1,
           value: 1000000
         }]
       },
@@ -40,7 +40,7 @@ describe('coloredcoinjs-lib (issuance)', function () {
 
         expect(comptx.getInputs()).to.deep.equal([{
           txid: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
-          vout: 1,
+          oidx: 1,
           sequence: 37
         }])
 

@@ -21,7 +21,7 @@ describe('ColorData', function () {
     cdStorage.ready.done(done, done)
     epobc = new cclib.definitions.EPOBC(1, {
       txid: bitcore.crypto.Random.getRandomBuffer(32).toString('hex'),
-      vout: 0,
+      oidx: 0,
       height: 0
     })
     cdata = new cclib.ColorData(cdStorage)
@@ -43,7 +43,7 @@ describe('ColorData', function () {
     })
 
     it('return ColorValue instance', function (done) {
-      var data = {txid: txid, vout: 0, colorId: epobc.getColorId(), value: 10}
+      var data = {txid: txid, oidx: 0, colorId: epobc.getColorId(), value: 10}
       cdStorage.add(data)
         .then(function () {
           return cdata._getColorValue(txid, 0, epobc)
@@ -119,7 +119,7 @@ describe('ColorData', function () {
 
   it('remove color values', function (done) {
     var txid = bitcore.crypto.Random.getRandomBuffer(32).toString('hex')
-    var data = {txid: txid, vout: 0, colorId: epobc.getColorId(), value: 10}
+    var data = {txid: txid, oidx: 0, colorId: epobc.getColorId(), value: 10}
     cdStorage.add(data)
       .then(function () {
         return cdata._getColorValue(txid, 0, epobc)
