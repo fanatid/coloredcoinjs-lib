@@ -1,6 +1,8 @@
 /* global describe, beforeEach, it */
+/* globals Promise:true */
 var _ = require('lodash')
 var expect = require('chai').expect
+var Promise = require('bluebird')
 var bitcore = require('bitcore')
 
 var cclib = require('../../')
@@ -123,14 +125,77 @@ describe('definitions.EPOBC', function () {
   })
 
   describe('fromDesc', function () {
-    it('throw error', function () {
-      function fn () { EPOBC.fromDesc(1, 'obc:11:2:3') }
-      expect(fn).to.throw(Error)
+    it('throw error', function (done) {
+      EPOBC.fromDesc('obc:11:2:3')
+        .asCallback(function (err) {
+          expect(err).to.be.instanceof(
+            cclib.errors.ColorDefinition.IncorrectDesc)
+          done()
+        })
+        .done(_.noop, _.noop)
     })
 
-    it('return EPOBCColorDefinition', function () {
-      var epobc2 = EPOBC.fromDesc(epobc.getColorId(), epobc.getDesc())
-      expect(epobc2).to.deep.equal(epobc)
+    it('return EPOBCColorDefinition', function (done) {
+      EPOBC.fromDesc(epobc.getDesc(), epobc.getColorId())
+        .then(function (epobc2) {
+          expect(epobc2).to.deep.equal(epobc)
+        })
+        .done(done, done)
+    })
+  })
+
+  describe('fromTx', function () {
+    beforeEach(function () {
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (3 << 6))
+      helpers.tx.addOutput(tx1, 9)
+    })
+
+    it('return null', function (done) {
+      tx1.outputs[0].satoshis = 8
+      EPOBC.fromTx(tx1, 1)
+        .then(function (epobc) {
+          expect(epobc).to.be.null
+        })
+        .done(done, done)
+    })
+
+    it('from color id', function (done) {
+      EPOBC.fromTx(tx1, 1)
+        .then(function (epobc) {
+          expect(epobc).to.be.instanceof(EPOBC)
+          expect(epobc.getColorId()).to.equal(1)
+        })
+        .done(done, done)
+    })
+
+    it('resolve with color definition manager', function (done) {
+      var cdstorage = new cclib.storage.definitions.Memory()
+      var cdmanager = new cclib.definitions.Manager(cdstorage)
+
+      var deferred = Promise.defer()
+
+      cdmanager.on('new', function (cdef) {
+        Promise.try(function () {
+          expect(cdef).to.be.instanceof(EPOBC)
+          expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
+        })
+        .done(function () { deferred.resolve() },
+              function (err) { deferred.reject(err) })
+      })
+
+      cdstorage.ready
+        .then(function () {
+          return EPOBC.fromTx(tx1, cdmanager)
+        })
+        .then(function (epobc) {
+          expect(epobc).to.be.instanceof(EPOBC)
+          expect(epobc.getDesc()).to.match(new RegExp(tx1.id))
+          return deferred.promise
+        })
+        .finally(function () {
+          cdmanager.removeAllListeners()
+        })
+        .done(done, done)
     })
   })
 

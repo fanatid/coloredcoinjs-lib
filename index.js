@@ -33,6 +33,7 @@ cclib.tx.SimpleOperationalTx = require('./lib/tx/simpleoperational')
 // util
 cclib.util = {}
 cclib.util.const = require('./lib/util/const')
+cclib.util.js = require('./lib/util/js')
 cclib.util.tx = require('./lib/util/tx')
 
 // dependencies

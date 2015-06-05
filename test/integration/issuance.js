@@ -5,7 +5,7 @@ var bitcore = require('bitcore')
 var cclib = require('../../')
 
 describe('coloredcoinjs-lib (issuance)', function () {
-  it('EPOBC', function (done) {
+  it.skip('EPOBC', function (done) {
     // http://tbtc.blockr.io/tx/info/7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d
 
     var pk1 = bitcore.PrivateKey(

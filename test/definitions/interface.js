@@ -29,9 +29,22 @@ describe('definitions.Interface', function () {
     expect(cdef.getDesc).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('static fromDesc', function () {
-    expect(Interface.fromDesc).to.throw(
-      cclib.errors.NotImplemented)
+  it('static fromDesc', function (done) {
+    Interface.fromDesc()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it('static fromTx', function (done) {
+    Interface.fromTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
   it('isGenesis', function () {

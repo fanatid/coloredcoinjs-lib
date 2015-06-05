@@ -1,5 +1,5 @@
 /* globals Promise:true */
-/* global describe, beforeEach, afterEach, it */
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
 var _ = require('lodash')
 var events = require('events')
@@ -8,24 +8,20 @@ var Promise = require('bluebird')
 var cclib = require('../../')
 
 describe('ColorDefinitionManager', function () {
-  var cdManager
-  var cdStorage
+  var cdmanager
+  var cdstorage
   var epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
   var epobcDesc2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(function (done) {
-    cdStorage = new cclib.storage.definitions.Memory()
-    cdStorage.ready.done(done, done)
-    cdManager = new cclib.definitions.Manager(cdStorage)
-  })
-
-  afterEach(function (done) {
-    cdStorage.clear().done(done, done)
+    cdstorage = new cclib.storage.definitions.Memory()
+    cdstorage.ready.done(done, done)
+    cdmanager = new cclib.definitions.Manager(cdstorage)
   })
 
   it('inherit EventEmitter', function () {
-    expect(cdManager).to.be.instanceof(cclib.definitions.Manager)
-    expect(cdManager).to.be.instanceof(events.EventEmitter)
+    expect(cdmanager).to.be.instanceof(cclib.definitions.Manager)
+    expect(cdmanager).to.be.instanceof(events.EventEmitter)
   })
 
   it('getUncolored', function () {
@@ -67,7 +63,7 @@ describe('ColorDefinitionManager', function () {
 
   describe('resolve', function () {
     it('add new record', function (done) {
-      cdManager.resolve(epobcDesc1)
+      cdmanager.resolve(epobcDesc1)
         .then(function (cdef) {
           expect(cdef.getDesc()).to.equal(epobcDesc1)
         })
@@ -77,7 +73,7 @@ describe('ColorDefinitionManager', function () {
     it('generate event on adding new defintion', function (done) {
       var deferred = Promise.defer()
 
-      cdManager.on('new', function (cdef) {
+      cdmanager.on('new', function (cdef) {
         Promise.try(function () {
           expect(cdef).to.be.instanceof(cclib.definitions.Interface)
           expect(cdef.getDesc()).to.equal(epobcDesc1)
@@ -86,21 +82,21 @@ describe('ColorDefinitionManager', function () {
               function (err) { deferred.reject(err) })
       })
 
-      cdManager.resolve(epobcDesc1)
+      cdmanager.resolve(epobcDesc1)
         .then(function (cdef) {
           expect(cdef.getDesc()).to.equal(epobcDesc1)
           return deferred.promise
         })
         .finally(function () {
-          cdManager.removeAllListeners()
+          cdmanager.removeAllListeners()
         })
         .done(done, done)
     })
 
     it('record is not null', function (done) {
-      cdStorage.resolve(epobcDesc1)
+      cdstorage.resolve(epobcDesc1)
         .then(function (data) {
-          return cdManager.resolve(data.record.desc)
+          return cdmanager.resolve(data.record.desc)
             .then(function (cdef) {
               expect(cdef.getColorId()).to.equal(data.record.id)
               expect(cdef.getDesc()).to.equal(data.record.desc)
@@ -110,7 +106,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('record is null, autoAdd is false', function (done) {
-      cdManager.resolve(epobcDesc1, {autoAdd: false})
+      cdmanager.resolve(epobcDesc1, {autoAdd: false})
         .then(function (cdef) {
           expect(cdef).to.be.null
         })
@@ -118,7 +114,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('return uncolored', function (done) {
-      cdManager.resolve('')
+      cdmanager.resolve('')
         .then(function (cdef) {
           expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
         })
@@ -128,7 +124,7 @@ describe('ColorDefinitionManager', function () {
 
   describe('get', function () {
     it('return null', function (done) {
-      cdManager.get({id: 10})
+      cdmanager.get({id: 10})
         .then(function (cdef) {
           expect(cdef).to.be.null
         })
@@ -136,7 +132,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('return uncolred', function (done) {
-      cdManager.get({id: 0})
+      cdmanager.get({id: 0})
         .then(function (cdef) {
           expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
         })
@@ -144,9 +140,9 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('return ColorDefinition', function (done) {
-      cdStorage.resolve(epobcDesc1)
+      cdstorage.resolve(epobcDesc1)
         .then(function (data) {
-          return cdManager.get({id: data.record.id})
+          return cdmanager.get({id: data.record.id})
             .then(function (cdef) {
               expect(cdef.getDesc()).to.equal(data.record.desc)
               expect(cdef.getColorId()).to.equal(data.record.id)
@@ -156,7 +152,7 @@ describe('ColorDefinitionManager', function () {
     })
 
     it('return empty Array', function (done) {
-      cdManager.get()
+      cdmanager.get()
         .then(function (cdefs) {
           expect(cdefs).to.deep.equal([])
         })
@@ -165,11 +161,11 @@ describe('ColorDefinitionManager', function () {
 
     it('return 2 items', function (done) {
       Promise.all([
-        cdManager.resolve(epobcDesc1),
-        cdManager.resolve(epobcDesc2)
+        cdmanager.resolve(epobcDesc1),
+        cdmanager.resolve(epobcDesc2)
       ])
       .then(function () {
-        return cdManager.get()
+        return cdmanager.get()
       })
       .then(function (cdefs) {
         var result = _.invoke(cdefs, 'getDesc').sort()

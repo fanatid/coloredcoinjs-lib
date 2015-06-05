@@ -20,7 +20,7 @@ describe('coloredcoinjs-lib (balance)', function () {
     cdStorage.clear().done(done, done)
   })
 
-  it('EPOBC', function (done) {
+  it.skip('EPOBC', function (done) {
     var txid = '694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c'
     var tx = bitcore.Transaction(fixtures[txid])
     var oidx = 0

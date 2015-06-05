@@ -36,9 +36,22 @@ describe('definitions.Genesis', function () {
     expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('static fromDesc', function () {
-    var fn = Genesis.fromDesc.bind(Genesis)
-    expect(fn).to.throw(cclib.errors.NotImplemented)
+  it('static fromDesc', function (done) {
+    Genesis.fromDesc()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
+      .done(_.noop, _.noop)
+  })
+
+  it('fromTx', function (done) {
+    Genesis.fromTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
   it('runKernel', function (done) {

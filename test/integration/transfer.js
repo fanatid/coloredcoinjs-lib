@@ -54,7 +54,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
       .done(done, done)
   })
 
-  it('EPOBC', function (done) {
+  it.skip('EPOBC', function (done) {
     // http://tbtc.blockr.io/tx/info/87b2e65e7fec95c2ba5d84f5e61779d64df8ca17f2e0f2dd86e56d65c882dce6
 
     var pk1 = bitcore.PrivateKey(

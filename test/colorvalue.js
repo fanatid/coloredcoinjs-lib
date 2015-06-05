@@ -27,8 +27,11 @@ describe('ColorValue', function () {
   })
 
   it('isUncolored return false', function () {
-    var cdef = cclib.definitions.EPOBC.fromDesc(
-      1, 'epobc:73560ffd916267a70a1233eb63d5d97e79e7eac981a52860df1ac38d2568b3a5:0:274664')
+    var cdef = new cclib.definitions.EPOBC(1, {
+      txid: '73560ffd916267a70a1233eb63d5d97e79e7eac981a52860df1ac38d2568b3a5',
+      oidx: 0,
+      height: 274664
+    })
     cv1 = new ColorValue(cdef, 1)
     expect(cv1.isUncolored()).to.be.false
   })

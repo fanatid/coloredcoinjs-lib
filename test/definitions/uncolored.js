@@ -34,20 +34,50 @@ describe('definitions.Uncolored', function () {
   })
 
   describe('fromDesc', function () {
-    it('fail, wrong color id', function () {
-      function fn () { Uncolored.fromDesc(1, '') }
-      expect(fn).to.throw(cclib.errors.ColorDefinition.IncorrectColorId)
+    it('fail, wrong color id', function (done) {
+      Uncolored.fromDesc('', 1)
+        .asCallback(function (err) {
+          expect(err).to.be.instanceof(
+            cclib.errors.ColorDefinition.IncorrectColorId)
+          done()
+        })
+        .done(_.noop, _.noop)
     })
 
-    it('fail, wrong description', function () {
-      function fn () { Uncolored.fromDesc(0, 'xxx') }
-      expect(fn).to.throw(cclib.errors.ColorDefinition.IncorrectDesc)
+    it('fail, wrong description', function (done) {
+      Uncolored.fromDesc('xxx', 0)
+        .asCallback(function (err) {
+          expect(err).to.be.instanceof(
+            cclib.errors.ColorDefinition.IncorrectDesc)
+          done()
+        })
+        .done(_.noop, _.noop)
     })
 
-    it('successful', function () {
-      cdef = Uncolored.fromDesc(0, '')
-      expect(cdef.getColorId()).to.equal(0)
+    it('successful #1', function (done) {
+      Uncolored.fromDesc('', 0)
+        .then(function (cdef) {
+          expect(cdef.getColorId()).to.equal(0)
+        })
+        .done(done, done)
     })
+
+    it('successful #2', function (done) {
+      Uncolored.fromDesc('')
+        .then(function (cdef) {
+          expect(cdef.getColorId()).to.equal(0)
+        })
+        .done(done, done)
+    })
+  })
+
+  it('fromTx', function (done) {
+    Uncolored.fromTx()
+      .asCallback(function (err) {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
+      .done(_.noop, _.noop)
   })
 
   it('runKernel', function (done) {
