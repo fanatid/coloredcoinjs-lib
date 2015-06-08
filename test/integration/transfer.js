@@ -54,7 +54,7 @@ describe('coloredcoinjs-lib (transfer)', function () {
       .done(done, done)
   })
 
-  it.skip('EPOBC', function (done) {
+  it('EPOBC', function (done) {
     // http://tbtc.blockr.io/tx/info/87b2e65e7fec95c2ba5d84f5e61779d64df8ca17f2e0f2dd86e56d65c882dce6
 
     var pk1 = bitcore.PrivateKey(
@@ -62,59 +62,61 @@ describe('coloredcoinjs-lib (transfer)', function () {
     var pk2 = bitcore.PrivateKey(
       'cVZRCg3E45bjMiqt16uWDiYsEimtzvUJShAnXUurDxgo44rSu6a2', 'testnet')
 
-    var cdef = cclib.definitions.EPOBC.fromDesc(
-      1, 'epobc:7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d:0:318050')
-    var cvalue = new cclib.ColorValue(cdef, 100000)
-    var ctarget = new cclib.ColorTarget(
-      bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
+    cclib.definitions.EPOBC.fromDesc(
+      'epobc:7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d:0:318050', 1)
+    .then(function (cdef) {
+      var cvalue = new cclib.ColorValue(cdef, 100000)
+      var ctarget = new cclib.ColorTarget(
+        bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
 
-    var optx = new cclib.tx.SimpleOperationalTx({
-      targets: [
-        ctarget
-      ],
-      coins: {
-        0: [{
-          txid: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
-          oidx: 0,
-          value: 250000
-        }],
-        1: [{
-          txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
-          oidx: 0,
-          value: 500000
-        }]
-      },
-      changeAddresses: {
-        0: pk1.toAddress().toString(),
-        1: pk1.toAddress().toString()
-      },
-      fee: 0
-    })
-
-    cclib.definitions.EPOBC.makeComposedTx(optx)
-      .then(function (comptx) {
-        expect(comptx).to.be.instanceof(cclib.tx.ComposedTx)
-
-        expect(comptx.getInputs()).to.deep.equal([{
-          txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
-          oidx: 0,
-          sequence: 51
-        }, {
-          txid: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
-          oidx: 0
-        }])
-
-        expect(comptx.getOutputs()).to.deep.equal([{
-          script: '76a9149f2e711e71c1ae8cbe1d785da3c2962d7b1a6e3b88ac',
-          value: 100000
-        }, {
-          script: '76a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac',
-          value: 400000
-        }, {
-          script: '76a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac',
-          value: 249000
-        }])
+      var optx = new cclib.tx.SimpleOperationalTx({
+        targets: [
+          ctarget
+        ],
+        coins: {
+          0: [{
+            txid: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
+            oidx: 0,
+            value: 250000
+          }],
+          1: [{
+            txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
+            oidx: 0,
+            value: 500000
+          }]
+        },
+        changeAddresses: {
+          0: pk1.toAddress().toString(),
+          1: pk1.toAddress().toString()
+        },
+        fee: 0
       })
-      .done(done, done)
+
+      return cclib.definitions.EPOBC.makeComposedTx(optx)
+    })
+    .then(function (comptx) {
+      expect(comptx).to.be.instanceof(cclib.tx.ComposedTx)
+
+      expect(comptx.getInputs()).to.deep.equal([{
+        txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
+        oidx: 0,
+        sequence: 51
+      }, {
+        txid: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
+        oidx: 0
+      }])
+
+      expect(comptx.getOutputs()).to.deep.equal([{
+        script: '76a9149f2e711e71c1ae8cbe1d785da3c2962d7b1a6e3b88ac',
+        value: 100000
+      }, {
+        script: '76a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac',
+        value: 400000
+      }, {
+        script: '76a9140bfea40f3ccecb6da7cd67f1484a537c183be1b288ac',
+        value: 249000
+      }])
+    })
+    .done(done, done)
   })
 })

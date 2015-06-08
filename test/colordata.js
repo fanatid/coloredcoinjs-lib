@@ -1,5 +1,4 @@
 /* global describe, beforeEach, it */
-/* globals Promise:true */
 var expect = require('chai').expect
 var _ = require('lodash')
 var bitcore = require('bitcore')
@@ -43,7 +42,9 @@ describe('ColorData', function () {
 
       cdata.getTxColorValues(tx1, null, EPOBC, helpers.getTxFnStub([]))
         .then(function (result) {
-          // expect(result).to.deep.equal({inputs: [null], outputs: [null]})
+          expect(result).to.be.an('object')
+          expect(result.inputs).to.be.an('array').and.to.have.length(0)
+          expect(result.outputs).to.be.an('array').and.to.have.length(0)
         })
         .done(done, done)
     })
@@ -54,8 +55,19 @@ describe('ColorData', function () {
 
       cdata.getTxColorValues(tx1, null, EPOBC, helpers.getTxFnStub([]))
         .then(function (result) {
-          // var ovalue = new cclib.ColorValue(epobc, 7)
-          // expect(result).to.deep.equal({inputs: [null], outputs: [ovalue]})
+          expect(result).to.be.an('object')
+          expect(result.inputs).to.be.an('array').and.to.have.length(0)
+          expect(result.outputs).to.be.an('array').and.to.have.length(1)
+
+          var output = result.outputs[0]
+          expect(output).to.be.an('object')
+          expect(output.cdef).to.be.instanceof(EPOBC)
+          expect(output.cdef._genesis.txid).to.equal(tx1.id)
+          expect(output.outputs).to.be.an('array').and.to.have.length(1)
+          var ocvalue = output.outputs[0]
+          expect(ocvalue).to.be.instanceof(cclib.ColorValue)
+          expect(ocvalue.getColorDefinition()).to.deep.equal(output.cdef)
+          expect(ocvalue.getValue()).to.equal(7)
         })
         .done(done, done)
     })
@@ -69,20 +81,27 @@ describe('ColorData', function () {
 
       cdata.getTxColorValues(tx2, [0], EPOBC, helpers.getTxFnStub([tx1]))
         .then(function (result) {
-          /*
-          function check (arr, prop) {
-            expect(arr).to.have.length(1)
-            expect(arr[0].cdef).to.be.instanceof(EPOBC)
-            expect(arr[0].cdef._genesis).to.equal(tx1.id)
-            var values = arr[0][prop]
-            expect(values).to.have.length(1)
-            expect(values[0]).to.be.instanceof(cclib.ColorValue)
-            expect(values[0].getColorDefinition()._genesis).to.equal(tx1.id)
-            expect(values[0].getValue()).to.equal(
-          */
-          // var incval = new cclib.ColorValue(epobc, 7)
-          // var outcval = new cclib.ColorValue(epobc, 6)
-          // expect(result).to.deep.equal({inputs: [incval], outputs: [outcval]})
+          expect(result).to.be.an('object')
+
+          expect(result.inputs).to.be.an('array').and.to.have.length(1)
+          var input = result.inputs[0]
+          expect(input.cdef).to.be.instanceof(EPOBC)
+          expect(input.cdef._genesis.txid).to.equal(tx1.id)
+          expect(input.inputs).to.be.an('array').and.to.have.length(1)
+          var icvalue = input.inputs[0]
+          expect(icvalue).to.be.instanceof(cclib.ColorValue)
+          expect(icvalue.getColorDefinition()).to.deep.equal(input.cdef)
+          expect(icvalue.getValue()).to.equal(7)
+
+          expect(result.outputs).to.be.an('array').and.to.have.length(1)
+          var output = result.outputs[0]
+          expect(output.cdef).to.be.instanceof(EPOBC)
+          expect(output.cdef._genesis.txid).to.equal(tx1.id)
+          expect(output.outputs).to.be.an('array').and.to.have.length(1)
+          var ocvalue = output.outputs[0]
+          expect(ocvalue).to.be.instanceof(cclib.ColorValue)
+          expect(ocvalue.getColorDefinition()).to.deep.equal(output.cdef)
+          expect(ocvalue.getValue()).to.equal(6)
         })
         .done(done, done)
     })
@@ -106,6 +125,7 @@ describe('ColorData', function () {
 
       cdata.getOutputColorValue(tx3, 0, EPOBC, getTxFn)
         .then(function (result) {
+          expect(result).to.be.an('array').and.to.have.length(1)
           var cv = result[0]
           expect(cv).to.be.instanceof(cclib.ColorValue)
           expect(cv.getColorDefinition()._genesis.txid).to.equal(tx1.id)
@@ -113,10 +133,11 @@ describe('ColorData', function () {
           return cdata.getOutputColorValue(tx3, 1, EPOBC, getTxFn)
         })
         .then(function (result) {
-          expect(result).to.deep.equal([])
+          expect(result).to.be.an('array').and.to.have.length(0)
           return cdata.getOutputColorValue(tx3, 2, EPOBC, getTxFn)
         })
         .then(function (result) {
+          expect(result).to.be.an('array').and.to.have.length(1)
           var cv = result[0]
           expect(cv).to.be.instanceof(cclib.ColorValue)
           expect(cv.getColorDefinition()._genesis.txid).to.equal(tx2.id)

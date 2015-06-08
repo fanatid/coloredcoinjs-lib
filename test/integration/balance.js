@@ -1,37 +1,46 @@
-/* global describe, beforeEach, afterEach, it */
+/* global describe, beforeEach, it */
 var expect = require('chai').expect
+var _ = require('lodash')
 var bitcore = require('bitcore')
+var Promise = require('bluebird')
 
 var cclib = require('../../')
+var EPOBC = cclib.definitions.EPOBC
 var helpers = require('../helpers')
 var fixtures = require('../fixtures/transactions')
 
 describe('coloredcoinjs-lib (balance)', function () {
-  var cdStorage
+  var cdefstorage
+  var cdmanager
+  var cdstorage
   var cdata
 
   beforeEach(function (done) {
-    cdStorage = new cclib.storage.data.Memory()
-    cdStorage.ready.done(done, done)
-    cdata = new cclib.ColorData(cdStorage)
+    cdefstorage = new cclib.storage.definitions.Memory()
+    cdmanager = new cclib.definitions.Manager(cdefstorage)
+
+    cdstorage = new cclib.storage.data.Memory()
+    cdata = new cclib.ColorData(cdstorage, cdmanager)
+
+    Promise.all([cdefstorage.ready, cdstorage.ready])
+    .then(_.noop)
+    .done(done, done)
   })
 
-  afterEach(function (done) {
-    cdStorage.clear().done(done, done)
-  })
-
-  it.skip('EPOBC', function (done) {
+  it('EPOBC', function (done) {
     var txid = '694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c'
     var tx = bitcore.Transaction(fixtures[txid])
     var oidx = 0
 
-    var epobc = cclib.definitions.EPOBC.fromDesc(
-      1, 'epobc:b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170:0:314325')
-
-    cdata.getOutputColorValue(tx, oidx, epobc, helpers.getTxFn)
-      .then(function (cvalue) {
-        expect(cvalue).to.be.instanceof(cclib.ColorValue)
-        expect(cvalue.getValue()).to.be.equal(100000)
+    cdata.getOutputColorValue(tx, oidx, EPOBC, helpers.getTxFn)
+      .then(function (data) {
+        expect(data).to.be.an('array').and.to.have.length(1)
+        var cv = data[0]
+        expect(cv).to.be.instanceof(cclib.ColorValue)
+        expect(cv.getColorDefinition()).to.be.instanceof(EPOBC)
+        expect(cv.getColorDefinition()._genesis.txid).to.equal(
+          'b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170')
+        expect(cv.getValue()).to.equal(100000)
       })
       .done(done, done)
   })

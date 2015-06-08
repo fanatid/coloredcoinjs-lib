@@ -1,5 +1,4 @@
 /* global describe, xdescribe, beforeEach, afterEach, it */
-/* globals Promise:true */
 var expect = require('chai').expect
 var _ = require('lodash')
 var Promise = require('bluebird')
@@ -19,14 +18,18 @@ module.exports = function (opts) {
 
   ldescribe('storage.data.' + opts.StorageCls.name, function () {
     var storage
-    /* @todo Rename to record1, add record2, record3 */
-    var record = {
-      colorCode: 'epobc',
-      txid: random.getRandomBuffer(32).toString('hex'),
-      oidx: 2,
-      colorId: 1,
-      value: 10
-    }
+
+    var records = _.range(3).map(function () {
+      return {
+        colorCode: 'epobc',
+        txid: random.getRandomBuffer(32).toString('hex'),
+        oidx: 2,
+        colorId: 1,
+        value: 10
+      }
+    })
+    records[1].txid = records[0].txid
+    records[1].oidx += 1
 
     beforeEach(function (done) {
       storage = new opts.StorageCls(opts.storageOpts)
@@ -39,9 +42,11 @@ module.exports = function (opts) {
 
     describe('#add', function () {
       it('same output for given color id already exists', function (done) {
-        storage.add(record)
+        storage.add(records[0])
           .then(function () {
-            var newRecord = _.defaults({value: record.value + 1}, record)
+            var newRecord = _.defaults({
+              value: records[0].value + 1
+            }, records[0])
             return storage.add(newRecord)
           })
           .asCallback(function (err) {
@@ -54,17 +59,10 @@ module.exports = function (opts) {
     })
 
     describe('#get', function () {
-      var record2 = _.cloneDeep(record)
-      record2.oidx += 1
-      var record3 = _.cloneDeep(record)
-      record3.txid = random.getRandomBuffer(32).toString('hex')
-
       beforeEach(function (done) {
-        Promise.all([
-          storage.add(record),
-          storage.add(record2),
-          storage.add(record3)
-        ])
+        Promise.map(records, function (record) {
+          return storage.add(record)
+        })
         .then(_.noop)
         .done(done, done)
       })
@@ -78,59 +76,65 @@ module.exports = function (opts) {
       })
 
       it('output exists', function (done) {
-        return storage.get({colorCode: record.colorCode, txid: record.txid})
+        var opts = {colorCode: records[0].colorCode, txid: records[0].txid}
+        return storage.get(opts)
           .then(function (data) {
             var obj = {}
-            obj[record.oidx] = {}
-            obj[record.oidx][record.colorId] = record.value
-            obj[record2.oidx] = {}
-            obj[record2.oidx][record2.colorId] = record.value
+            obj[records[0].oidx] = {}
+            obj[records[0].oidx][records[0].colorId] = records[0].value
+            obj[records[1].oidx] = {}
+            obj[records[1].oidx][records[1].colorId] = records[1].value
             expect(data).to.deep.equal(obj)
           })
           .done(done, done)
       })
 
       it('output exists, specific oidx', function (done) {
-        return storage.get({
-          colorCode: record.colorCode,
-          txid: record.txid,
-          oidx: record.oidx
-        })
-        .then(function (data) {
-          var obj = {}
-          obj[record.oidx] = {}
-          obj[record.oidx][record.colorId] = record.value
-          expect(data).to.deep.equal(obj)
-        })
-        .done(done, done)
+        var opts = {
+          colorCode: records[0].colorCode,
+          txid: records[0].txid,
+          oidx: records[0].oidx
+        }
+        return storage.get(opts)
+          .then(function (data) {
+            var obj = {}
+            obj[records[0].oidx] = {}
+            obj[records[0].oidx][records[0].colorId] = records[0].value
+            expect(data).to.deep.equal(obj)
+          })
+          .done(done, done)
       })
     })
 
     describe('#remove', function () {
       it('add/get/delete/get', function (done) {
-        storage.add(record)
+        storage.add(records[0])
           .then(function () {
-            return storage.get({
-              colorCode: record.colorCode,
-              txid: record.txid,
-              oidx: record.oidx
-            })
+            var opts = {
+              colorCode: records[0].colorCode,
+              txid: records[0].txid,
+              oidx: records[0].oidx
+            }
+            return storage.get(opts)
           })
           .then(function (data) {
             var obj = {}
-            obj[record.oidx] = {}
-            obj[record.oidx][record.colorId] = record.value
+            obj[records[0].oidx] = {}
+            obj[records[0].oidx][records[0].colorId] = records[0].value
             expect(data).to.deep.equal(obj)
-            return storage.remove({
-              colorCode: record.colorCode,
-              txid: record.txid
-            })
+
+            var opts = {
+              colorCode: records[0].colorCode,
+              txid: records[0].txid
+            }
+            return storage.remove(opts)
           })
           .then(function () {
-            return storage.get({
-              colorCode: record.colorCode,
-              txid: record.txid
-            })
+            var opts = {
+              colorCode: records[0].colorCode,
+              txid: records[0].txid
+            }
+            return storage.get(opts)
           })
           .then(function (data) {
             expect(data).to.deep.equal({})

@@ -56,7 +56,6 @@
     "bitcore": "=0.12.7",
     "bluebird": "=2.9.27",
     "bs58": "=2.0.1",
-    "core-js": "=0.9.14",
     "error-system": "=0.1.0",
     "lodash": "=3.9.3",
     "make-concurrent": "=0.0.4",

@@ -1,4 +1,3 @@
-/* globals Promise:true */
 /* global describe, xdescribe, beforeEach, afterEach, it */
 var expect = require('chai').expect
 
