@@ -1,0 +1,4 @@
+{
+  "url": "postgres://postgres@localhost/travis_ci_test",
+  "native": false
+}

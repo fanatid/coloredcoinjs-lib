@@ -53,14 +53,17 @@
     "test:browser": "npm run compile:test && npm run karma"
   },
   "dependencies": {
-    "bitcore": "=0.12.7",
-    "bluebird": "=2.9.27",
-    "bs58": "=2.0.1",
-    "error-system": "=0.1.0",
-    "lodash": "=3.9.3",
-    "make-concurrent": "=0.0.4",
-    "ready-mixin": "=0.0.5",
-    "sqlite3": "=3.0.8"
+    "bluebird": "^2.9.27",
+    "bs58": "^2.0.1",
+    "error-system": "^0.1.0",
+    "lodash": "^3.9.3",
+    "make-concurrent": "^0.0.4",
+    "pg": "^4.4.0",
+    "ready-mixin": "^0.0.5",
+    "sqlite3": "^3.0.8"
+  },
+  "peerDependencies": {
+    "bitcore": "=0.12.8"
   },
   "devDependencies": {
     "browserify": "^9.0.8",

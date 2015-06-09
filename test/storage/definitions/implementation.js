@@ -40,8 +40,11 @@ module.exports = function (opts) {
         var desc = random.getRandomBuffer(5).toString('hex')
         storage.resolve(desc)
           .then(function (data) {
-            expect(data).to.deep.equal(
-              {record: {id: 1, desc: desc}, new: true})
+            expect(data).to.be.an('object')
+            expect(data.record).to.be.an('object')
+            expect(data.record.id).to.be.at.least(1)
+            expect(data.record.desc).to.equal(desc)
+            expect(data.new).to.be.true
           })
           .done(done, done)
       })

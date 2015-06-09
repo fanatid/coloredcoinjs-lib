@@ -35,10 +35,3 @@ cclib.util = {}
 cclib.util.const = require('./lib/util/const')
 cclib.util.js = require('./lib/util/js')
 cclib.util.tx = require('./lib/util/tx')
-
-// dependencies
-cclib.deps = {}
-cclib.deps.bitcore = require('bitcore')
-cclib.deps.bluebird = require('bluebird')
-cclib.deps.bs58 = require('bs58')
-cclib.deps.lodash = require('lodash')
