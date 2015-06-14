@@ -1,4 +1,9 @@
+'use strict'
+
 var cclib = module.exports
+
+// version
+cclib.version = require('./package.json').version
 
 // library errors
 cclib.errors = require('./lib/errors')

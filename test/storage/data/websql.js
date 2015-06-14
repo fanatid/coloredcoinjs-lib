@@ -1,4 +1,6 @@
 /* global describe */
+'use strict'
+
 var random = require('bitcore').crypto.Random
 
 var cclib = require('../../../')

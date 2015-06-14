@@ -1,4 +1,6 @@
 /* global describe */
+'use strict'
+
 var cclib = require('../../../')
 
 require('./implementation')({

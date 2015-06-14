@@ -1,3 +1,5 @@
+'use strict'
+
 var _ = require('lodash')
 var timers = require('timers')
 var inherits = require('util').inherits

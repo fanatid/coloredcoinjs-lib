@@ -1,4 +1,6 @@
 /* global describe, xdescribe, beforeEach, afterEach, it */
+'use strict'
+
 var expect = require('chai').expect
 var _ = require('lodash')
 var Promise = require('bluebird')

@@ -1,4 +1,6 @@
 /* global describe, beforeEach, it */
+'use strict'
+
 var _ = require('lodash')
 var expect = require('chai').expect
 
@@ -26,7 +28,8 @@ describe('definitions.Interface', function () {
   })
 
   it('desc', function () {
-    expect(cdef.getDesc).to.throw(cclib.errors.NotImplemented)
+    var fn = cdef.getDesc.bind(cdef)
+    expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
   it('static fromDesc', function (done) {
