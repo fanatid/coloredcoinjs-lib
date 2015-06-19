@@ -58,9 +58,8 @@
     "error-system": "^0.1.0",
     "lodash": "^3.9.3",
     "make-concurrent": "^0.0.4",
-    "pg": "^4.4.0",
-    "ready-mixin": "^0.0.5",
-    "sqlite3": "^3.0.8"
+    "odd-storage": "0.0.2",
+    "ready-mixin": "^0.0.5"
   },
   "peerDependencies": {
     "bitcore": "=0.12.8"
@@ -81,8 +80,7 @@
   },
   "browser": {
     "./lib/storage/data/index.js": "./lib/storage/data/index-browser.js",
-    "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js",
-    "./lib/storage/providers/index.js": "./lib/storage/providers/index-browser.js"
+    "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js"
   },
   "standard": {
     "ignore": [
