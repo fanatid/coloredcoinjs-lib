@@ -3,6 +3,7 @@
 
 var expect = require('chai').expect
 var _ = require('lodash')
+var crypto = require('crypto')
 var bitcore = require('bitcore')
 var Promise = require('bluebird')
 
@@ -152,7 +153,7 @@ describe('ColorData', function () {
   it('remove color values', function (done) {
     var data = {
       colorCode: EPOBC.getColorCode(),
-      txid: bitcore.crypto.Random.getRandomBuffer(32).toString('hex'),
+      txid: crypto.pseudoRandomBytes(32).toString('hex'),
       oidx: 0,
       colorId: 1,
       value: 10

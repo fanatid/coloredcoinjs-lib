@@ -1,30 +1,31 @@
 /* global describe, xdescribe, beforeEach, afterEach, it */
 'use strict'
 
-var expect = require('chai').expect
 var _ = require('lodash')
+var expect = require('chai').expect
 var Promise = require('bluebird')
-var random = require('bitcore').crypto.Random
+var crypto = require('crypto')
 
 var cclib = require('../../../')
 
 module.exports = function (opts) {
-  if (opts.StorageCls === undefined) {
+  var StorageCls = cclib.storage.data[opts.clsName]
+  if (StorageCls === undefined) {
     return
   }
 
   var ldescribe = opts.describe || describe
-  if (!opts.StorageCls.isAvailable()) {
+  if (!StorageCls.isAvailable()) {
     ldescribe = xdescribe
   }
 
-  ldescribe('storage.data.' + opts.StorageCls.name, function () {
+  ldescribe('storage.data.' + opts.clsName, function () {
     var storage
 
     var records = _.range(3).map(function () {
       return {
         colorCode: 'epobc',
-        txid: random.getRandomBuffer(32).toString('hex'),
+        txid: crypto.pseudoRandomBytes(32).toString('hex'),
         oidx: 2,
         colorId: 1,
         value: 10
@@ -34,7 +35,7 @@ module.exports = function (opts) {
     records[1].oidx += 1
 
     beforeEach(function (done) {
-      storage = new opts.StorageCls(opts.storageOpts)
+      storage = new StorageCls(opts.clsOpts)
       storage.ready.done(done, done)
     })
 
@@ -70,7 +71,7 @@ module.exports = function (opts) {
       })
 
       it('output not exists', function (done) {
-        storage.get({txid: random.getRandomBuffer(32).toString('hex')})
+        storage.get({txid: crypto.pseudoRandomBytes(32).toString('hex')})
           .then(function (data) {
             expect(data).to.deep.equal({})
           })

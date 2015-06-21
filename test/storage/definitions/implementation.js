@@ -1,27 +1,29 @@
 /* global describe, xdescribe, beforeEach, afterEach, it */
 'use strict'
 
-var expect = require('chai').expect
-
 var _ = require('lodash')
+var expect = require('chai').expect
 var Promise = require('bluebird')
-var random = require('bitcore').crypto.Random
+var crypto = require('crypto')
+
+var cclib = require('../../../')
 
 module.exports = function (opts) {
-  if (opts.StorageCls === undefined) {
+  var StorageCls = cclib.storage.definitions[opts.clsName]
+  if (StorageCls === undefined) {
     return
   }
 
   var ldescribe = opts.describe || describe
-  if (!opts.StorageCls.isAvailable()) {
+  if (!StorageCls.isAvailable()) {
     ldescribe = xdescribe
   }
 
-  ldescribe('storage.definitions.' + opts.StorageCls.name, function () {
+  ldescribe('storage.definitions.' + opts.clsName, function () {
     var storage
 
     beforeEach(function (done) {
-      storage = new opts.StorageCls(opts.storageOpts)
+      storage = new StorageCls(opts.clsOpts)
       storage.ready.done(done, done)
     })
 
@@ -39,7 +41,7 @@ module.exports = function (opts) {
       })
 
       it('create new record', function (done) {
-        var desc = random.getRandomBuffer(5).toString('hex')
+        var desc = crypto.pseudoRandomBytes(5).toString('hex')
         storage.resolve(desc)
           .then(function (data) {
             expect(data).to.be.an('object')
@@ -53,7 +55,7 @@ module.exports = function (opts) {
 
       it('resolve exists record', function (done) {
         var colorId
-        var desc = random.getRandomBuffer(5).toString('hex')
+        var desc = crypto.pseudoRandomBytes(5).toString('hex')
         storage.resolve(desc)
           .then(function (data) {
             expect(data).to.have.deep.property('record.id').and.to.be.a('Number')
@@ -75,9 +77,9 @@ module.exports = function (opts) {
 
       beforeEach(function (done) {
         Promise.all([
-          storage.resolve(random.getRandomBuffer(5).toString('hex')),
-          storage.resolve(random.getRandomBuffer(5).toString('hex')),
-          storage.resolve(random.getRandomBuffer(5).toString('hex'))
+          storage.resolve(crypto.pseudoRandomBytes(5).toString('hex')),
+          storage.resolve(crypto.pseudoRandomBytes(5).toString('hex')),
+          storage.resolve(crypto.pseudoRandomBytes(5).toString('hex'))
         ])
         .then(function (result) {
           expect(result).to.have.length(3)

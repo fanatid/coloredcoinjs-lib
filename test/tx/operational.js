@@ -3,7 +3,7 @@
 
 var _ = require('lodash')
 var expect = require('chai').expect
-var random = require('bitcore').crypto.Random
+var crypto = require('crypto')
 
 var cclib = require('../../')
 
@@ -16,7 +16,7 @@ describe('tx.OperationalTx', function () {
     var cdef = new cclib.definitions.Uncolored()
     var value = _.random(1, 10)
     var cvalue = new cclib.ColorValue(cdef, value)
-    var script = random.getRandomBuffer(5).toString('hex')
+    var script = crypto.pseudoRandomBytes(5).toString('hex')
     ctarget = new cclib.ColorTarget(script, cvalue)
   })
 
@@ -38,7 +38,7 @@ describe('tx.OperationalTx', function () {
     var cdef = new cclib.definitions.Genesis()
     var value = _.random(1, 10)
     var cvalue = new cclib.ColorValue(cdef, value)
-    var script = random.getRandomBuffer(5).toString('hex')
+    var script = crypto.pseudoRandomBytes(5).toString('hex')
     var ctarget2 = new cclib.ColorTarget(script, cvalue)
     optx.addTargets([ctarget, ctarget2])
     expect(optx.isMonoColor()).to.be.false

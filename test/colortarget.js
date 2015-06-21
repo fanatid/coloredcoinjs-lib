@@ -3,13 +3,13 @@
 
 var _ = require('lodash')
 var expect = require('chai').expect
-var random = require('bitcore').crypto.Random
+var crypto = require('crypto')
 
 var cclib = require('../')
 
 describe('ColorTarget', function () {
   var cdef = new cclib.definitions.Uncolored()
-  var script = random.getRandomBuffer(5).toString('hex')
+  var script = crypto.pseudoRandomBytes(5).toString('hex')
   var value = _.random(1, 10)
   var cvalue
   var ctarget
@@ -46,7 +46,7 @@ describe('ColorTarget', function () {
   it('sum', function () {
     var ovalue = _.random(1, 10)
     var ocvalue = new cclib.ColorValue(cdef, ovalue)
-    var oscript = random.getRandomBuffer(5).toString('hex')
+    var oscript = crypto.pseudoRandomBytes(5).toString('hex')
     var octarget = new cclib.ColorTarget(oscript, ocvalue)
 
     var result = cvalue.plus(ocvalue)

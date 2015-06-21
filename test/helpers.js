@@ -3,6 +3,7 @@
 var _ = require('lodash')
 var timers = require('timers')
 var inherits = require('util').inherits
+var crypto = require('crypto')
 var bitcore = require('bitcore')
 
 var cclib = require('../')
@@ -96,7 +97,7 @@ function createRunKernelEnv (txid, inputs, outputs, sequence) {
   top._getHash = function () { return txHash }
 
   inputs.forEach(function (satoshis) {
-    var itxid = bitcore.crypto.Random.getRandomBuffer(32).toString('hex')
+    var itxid = crypto.pseudoRandomBytes(32).toString('hex')
     top.uncheckedAddInput(bitcore.Transaction.Input({
       prevTxId: itxid,
       outputIndex: 0,

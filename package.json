@@ -37,7 +37,7 @@
   "main": "./index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chromaway/coloredcoinjs-lib"
+    "url": "https://github.com/chromaway/coloredcoinjs-lib.git"
   },
   "scripts": {
     "compile": "browserify index.js -s cclib -o cclib.js -g [ uglifyify --no-sourcemap ]",
