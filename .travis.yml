@@ -14,7 +14,6 @@ before_script:
 install:
   - npm install -g npm
   - npm install
-  - npm install bitcore@0.12.8
 env:
   - TEST_SUITE=compile
   - TEST_SUITE=coveralls

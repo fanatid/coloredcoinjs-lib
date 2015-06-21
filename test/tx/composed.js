@@ -11,7 +11,7 @@ describe('tx.ComposedTx', function () {
   var tx
 
   beforeEach(function () {
-    var optx = new cclib.tx.OperationalTx()
+    var optx = new cclib.tx.Operational()
     tx = optx.makeComposedTx()
   })
 

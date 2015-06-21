@@ -14,13 +14,13 @@ var cclib = require('../')
  * @param {number} feeSize
  */
 function FixedFeeOperationalTx (feeSize) {
-  cclib.tx.OperationalTx.call(this)
+  cclib.tx.Operational.call(this)
 
   var cdef = new cclib.definitions.Uncolored()
   this._feeSize = new cclib.ColorValue(cdef, feeSize)
 }
 
-inherits(FixedFeeOperationalTx, cclib.tx.OperationalTx)
+inherits(FixedFeeOperationalTx, cclib.tx.Operational)
 
 FixedFeeOperationalTx.prototype.getRequiredFee = function () {
   return this._feeSize

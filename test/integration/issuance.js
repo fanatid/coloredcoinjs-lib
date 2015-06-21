@@ -19,7 +19,7 @@ describe('coloredcoinjs-lib (issuance)', function () {
     var ctarget = new cclib.ColorTarget(
       bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
 
-    var optx = new cclib.tx.SimpleOperationalTx({
+    var optx = new cclib.tx.SimpleOperational({
       targets: [
         ctarget
       ],
@@ -38,7 +38,7 @@ describe('coloredcoinjs-lib (issuance)', function () {
 
     cclib.definitions.EPOBC.composeGenesisTx(optx)
       .then(function (comptx) {
-        expect(comptx).to.be.instanceof(cclib.tx.ComposedTx)
+        expect(comptx).to.be.instanceof(cclib.tx.Composed)
 
         expect(comptx.getInputs()).to.deep.equal([{
           txid: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',

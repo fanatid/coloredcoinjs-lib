@@ -7,12 +7,12 @@ var crypto = require('crypto')
 
 var cclib = require('../../')
 
-describe('tx.OperationalTx', function () {
+describe('tx.Operational', function () {
   var optx
   var ctarget
 
   beforeEach(function () {
-    optx = new cclib.tx.OperationalTx()
+    optx = new cclib.tx.Operational()
     var cdef = new cclib.definitions.Uncolored()
     var value = _.random(1, 10)
     var cvalue = new cclib.ColorValue(cdef, value)
@@ -80,6 +80,6 @@ describe('tx.OperationalTx', function () {
   })
 
   it('makeComposedTx', function () {
-    expect(optx.makeComposedTx()).to.be.instanceof(cclib.tx.ComposedTx)
+    expect(optx.makeComposedTx()).to.be.instanceof(cclib.tx.Composed)
   })
 })
