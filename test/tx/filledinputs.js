@@ -14,10 +14,10 @@ describe('tx.FilledInputs', function () {
 
   describe('isCoinbase', function () {
     var txid = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
-    var tx = bitcore.Transaction(transactions[txid])
+    var rawtx = transactions[txid]
 
     beforeEach(function (done) {
-      fitx = new cclib.tx.FilledInputs(tx, getTxFn)
+      fitx = new cclib.tx.FilledInputs(rawtx, getTxFn)
       fitx.ready.done(done, done)
     })
 
