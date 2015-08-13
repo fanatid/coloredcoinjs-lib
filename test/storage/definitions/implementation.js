@@ -1,107 +1,107 @@
-/* global describe, xdescribe, beforeEach, afterEach, it */
-'use strict'
+import { expect } from 'chai'
+import _ from 'lodash'
+import { pseudoRandomBytes as getRandomBytes } from 'crypto'
 
-var _ = require('lodash')
-var expect = require('chai').expect
-var Promise = require('bluebird')
-var crypto = require('crypto')
+import cclib from '../../../src'
 
-var cclib = require('../../../')
-
-module.exports = function (opts) {
-  var StorageCls = cclib.storage.definitions[opts.clsName]
+module.exports = (opts) => {
+  let StorageCls = cclib.storage.definitions[opts.clsName]
   if (StorageCls === undefined) {
     return
   }
 
-  var ldescribe = opts.describe || describe
+  let ldescribe = opts.describe || describe
   if (!StorageCls.isAvailable()) {
     ldescribe = xdescribe
   }
 
-  ldescribe('storage.definitions.' + opts.clsName, function () {
-    var storage
+  ldescribe('storage.definitions.' + opts.clsName, () => {
+    let storage
 
-    beforeEach(function (done) {
+    beforeEach((done) => {
       storage = new StorageCls(opts.clsOpts)
-      storage.ready.done(done, done)
+      storage.ready.then(done, done)
     })
 
-    afterEach(function (done) {
-      storage.clear().done(done, done)
+    afterEach((done) => {
+      storage.clear().then(done, done)
     })
 
-    describe('#resolve', function () {
-      it('return null', function (done) {
-        storage.resolve('...', {autoAdd: false})
-          .then(function (data) {
+    describe('#resolve', () => {
+      it('return null', (done) => {
+        Promise.resolve()
+          .then(async () => {
+            let data = await storage.resolve('...', {autoAdd: false})
             expect(data).to.deep.equal({record: null, new: null})
           })
-          .done(done, done)
+          .then(done, done)
       })
 
-      it('create new record', function (done) {
-        var desc = crypto.pseudoRandomBytes(5).toString('hex')
-        storage.resolve(desc)
-          .then(function (data) {
+      it('create new record', (done) => {
+        Promise.resolve()
+          .then(async () => {
+            let desc = getRandomBytes(5).toString('hex')
+            let data = await storage.resolve(desc)
             expect(data).to.be.an('object')
             expect(data.record).to.be.an('object')
             expect(data.record.id).to.be.at.least(1)
             expect(data.record.desc).to.equal(desc)
             expect(data.new).to.be.true
           })
-          .done(done, done)
+          .then(done, done)
       })
 
-      it('resolve exists record', function (done) {
-        var colorId
-        var desc = crypto.pseudoRandomBytes(5).toString('hex')
-        storage.resolve(desc)
-          .then(function (data) {
+      it('resolve exists record', (done) => {
+        Promise.resolve()
+          .then(async () => {
+            let desc = getRandomBytes(5).toString('hex')
+            let data = await storage.resolve(desc)
             expect(data).to.have.deep.property('record.id').and.to.be.a('Number')
             expect(data).to.have.deep.property('record.desc', desc)
             expect(data).to.have.property('new', true)
-            colorId = data.record.id
-            return storage.resolve(desc)
-          })
-          .then(function (data) {
+
+            let colorId = data.record.id
+            data = await storage.resolve(desc)
             expect(data).to.deep.equal(
               {record: {id: colorId, desc: desc}, new: false})
           })
-          .done(done, done)
+          .then(done, done)
       })
     })
 
-    describe('#get', function () {
-      var records
+    describe('#get', () => {
+      let records
 
-      beforeEach(function (done) {
-        Promise.all([
-          storage.resolve(crypto.pseudoRandomBytes(5).toString('hex')),
-          storage.resolve(crypto.pseudoRandomBytes(5).toString('hex')),
-          storage.resolve(crypto.pseudoRandomBytes(5).toString('hex'))
-        ])
-        .then(function (result) {
-          expect(result).to.have.length(3)
-          records = _.pluck(result, 'record')
-        })
-        .done(done, done)
+      beforeEach((done) => {
+        Promise.resolve()
+          .then(async () => {
+            let result = await* [
+              storage.resolve(getRandomBytes(5).toString('hex')),
+              storage.resolve(getRandomBytes(5).toString('hex')),
+              storage.resolve(getRandomBytes(5).toString('hex'))
+            ]
+            expect(result).to.have.length(3)
+            records = _.pluck(result, 'record')
+          })
+          .then(done, done)
       })
 
-      it('by id', function (done) {
-        storage.get({id: records[0].id})
-          .then(function (data) {
+      it('by id', (done) => {
+        Promise.resolve()
+          .then(async () => {
+            let data = await storage.get({id: records[0].id})
             expect(data).to.deep.equal(records[0])
           })
-          .done(done, done)
+          .then(done, done)
       })
 
-      it('get all', function (done) {
-        storage.get()
-          .then(function (result) {
+      it('get all', (done) => {
+        Promise.resolve()
+          .then(async () => {
+            let result = await storage.get()
             expect(_.sortBy(result, 'id')).to.deep.equal(_.sortBy(records, 'id'))
           })
-          .done(done, done)
+          .then(done, done)
       })
     })
   })

@@ -1,60 +1,55 @@
-/* global describe, beforeEach, afterEach, it */
-'use strict'
+import { expect } from 'chai'
 
-var expect = require('chai').expect
+import cclib from '../src'
 
-var cclib = require('../')
+describe('ColorSet', () => {
+  let cdef = new cclib.definitions.Uncolored()
+  let cdstorage
+  let cdmanager
 
-describe('ColorSet', function () {
-  var cdef = new cclib.definitions.Uncolored()
-  var cdstorage
-  var cdmanager
-
-  beforeEach(function (done) {
+  beforeEach((done) => {
     cdstorage = new cclib.storage.definitions.Memory()
-    cdstorage.ready.done(done, done)
+    cdstorage.ready.then(done, done)
     cdmanager = new cclib.definitions.Manager(cdstorage)
   })
 
-  afterEach(function (done) {
-    cdstorage.clear().done(done, done)
+  afterEach((done) => {
+    cdstorage.clear().then(done, done)
   })
 
-  it('getColorHash', function () {
-    var cdescs = [
+  it('getColorHash', () => {
+    let cdescs = [
       '',
       'epobc:b95323a763fa507110a89ab857af8e949810cf1e67e91104cd64222a04ccd0bb:0:180679'
     ]
-    var cset = new cclib.ColorSet(cdmanager, cdescs)
+    let cset = new cclib.ColorSet(cdmanager, cdescs)
     expect(cset.getColorHash()).to.deep.equal('6xgXQgnviwX5Lk')
   })
 
-  it('getColorDescs', function () {
-    var cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
+  it('getColorDescs', () => {
+    let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
     expect(cset.getColorDescs()).to.deep.equal([cdef.getDesc()])
   })
 
-  it('getColorDefinitions', function (done) {
-    var cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
-    cset.ready
-      .then(function () {
-        return cset.getColorDefinitions()
-      })
-      .then(function (cdefs) {
+  it('getColorDefinitions', (done) => {
+    Promise.resolve()
+      .then(async () => {
+        let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
+        await cset.ready
+        let cdefs = await cset.getColorDefinitions()
         expect(cdefs).to.deep.equal([cdef])
       })
-      .done(done, done)
+      .then(done, done)
   })
 
-  it('getColorIds', function (done) {
-    var cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
-    cset.ready
-      .then(function () {
-        return cset.getColorIds()
-      })
-      .then(function (cids) {
+  it('getColorIds', (done) => {
+    Promise.resolve()
+      .then(async () => {
+        let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
+        await cset.ready
+        let cids = await cset.getColorIds()
         expect(cids).to.deep.equal([cdef.getColorId()])
       })
-      .done(done, done)
+      .then(done, done)
   })
 })

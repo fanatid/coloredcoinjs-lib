@@ -1,4 +1,4 @@
-# coloredcoinjs-lib <sup>[![version](http://vb.teelaun.ch/chromaway/coloredcoinjs-lib.svg)](https://www.npmjs.org/package/coloredcoinjs-lib/)</sup>
+# coloredcoinjs-lib
 
 [![build status](https://img.shields.io/travis/chromaway/coloredcoinjs-lib.svg?branch=master&style=flat-square)](http://travis-ci.org/chromaway/coloredcoinjs-lib)
 [![Coverage Status](https://img.shields.io/coveralls/chromaway/coloredcoinjs-lib.svg?style=flat-square)](https://coveralls.io/r/chromaway/coloredcoinjs-lib)

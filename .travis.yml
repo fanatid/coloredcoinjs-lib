@@ -12,10 +12,9 @@ before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
   - cp test/config/postgresql.json.travis test/config/postgresql.json
 install:
-  - npm install -g npm
   - npm install
+  - npm install bitcore
 env:
-  - TEST_SUITE=compile
   - TEST_SUITE=coveralls
   - TEST_SUITE=lint
   - TEST_SUITE=test

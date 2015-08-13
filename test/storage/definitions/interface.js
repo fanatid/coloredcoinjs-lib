@@ -1,43 +1,42 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { expect } from 'chai'
 
-var expect = require('chai').expect
-var _ = require('lodash')
+import cclib from '../../../src'
 
-var cclib = require('../../../')
+describe('storage.definitions.Interface', () => {
+  let storage
 
-describe('storage.definitions.Interface', function () {
-  var storage
-
-  beforeEach(function () {
+  beforeEach(() => {
     storage = new cclib.storage.definitions.Interface()
   })
 
-  it('isAvailable', function () {
+  it('isAvailable', () => {
     expect(cclib.storage.definitions.Interface.isAvailable()).to.be.false
   })
 
-  it('#resolve', function (done) {
-    storage.resolve().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+  it('#resolve', (done) => {
+    storage.resolve()
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+      })
+      .then(done, done)
   })
 
   it('#get', function (done) {
-    storage.get().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+    storage.get()
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+      })
+      .then(done, done)
   })
 
   it('#clear', function (done) {
-    storage.clear().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+    storage.clear()
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+      })
+      .then(done, done)
   })
 })

@@ -1,28 +1,24 @@
-/* global describe, beforeEach, it */
-'use strict'
+import _ from 'lodash'
+import bitcore from 'bitcore'
+import { pseudoRandomBytes as getRandomBytes } from 'crypto'
+import { expect } from 'chai'
 
-var expect = require('chai').expect
-var _ = require('lodash')
-var crypto = require('crypto')
-var bitcore = require('bitcore')
-var Promise = require('bluebird')
+import cclib from '../src'
+let EPOBC = cclib.definitions.EPOBC
 
-var cclib = require('../')
-var EPOBC = cclib.definitions.EPOBC
+import helpers from './helpers'
 
-var helpers = require('./helpers')
+describe('ColorData', () => {
+  let tx1
+  let tx2
+  let tx3
 
-describe('ColorData', function () {
-  var tx1
-  var tx2
-  var tx3
+  let cdefstorage
+  let cdmanager
+  let cdstorage
+  let cdata
 
-  var cdefstorage
-  var cdmanager
-  var cdstorage
-  var cdata
-
-  beforeEach(function (done) {
+  beforeEach((done) => {
     tx1 = new bitcore.Transaction()
     tx2 = new bitcore.Transaction()
     tx3 = new bitcore.Transaction()
@@ -33,142 +29,146 @@ describe('ColorData', function () {
     cdstorage = new cclib.storage.data.Memory()
     cdata = new cclib.ColorData(cdstorage, cdmanager)
 
-    Promise.all([cdefstorage.ready, cdstorage.ready])
-    .then(_.noop)
-    .done(done, done)
+    Promise.resolve()
+      .then(async () => {
+        await* [cdefstorage.ready, cdstorage.ready]
+      })
+      .then(done, done)
   })
 
-  describe('getTxColorValues', function () {
-    it('not a color tx', function (done) {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
-      helpers.tx.addOutput(tx1, _.random(1, 1000))
+  describe('getTxColorValues', () => {
+    it('not a color tx', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
+          helpers.tx.addOutput(tx1, _.random(1, 1000))
 
-      cdata.getTxColorValues(tx1, null, EPOBC, helpers.getTxFnStub([]))
-        .then(function (result) {
+          let getTxFn = helpers.getTxFnStub([])
+          let result = await cdata.getTxColorValues(tx1, null, EPOBC, getTxFn)
           expect(result).to.be.an('object')
           expect(result.inputs).to.be.an('array').and.to.have.length(0)
           expect(result.outputs).to.be.an('array').and.to.have.length(0)
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('genesis tx', function (done) {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
-      helpers.tx.addOutput(tx1, 11)
+    it('genesis tx', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+          helpers.tx.addOutput(tx1, 11)
 
-      cdata.getTxColorValues(tx1, null, EPOBC, helpers.getTxFnStub([]))
-        .then(function (result) {
+          let getTxFn = helpers.getTxFnStub([])
+          let result = await cdata.getTxColorValues(tx1, null, EPOBC, getTxFn)
           expect(result).to.be.an('object')
           expect(result.inputs).to.be.an('array').and.to.have.length(0)
           expect(result.outputs).to.be.an('array').and.to.have.length(1)
 
-          var output = result.outputs[0]
+          let output = result.outputs[0]
           expect(output).to.be.an('object')
           expect(output.cdef).to.be.instanceof(EPOBC)
           expect(output.cdef._genesis.txid).to.equal(tx1.id)
           expect(output.outputs).to.be.an('array').and.to.have.length(1)
-          var ocvalue = output.outputs[0]
+
+          let ocvalue = output.outputs[0]
           expect(ocvalue).to.be.instanceof(cclib.ColorValue)
           expect(ocvalue.getColorDefinition()).to.deep.equal(output.cdef)
           expect(ocvalue.getValue()).to.equal(7)
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('transfer tx', function (done) {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
-      helpers.tx.addOutput(tx1, 11)
+    it('transfer tx', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+          helpers.tx.addOutput(tx1, 11)
 
-      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
-      helpers.tx.addOutput(tx2, 10)
+          helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
+          helpers.tx.addOutput(tx2, 10)
 
-      cdata.getTxColorValues(tx2, [0], EPOBC, helpers.getTxFnStub([tx1]))
-        .then(function (result) {
+          let getTxFn = helpers.getTxFnStub([tx1])
+          let result = await cdata.getTxColorValues(tx2, [0], EPOBC, getTxFn)
           expect(result).to.be.an('object')
 
           expect(result.inputs).to.be.an('array').and.to.have.length(1)
-          var input = result.inputs[0]
+          let input = result.inputs[0]
           expect(input.cdef).to.be.instanceof(EPOBC)
           expect(input.cdef._genesis.txid).to.equal(tx1.id)
           expect(input.inputs).to.be.an('array').and.to.have.length(1)
-          var icvalue = input.inputs[0]
+          let icvalue = input.inputs[0]
           expect(icvalue).to.be.instanceof(cclib.ColorValue)
           expect(icvalue.getColorDefinition()).to.deep.equal(input.cdef)
           expect(icvalue.getValue()).to.equal(7)
 
           expect(result.outputs).to.be.an('array').and.to.have.length(1)
-          var output = result.outputs[0]
+          let output = result.outputs[0]
           expect(output.cdef).to.be.instanceof(EPOBC)
           expect(output.cdef._genesis.txid).to.equal(tx1.id)
           expect(output.outputs).to.be.an('array').and.to.have.length(1)
-          var ocvalue = output.outputs[0]
+          let ocvalue = output.outputs[0]
           expect(ocvalue).to.be.instanceof(cclib.ColorValue)
           expect(ocvalue.getColorDefinition()).to.deep.equal(output.cdef)
           expect(ocvalue.getValue()).to.equal(6)
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 
-  describe('getOutputColorValue', function () {
-    it('tranfer tx from 2 genesis tx', function (done) {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (3 << 6))
-      helpers.tx.addOutput(tx1, 18)
+  describe('getOutputColorValue', () => {
+    it('tranfer tx from 2 genesis tx', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (3 << 6))
+          helpers.tx.addOutput(tx1, 18)
 
-      helpers.tx.addInput(tx2, new Buffer(32), 0, 37 | (3 << 6))
-      helpers.tx.addOutput(tx2, 28)
+          helpers.tx.addInput(tx2, new Buffer(32), 0, 37 | (3 << 6))
+          helpers.tx.addOutput(tx2, 28)
 
-      helpers.tx.addInput(tx3, tx1.id, 0, 51 | (3 << 6))
-      helpers.tx.addInput(tx3, tx2.id, 0, 0)
-      helpers.tx.addOutput(tx3, 13)
-      helpers.tx.addOutput(tx3, 15)
-      helpers.tx.addOutput(tx3, 18)
+          helpers.tx.addInput(tx3, tx1.id, 0, 51 | (3 << 6))
+          helpers.tx.addInput(tx3, tx2.id, 0, 0)
+          helpers.tx.addOutput(tx3, 13)
+          helpers.tx.addOutput(tx3, 15)
+          helpers.tx.addOutput(tx3, 18)
 
-      var getTxFn = helpers.getTxFnStub([tx1, tx2])
-
-      cdata.getOutputColorValue(tx3, 0, EPOBC, getTxFn)
-        .then(function (result) {
+          let getTxFn = helpers.getTxFnStub([tx1, tx2])
+          let result = await cdata.getOutputColorValue(tx3, 0, EPOBC, getTxFn)
           expect(result).to.be.an('array').and.to.have.length(1)
-          var cv = result[0]
+          let cv = result[0]
           expect(cv).to.be.instanceof(cclib.ColorValue)
           expect(cv.getColorDefinition()._genesis.txid).to.equal(tx1.id)
           expect(cv.getValue()).to.equal(5)
-          return cdata.getOutputColorValue(tx3, 1, EPOBC, getTxFn)
-        })
-        .then(function (result) {
+
+          result = await cdata.getOutputColorValue(tx3, 1, EPOBC, getTxFn)
           expect(result).to.be.an('array').and.to.have.length(0)
-          return cdata.getOutputColorValue(tx3, 2, EPOBC, getTxFn)
-        })
-        .then(function (result) {
+
+          result = await cdata.getOutputColorValue(tx3, 2, EPOBC, getTxFn)
           expect(result).to.be.an('array').and.to.have.length(1)
-          var cv = result[0]
+          cv = result[0]
           expect(cv).to.be.instanceof(cclib.ColorValue)
           expect(cv.getColorDefinition()._genesis.txid).to.equal(tx2.id)
           expect(cv.getValue()).to.equal(10)
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 
-  it('remove color values', function (done) {
-    var data = {
-      colorCode: EPOBC.getColorCode(),
-      txid: crypto.pseudoRandomBytes(32).toString('hex'),
-      oidx: 0,
-      colorId: 1,
-      value: 10
-    }
+  it('remove color values', (done) => {
+    Promise.resolve()
+      .then(async () => {
+        let data = {
+          colorCode: EPOBC.getColorCode(),
+          txid: getRandomBytes(32).toString('hex'),
+          oidx: 0,
+          colorId: 1,
+          value: 10
+        }
 
-    cdstorage.add(data)
-      .then(function (cvalue) {
-        return cdata.removeColorValues(data.txid, EPOBC)
+        await cdstorage.add(data)
+        await cdata.removeColorValues(data.txid, EPOBC)
+        let result = await cdstorage.get(data)
+        expect(Array.from(result.keys())).to.have.length(0)
       })
-      .then(function () {
-        return cdstorage.get(data)
-      })
-      .then(function (data) {
-        expect(data).to.deep.equal({})
-      })
-      .done(done, done)
+      .then(done, done)
   })
 })

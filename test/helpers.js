@@ -1,29 +1,32 @@
-'use strict'
+import _ from 'lodash'
+import { setImmediate } from 'timers'
+import crypto from 'crypto'
+import bitcore from 'bitcore'
 
-var _ = require('lodash')
-var timers = require('timers')
-var inherits = require('util').inherits
-var crypto = require('crypto')
-var bitcore = require('bitcore')
-
-var cclib = require('../')
+import cclib from '../src'
 
 /**
  * @class FixedFeeOperationalTx
  * @extends OperationalTx
- * @param {number} feeSize
  */
-function FixedFeeOperationalTx (feeSize) {
-  cclib.tx.Operational.call(this)
+class FixedFeeOperationalTx extends cclib.tx.Operational {
+  /**
+   * @constructor
+   * @param {number} feeSize
+   */
+  constructor (feeSize) {
+    super()
 
-  var cdef = new cclib.definitions.Uncolored()
-  this._feeSize = new cclib.ColorValue(cdef, feeSize)
-}
+    let cdef = cclib.definitions.Manager.getUncolored()
+    this._feeSize = new cclib.ColorValue(cdef, feeSize)
+  }
 
-inherits(FixedFeeOperationalTx, cclib.tx.Operational)
-
-FixedFeeOperationalTx.prototype.getRequiredFee = function () {
-  return this._feeSize
+  /**
+   * @return {ColorValue}
+   */
+  getRequiredFee () {
+    return this._feeSize
+  }
 }
 
 /**
@@ -68,8 +71,8 @@ function addOutput (tx, value, address) {
  * @return {getTxFn}
  */
 function getTxFnStub (transactions) {
-  return cclib.util.tx.extendGetTxFn(function (txid, cb) {
-    timers.setImmediate(function () {
+  return cclib.util.tx.extendGetTxFn((txid, cb) => {
+    setImmediate(() => {
       cb(new Error(txid + ' not found'))
     })
   }, transactions)
@@ -90,23 +93,23 @@ function getRandomAddress () {
  * @return {{top: bitcore.Transaction, deps: bitcore.Transaction[]}}
  */
 function createRunKernelEnv (txid, inputs, outputs, sequence) {
-  var top = bitcore.Transaction()
-  var deps = []
+  let top = bitcore.Transaction()
+  let deps = []
 
-  var txHash = Array.prototype.reverse.call(new Buffer(txid, 'hex'))
-  top._getHash = function () { return txHash }
+  let txHash = Array.prototype.reverse.call(new Buffer(txid, 'hex'))
+  top._getHash = () => { return txHash }
 
-  inputs.forEach(function (satoshis) {
-    var itxid = crypto.pseudoRandomBytes(32).toString('hex')
+  for (let satoshis of inputs) {
+    let itxid = crypto.pseudoRandomBytes(32).toString('hex')
     top.uncheckedAddInput(bitcore.Transaction.Input({
       prevTxId: itxid,
       outputIndex: 0,
       script: bitcore.Script.fromAddress(getRandomAddress())
     }))
 
-    var env = createRunKernelEnv(itxid, [], [satoshis], [0, 1, 4, 5, 6, 7])
+    let env = createRunKernelEnv(itxid, [], [satoshis], [0, 1, 4, 5, 6, 7])
     deps = deps.concat(env.top, env.deps)
-  })
+  }
 
   if (top.inputs.length === 0) {
     top.uncheckedAddInput(bitcore.Transaction.Input({
@@ -118,33 +121,31 @@ function createRunKernelEnv (txid, inputs, outputs, sequence) {
   }
 
   if (_.isArray(sequence)) {
-    sequence = sequence.reduce(function (total, i) {
+    sequence = sequence.reduce((total, i) => {
       return total + Math.pow(2, i)
     }, 0)
   }
 
   top.inputs[0].sequenceNumber = sequence
 
-  outputs.forEach(function (satoshis) {
+  for (let satoshis of outputs) {
     top.addOutput(bitcore.Transaction.Output({
       satoshis: satoshis,
       script: bitcore.Script.buildPublicKeyHashOut(getRandomAddress())
     }))
-  })
+  }
 
   return {top: top, deps: deps}
 }
 
-module.exports = {
+export default {
   FixedFeeOperationalTx: FixedFeeOperationalTx,
   tx: {
     addInput: addInput,
     addOutput: addOutput
   },
-
   getTxFnStub: getTxFnStub,
-  getTxFn: getTxFnStub(require('./fixtures/transactions')),
-
+  getTxFn: getTxFnStub(require('./fixtures/transactions.json')),
   getRandomAddress: getRandomAddress,
   createRunKernelEnv: createRunKernelEnv
 }

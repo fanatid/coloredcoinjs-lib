@@ -1,10 +1,11 @@
-/* global describe */
-'use strict'
+import { pseudoRandomBytes as getRandomBytes } from 'crypto'
 
-require('./implementation')({
+import runImplementationTest from './implementation'
+
+runImplementationTest({
   describe: describe,
   clsName: 'IndexedDB',
   clsOpts: {
-    dbName: require('crypto').pseudoRandomBytes(5).toString('hex')
+    dbName: getRandomBytes(5).toString('hex')
   }
 })

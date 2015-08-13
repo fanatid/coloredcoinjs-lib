@@ -1,26 +1,23 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { pseudoRandomBytes as getRandomBytes } from 'crypto'
+import _ from 'lodash'
+import { expect } from 'chai'
 
-var _ = require('lodash')
-var expect = require('chai').expect
-var crypto = require('crypto')
+import cclib from '../../src'
 
-var cclib = require('../../')
+describe('tx.Operational', () => {
+  let optx
+  let ctarget
 
-describe('tx.Operational', function () {
-  var optx
-  var ctarget
-
-  beforeEach(function () {
+  beforeEach(() => {
     optx = new cclib.tx.Operational()
-    var cdef = new cclib.definitions.Uncolored()
-    var value = _.random(1, 10)
-    var cvalue = new cclib.ColorValue(cdef, value)
-    var script = crypto.pseudoRandomBytes(5).toString('hex')
+    let cdef = cclib.definitions.Manager.getUncolored()
+    let value = _.random(1, 10)
+    let cvalue = new cclib.ColorValue(cdef, value)
+    let script = getRandomBytes(5).toString('hex')
     ctarget = new cclib.ColorTarget(script, cvalue)
   })
 
-  it('addTarget/addTargets/getTargets', function () {
+  it('addTarget/addTargets/getTargets', () => {
     expect(optx.getTargets()).to.have.length(0)
     optx.addTarget(ctarget)
     expect(optx.getTargets()).to.have.length(1)
@@ -28,58 +25,58 @@ describe('tx.Operational', function () {
     expect(optx.getTargets()).to.have.length(3)
   })
 
-  it('isMonoColor return true', function () {
+  it('isMonoColor return true', () => {
     expect(optx.isMonoColor()).to.be.true
     optx.addTargets([ctarget, ctarget])
     expect(optx.isMonoColor()).to.be.true
   })
 
-  it('isMonoColor return false', function () {
-    var cdef = new cclib.definitions.Genesis()
-    var value = _.random(1, 10)
-    var cvalue = new cclib.ColorValue(cdef, value)
-    var script = crypto.pseudoRandomBytes(5).toString('hex')
-    var ctarget2 = new cclib.ColorTarget(script, cvalue)
+  it('isMonoColor return false', () => {
+    let cdef = cclib.definitions.Manager.getGenesis()
+    let value = _.random(1, 10)
+    let cvalue = new cclib.ColorValue(cdef, value)
+    let script = getRandomBytes(5).toString('hex')
+    let ctarget2 = new cclib.ColorTarget(script, cvalue)
     optx.addTargets([ctarget, ctarget2])
     expect(optx.isMonoColor()).to.be.false
   })
 
-  it('selectCoins', function (done) {
+  it('selectCoins', (done) => {
     optx.selectCoins()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('getChangeAddress', function (done) {
+  it('getChangeAddress', (done) => {
     optx.getChangeAddress()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('getRequiredFee (default fee-per-kilobyte)', function () {
-    var result = optx.getRequiredFee(_.random(1, 10000))
+  it('getRequiredFee (default fee-per-kilobyte)', () => {
+    let result = optx.getRequiredFee(_.random(1, 10000))
     expect(result).to.be.instanceof(cclib.ColorValue)
     expect(result.getColorDefinition().getColorCode()).to.equal('uncolored')
   })
 
-  it('getRequiredFee (certain fee-per-kilobyte)', function () {
-    var result = optx.getRequiredFee(_.random(1, 10000), 0)
+  it('getRequiredFee (certain fee-per-kilobyte)', () => {
+    let result = optx.getRequiredFee(_.random(1, 10000), 0)
     expect(result).to.be.instanceof(cclib.ColorValue)
     expect(result.getColorDefinition().getColorCode()).to.equal('uncolored')
     expect(result.getValue()).to.equal(0)
   })
 
-  it('getDustThreshold', function () {
+  it('getDustThreshold', () => {
     expect(optx.getDustThreshold()).to.be.instanceof(cclib.ColorValue)
   })
 
-  it('makeComposedTx', function () {
+  it('makeComposedTx', () => {
     expect(optx.makeComposedTx()).to.be.instanceof(cclib.tx.Composed)
   })
 })

@@ -1,43 +1,42 @@
-/* global describe, it */
-'use strict'
+import bitcore from 'bitcore'
+import { expect } from 'chai'
 
-var expect = require('chai').expect
-var bitcore = require('bitcore')
+import cclib from '../../src'
 
-var cclib = require('../../')
+describe('coloredcoinjs-lib (issuance)', () => {
+  it('EPOBC', (done) => {
+    Promise.resolve()
+      .then(async () => {
+        // http://tbtc.blockr.io/tx/info/7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d
 
-describe('coloredcoinjs-lib (issuance)', function () {
-  it('EPOBC', function (done) {
-    // http://tbtc.blockr.io/tx/info/7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d
+        let pk1 = bitcore.PrivateKey(
+          'cMgKymqtZtF2dCPXwR9h9yYnJm3Mno9xfuSjNXy42ByyW96qcqyT', 'testnet')
+        let pk2 = bitcore.PrivateKey(
+          'cW4QRvHawwgJNxuSBrUsSpPEkLpLDAemaZ68ciibV64HYHwHATVm', 'testnet')
 
-    var pk1 = bitcore.PrivateKey(
-      'cMgKymqtZtF2dCPXwR9h9yYnJm3Mno9xfuSjNXy42ByyW96qcqyT', 'testnet')
-    var pk2 = bitcore.PrivateKey(
-      'cW4QRvHawwgJNxuSBrUsSpPEkLpLDAemaZ68ciibV64HYHwHATVm', 'testnet')
+        let genesisCdef = cclib.definitions.Manager.getGenesis()
+        let cvalue = new cclib.ColorValue(genesisCdef, 500000)
+        let targetScript = bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey())
+        let ctarget = new cclib.ColorTarget(targetScript.toHex(), cvalue)
 
-    var cvalue = new cclib.ColorValue(new cclib.definitions.Genesis(), 500000)
-    var ctarget = new cclib.ColorTarget(
-      bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex(), cvalue)
+        let optx = new cclib.tx.SimpleOperational({
+          targets: [
+            ctarget
+          ],
+          coins: {
+            0: [{
+              txid: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
+              oidx: 1,
+              value: 1000000
+            }]
+          },
+          changeAddresses: {
+            0: pk1.toAddress().toString()
+          },
+          fee: 0
+        })
 
-    var optx = new cclib.tx.SimpleOperational({
-      targets: [
-        ctarget
-      ],
-      coins: {
-        0: [{
-          txid: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
-          oidx: 1,
-          value: 1000000
-        }]
-      },
-      changeAddresses: {
-        0: pk1.toAddress().toString()
-      },
-      fee: 0
-    })
-
-    cclib.definitions.EPOBC.composeGenesisTx(optx)
-      .then(function (comptx) {
+        let comptx = await cclib.definitions.EPOBC.composeGenesisTx(optx)
         expect(comptx).to.be.instanceof(cclib.tx.Composed)
 
         expect(comptx.getInputs()).to.deep.equal([{
@@ -54,6 +53,6 @@ describe('coloredcoinjs-lib (issuance)', function () {
           value: 499000
         }])
       })
-      .done(done, done)
+      .then(done, done)
   })
 })

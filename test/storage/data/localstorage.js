@@ -1,10 +1,11 @@
-/* global describe */
-'use strict'
+import { pseudoRandomBytes as getRandomBytes } from 'crypto'
 
-require('./implementation')({
+import runImplementationTest from './implementation'
+
+runImplementationTest({
   describe: describe,
   clsName: 'LocalStorage',
   clsOpts: {
-    prefix: require('crypto').pseudoRandomBytes(10).toString('hex')
+    prefix: getRandomBytes(10).toString('hex')
   }
 })

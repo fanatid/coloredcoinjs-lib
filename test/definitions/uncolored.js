@@ -1,113 +1,109 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { expect } from 'chai'
 
-var _ = require('lodash')
-var expect = require('chai').expect
+import cclib from '../../src'
+let Uncolored = cclib.definitions.Uncolored
 
-var cclib = require('../../')
-var Uncolored = cclib.definitions.Uncolored
-
-describe('definitions.Uncolored', function () {
+describe('definitions.Uncolored', () => {
   var cdef
 
-  beforeEach(function () {
+  beforeEach(() => {
     cdef = new Uncolored()
   })
 
-  it('inherits defintions.Interface', function () {
+  it('inherits defintions.Interface', () => {
     expect(cdef).to.be.instanceof(cclib.definitions.Interface)
     expect(cdef).to.be.instanceof(Uncolored)
   })
 
-  it('static getColoreCode', function () {
+  it('static getColoreCode', () => {
     expect(Uncolored.getColorCode()).to.equal('uncolored')
   })
 
-  it('getColorCode', function () {
+  it('getColorCode', () => {
     expect(cdef.getColorCode()).to.equal('uncolored')
   })
 
-  it('getColorId', function () {
+  it('getColorId', () => {
     expect(cdef.getColorId()).to.equal(0)
   })
 
-  it('getDesc', function () {
+  it('getDesc', () => {
     expect(cdef.getDesc()).to.equal('')
   })
 
-  describe('fromDesc', function () {
-    it('fail, wrong color id', function (done) {
+  describe('fromDesc', () => {
+    it('fail, wrong color id', (done) => {
       Uncolored.fromDesc('', 1)
-        .asCallback(function (err) {
+        .then(() => { throw new Error('h1') })
+        .catch((err) => {
           expect(err).to.be.instanceof(
             cclib.errors.ColorDefinition.IncorrectColorId)
-          done()
         })
-        .done(_.noop, _.noop)
+        .then(done, done)
     })
 
-    it('fail, wrong description', function (done) {
+    it('fail, wrong description', (done) => {
       Uncolored.fromDesc('xxx', 0)
-        .asCallback(function (err) {
+        .then(() => { throw new Error('h1') })
+        .catch((err) => {
           expect(err).to.be.instanceof(
             cclib.errors.ColorDefinition.IncorrectDesc)
-          done()
         })
-        .done(_.noop, _.noop)
+        .then(done, done)
     })
 
-    it('successful #1', function (done) {
+    it('successful #1', (done) => {
       Uncolored.fromDesc('', 0)
-        .then(function (cdef) {
+        .then((cdef) => {
           expect(cdef.getColorId()).to.equal(0)
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('successful #2', function (done) {
+    it('successful #2', (done) => {
       Uncolored.fromDesc('')
-        .then(function (cdef) {
+        .then((cdef) => {
           expect(cdef.getColorId()).to.equal(0)
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 
-  it('fromTx', function (done) {
+  it('fromTx', (done) => {
     Uncolored.fromTx()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('runKernel', function (done) {
+  it('runKernel', (done) => {
     cdef.runKernel()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('static getAffectingInputs', function (done) {
+  it('static getAffectingInputs', (done) => {
     Uncolored.getAffectingInputs()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it.skip('static makeComposedTx', function (done) {})
+  it.skip('static makeComposedTx', (done) => {})
 
-  it('static composeGenesisTx', function (done) {
+  it('static composeGenesisTx', (done) => {
     Uncolored.composeGenesisTx()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 })

@@ -1,92 +1,89 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { expect } from 'chai'
+import _ from 'lodash'
+import { pseudoRandomBytes as getRandomBytes } from 'crypto'
 
-var _ = require('lodash')
-var expect = require('chai').expect
-var crypto = require('crypto')
+import cclib from '../src'
 
-var cclib = require('../')
+describe('ColorTarget', () => {
+  let cdef = new cclib.definitions.Uncolored()
+  let script = getRandomBytes(5).toString('hex')
+  let value = _.random(1, 10)
+  let cvalue
+  let ctarget
 
-describe('ColorTarget', function () {
-  var cdef = new cclib.definitions.Uncolored()
-  var script = crypto.pseudoRandomBytes(5).toString('hex')
-  var value = _.random(1, 10)
-  var cvalue
-  var ctarget
-
-  beforeEach(function () {
+  beforeEach(() => {
     cvalue = new cclib.ColorValue(cdef, value)
     ctarget = new cclib.ColorTarget(script, cvalue)
   })
 
-  it('getScript', function () {
+  it('getScript', () => {
     expect(ctarget.getScript()).to.equal(script)
   })
 
-  it('getColorValue', function () {
+  it('getColorValue', () => {
     expect(ctarget.getColorValue()).to.deep.equal(cvalue)
   })
 
-  it('getValue', function () {
+  it('getValue', () => {
     expect(ctarget.getValue()).to.equal(value)
   })
 
-  it('getColorDefinition', function () {
+  it('getColorDefinition', () => {
     expect(ctarget.getColorDefinition()).to.deep.equal(cdef)
   })
 
-  it('getColorId', function () {
+  it('getColorId', () => {
     expect(ctarget.getColorId()).to.equal(cdef.getColorId())
   })
 
-  it('is uncolored target?', function () {
+  it('is uncolored target?', () => {
     expect(ctarget.isUncolored()).to.equal(cdef.getColorCode() === 'uncolored')
   })
 
-  it('sum', function () {
-    var ovalue = _.random(1, 10)
-    var ocvalue = new cclib.ColorValue(cdef, ovalue)
-    var oscript = crypto.pseudoRandomBytes(5).toString('hex')
-    var octarget = new cclib.ColorTarget(oscript, ocvalue)
+  it('sum', () => {
+    let ovalue = _.random(1, 10)
+    let ocvalue = new cclib.ColorValue(cdef, ovalue)
+    let oscript = getRandomBytes(5).toString('hex')
+    let octarget = new cclib.ColorTarget(oscript, ocvalue)
 
-    var result = cvalue.plus(ocvalue)
+    let result = cvalue.plus(ocvalue)
     expect(cclib.ColorTarget.sum([ctarget, octarget])).to.deep.equal(result)
   })
 
-  describe('groupByColorId', function () {
-    it('given array of targets haven\'t TargetCls instance', function () {
-      var targets = [{
+  describe('groupByColorId', () => {
+    it('given array of targets haven\'t TargetCls instance', () => {
+      let targets = [{
         getColorDefinition: _.constant(new cclib.definitions.Genesis()),
         isUncolored: _.constant(false)
       }]
-      var fn = function () {
+      let fn = () => {
         cclib.ColorTarget.groupByColorId(targets, cclib.definitions.EPOBC)
       }
       expect(fn).to.throw(Error)
     })
 
-    it('grouped', function () {
-      var uncoloredCDef = new cclib.definitions.Uncolored()
-      var genesisCDef = new cclib.definitions.Genesis()
+    it('grouped', () => {
+      let uncoloredCDef = new cclib.definitions.Uncolored()
+      let genesisCDef = new cclib.definitions.Genesis()
 
-      var target1 = {
+      let target1 = {
         _id: _.uniqueId(),
         getColorDefinition: _.constant(uncoloredCDef),
         getColorId: _.constant(uncoloredCDef.getColorId()),
         isUncolored: _.constant(true)
       }
-      var target2 = {
+      let target2 = {
         _id: _.uniqueId(),
         getColorDefinition: _.constant(genesisCDef),
         getColorId: _.constant(genesisCDef.getColorId()),
         isUncolored: _.constant(false)
       }
 
-      var expected = {}
+      let expected = {}
       expected[uncoloredCDef.getColorId()] = [target1]
       expected[genesisCDef.getColorId()] = [target2]
 
-      var result = cclib.ColorTarget.groupByColorId(
+      let result = cclib.ColorTarget.groupByColorId(
         [target1, target2], cclib.definitions.Genesis)
 
       expect(result).to.deep.equal(expected)

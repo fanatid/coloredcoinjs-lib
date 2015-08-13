@@ -1,51 +1,51 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { expect } from 'chai'
 
-var expect = require('chai').expect
-var _ = require('lodash')
+import cclib from '../../../src'
 
-var cclib = require('../../../')
+describe('storage.data.Interface', () => {
+  let storage
 
-describe('storage.data.Interface', function () {
-  var storage
-
-  beforeEach(function () {
+  beforeEach(() => {
     storage = new cclib.storage.data.Interface()
   })
 
-  it('isAvailable', function () {
+  it('isAvailable', () => {
     expect(cclib.storage.data.Interface.isAvailable()).to.be.false
   })
 
-  it('#add', function (done) {
-    storage.add().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+  it('#add', (done) => {
+    storage.add()
+      .then(() => { throw new Error() })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
   })
 
   it('#get', function (done) {
-    storage.get().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+    storage.get()
+      .then(() => { throw new Error() })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
   })
 
   it('#remove', function (done) {
-    storage.remove().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+    storage.remove()
+      .then(() => { throw new Error() })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
   })
 
   it('#clear', function (done) {
-    storage.clear().asCallback(function (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      done()
-    })
-    .done(_.noop, _.noop)
+    storage.clear()
+      .then(() => { throw new Error() })
+      .catch((err) => {
+        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+        done()
+      })
   })
 })

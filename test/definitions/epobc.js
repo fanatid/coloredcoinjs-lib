@@ -1,232 +1,236 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { expect } from 'chai'
+import _ from 'lodash'
+import bitcore from 'bitcore'
 
-var _ = require('lodash')
-var expect = require('chai').expect
-var Promise = require('bluebird')
-var bitcore = require('bitcore')
+import cclib from '../../src'
+let EPOBC = cclib.definitions.EPOBC
 
-var cclib = require('../../')
-var EPOBC = cclib.definitions.EPOBC
+import helpers from '../helpers'
+import { epobc as fixtures } from '../fixtures/definitions.json'
 
-var helpers = require('../helpers')
-var fixtures = require('../fixtures/definitions.json').epobc
+describe('definitions.EPOBC._Tag', () => {
+  let Tag = EPOBC._Tag
 
-describe('definitions.EPOBC._Tag', function () {
-  var Tag = EPOBC._Tag
-
-  it('_number2bitArray', function () {
-    var bits = Tag._number2bitArray(54648432)
+  it('_number2bitArray', () => {
+    let bits = Tag._number2bitArray(54648432)
     expect(bits).to.deep.equal(
       [0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0])
   })
 
-  it('_number2bitArray (specific bits)', function () {
-    var bits = Tag._number2bitArray(51, 6)
+  it('_number2bitArray (specific bits)', () => {
+    let bits = Tag._number2bitArray(51, 6)
     expect(bits).to.deep.equal([1, 1, 0, 0, 1, 1])
   })
 
-  it('_bitArray2number', function () {
-    var bits = [1, 1, 0, 0, 1, 1]
+  it('_bitArray2number', () => {
+    let bits = [1, 1, 0, 0, 1, 1]
     expect(Tag._bitArray2number(bits)).to.equal(51)
   })
 
-  it('closestPaddingCode for zero padding', function () {
-    var result = Tag.closestPaddingCode(0)
+  it('closestPaddingCode for zero padding', () => {
+    let result = Tag.closestPaddingCode(0)
     expect(result).to.equal(0)
   })
 
-  it('closestPaddingCode more than max padding', function () {
-    var fn = function () { Tag.closestPaddingCode(Math.pow(2, 64)) }
+  it('closestPaddingCode more than max padding', () => {
+    let fn = () => { Tag.closestPaddingCode(Math.pow(2, 64)) }
     expect(fn).to.throw(Error)
   })
 
-  it('closestPaddingCode', function () {
-    var result = Tag.closestPaddingCode(7)
+  it('closestPaddingCode', () => {
+    let result = Tag.closestPaddingCode(7)
     expect(result).to.equal(3)
   })
 
-  it('fromTx for coinbase tx', function () {
-    var tx = {
+  it('fromTx for coinbase tx', () => {
+    let tx = {
       inputs: [{
         prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
         outputIndex: 4294967295
       }]
     }
-    var tag = Tag.fromTx(tx)
+    let tag = Tag.fromTx(tx)
     expect(tag).to.be.null
   })
 
-  it('fromTx for not xfer and not genesis tx', function () {
-    var tx = {
+  it('fromTx for not xfer and not genesis tx', () => {
+    let tx = {
       inputs: [{
         prevTxId: new Buffer(32),
         outputIndex: 0,
         sequenceNumber: 4294967295
       }]
     }
-    var tag = Tag.fromTx(tx)
+    let tag = Tag.fromTx(tx)
     expect(tag).to.be.null
   })
 
-  it('fromTx', function () {
-    var tx = {
+  it('fromTx', () => {
+    let tx = {
       inputs: [{
         prevTxId: new Buffer(32),
         outputIndex: 0,
         sequenceNumber: 37 | (1 << 6)
       }]
     }
-    var tag = Tag.fromTx(tx)
+    let tag = Tag.fromTx(tx)
     expect(tag).to.be.instanceof(Tag)
     expect(tag.isGenesis()).to.equal(true)
     expect(tag.getPadding()).to.equal(2)
   })
 
-  it('toSequence for genesis tag', function () {
-    var tag = new Tag(10, true)
+  it('toSequence for genesis tag', () => {
+    let tag = new Tag(10, true)
     expect(tag.toSequence()).to.equal(677)
   })
 
-  it('toSequence for xfer tag', function () {
-    var tag = new Tag(10, false)
+  it('toSequence for xfer tag', () => {
+    let tag = new Tag(10, false)
     expect(tag.toSequence()).to.equal(691)
   })
 
-  it('getPadding #1', function () {
-    var tag = new Tag(0, true)
+  it('getPadding #1', () => {
+    let tag = new Tag(0, true)
     expect(tag.getPadding()).to.equal(0)
   })
 
-  it('getPadding #2', function () {
-    var tag = new Tag(2, true)
+  it('getPadding #2', () => {
+    let tag = new Tag(2, true)
     expect(tag.getPadding()).to.equal(4)
   })
 })
 
-describe('definitions.EPOBC', function () {
-  var genesis = {
+describe('definitions.EPOBC', () => {
+  let genesis = {
     txid: new Buffer(32).toString('hex'),
     oidx: _.random(0, 10),
     height: _.random(100000, 400000)
   }
-  var epobc
-  var tx1
-  var tx2
+  let epobc
+  let tx1
+  let tx2
 
-  beforeEach(function () {
+  beforeEach(() => {
     tx1 = new bitcore.Transaction()
     tx2 = new bitcore.Transaction()
     epobc = new EPOBC(1, genesis)
   })
 
-  it('inherits IColorDefinition', function () {
+  it('inherits IColorDefinition', () => {
     expect(epobc).to.be.instanceof(EPOBC)
     expect(epobc).to.be.instanceof(cclib.definitions.Interface)
   })
 
-  describe('fromDesc', function () {
-    it('throw error', function (done) {
+  describe('fromDesc', () => {
+    it('throw error', (done) => {
       EPOBC.fromDesc('obc:11:2:3')
-        .asCallback(function (err) {
+        .then(() => { throw new Error('h1') })
+        .catch((err) => {
           expect(err).to.be.instanceof(
             cclib.errors.ColorDefinition.IncorrectDesc)
-          done()
         })
-        .done(_.noop, _.noop)
+        .then(done, done)
     })
 
-    it('return EPOBCColorDefinition', function (done) {
-      EPOBC.fromDesc(epobc.getDesc(), epobc.getColorId())
-        .then(function (epobc2) {
+    it('return EPOBCColorDefinition', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let epobc2 = await EPOBC.fromDesc(epobc.getDesc(), epobc.getColorId())
           expect(epobc2).to.deep.equal(epobc)
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 
-  describe('fromTx', function () {
-    beforeEach(function () {
+  describe('fromTx', () => {
+    beforeEach(() => {
       helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (3 << 6))
       helpers.tx.addOutput(tx1, 9)
     })
 
-    it('return null', function (done) {
-      tx1.outputs[0].satoshis = 8
-      EPOBC.fromTx(tx1, 1)
-        .then(function (epobc) {
+    it('return null', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          tx1.outputs[0].satoshis = 8
+          let epobc = await EPOBC.fromTx(tx1, 1)
           expect(epobc).to.be.null
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('from color id', function (done) {
-      EPOBC.fromTx(tx1, 1)
-        .then(function (epobc) {
+    it('from color id', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let epobc = await EPOBC.fromTx(tx1, 1)
           expect(epobc).to.be.instanceof(EPOBC)
           expect(epobc.getColorId()).to.equal(1)
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('resolve with color definition manager', function (done) {
-      var cdstorage = new cclib.storage.definitions.Memory()
-      var cdmanager = new cclib.definitions.Manager(cdstorage)
+    it('resolve with color definition manager', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let cdstorage = new cclib.storage.definitions.Memory()
+          let cdmanager = new cclib.definitions.Manager(cdstorage)
 
-      var deferred = Promise.defer()
+          try {
+            let deferred
+            let promise = new Promise((resolve, reject) => {
+              deferred = {resolve: resolve, reject: reject}
+            })
 
-      cdmanager.on('new', function (cdef) {
-        Promise.try(function () {
-          expect(cdef).to.be.instanceof(EPOBC)
-          expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
-        })
-        .done(function () { deferred.resolve() },
-              function (err) { deferred.reject(err) })
-      })
+            cdmanager.on('new', function (cdef) {
+              Promise.resolve()
+                .then(() => {
+                  expect(cdef).to.be.instanceof(EPOBC)
+                  expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
+                })
+                .then(deferred.resolve, deferred.reject)
+            })
 
-      cdstorage.ready
-        .then(function () {
-          return EPOBC.fromTx(tx1, cdmanager)
+            await cdstorage.ready
+            let epobc = await EPOBC.fromTx(tx1, cdmanager)
+            expect(epobc).to.be.instanceof(EPOBC)
+            expect(epobc.getDesc()).to.match(new RegExp(tx1.id))
+            await promise
+          } finally {
+            cdmanager.removeAllListeners()
+          }
         })
-        .then(function (epobc) {
-          expect(epobc).to.be.instanceof(EPOBC)
-          expect(epobc.getDesc()).to.match(new RegExp(tx1.id))
-          return deferred.promise
-        })
-        .finally(function () {
-          cdmanager.removeAllListeners()
-        })
-        .done(done, done)
+        .then(done, done)
     })
   })
 
-  describe('getDesc', function () {
-    it('#1', function () {
-      var items = [genesis.txid, genesis.oidx, genesis.height]
+  describe('getDesc', () => {
+    it('#1', () => {
+      let items = [genesis.txid, genesis.oidx, genesis.height]
       expect(epobc.getDesc()).to.equal('epobc:' + items.join(':'))
     })
   })
 
-  describe('runKernel', function () {
+  describe('runKernel', () => {
     fixtures.runKernel.forEach(function (f) {
-      it(f.description, function (done) {
-        if (f.description.indexOf('genesis') !== -1) {
-          epobc._genesis.txid = f.txid
-        }
+      it(f.description, (done) => {
+        Promise.resolve()
+          .then(async () => {
+            if (f.description.indexOf('genesis') !== -1) {
+              epobc._genesis.txid = f.txid
+            }
 
-        var env = helpers.createRunKernelEnv(
-          f.txid, f.inputs, f.outputs, f.sequence)
+            let env = helpers.createRunKernelEnv(
+              f.txid, f.inputs, f.outputs, f.sequence)
 
-        var inColorValues = f.inColorValues.map(function (cv) {
-          if (cv !== null) {
-            cv = new cclib.ColorValue(epobc, cv)
-          }
+            let inColorValues = f.inColorValues.map(function (cv) {
+              if (cv !== null) {
+                cv = new cclib.ColorValue(epobc, cv)
+              }
 
-          return cv
-        })
+              return cv
+            })
 
-        epobc.runKernel(env.top, inColorValues, helpers.getTxFnStub(env.deps))
-          .then(function (result) {
+            let getTxFn = helpers.getTxFnStub(env.deps)
+            let result = await epobc.runKernel(env.top, inColorValues, getTxFn)
             expect(result).to.be.instanceof(Array)
 
             result = result.map(function (value) {
@@ -239,52 +243,58 @@ describe('definitions.EPOBC', function () {
 
             expect(result).to.deep.equal(f.expect)
           })
-          .done(done, done)
+          .then(done, done)
       })
     })
   })
 
-  describe('getAffectingInputs', function () {
-    it('tag is null', function (done) {
-      var tx = {
-        inputs: [{
-          prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
-          sequenceNumber: 4294967295
-        }]
-      }
-      EPOBC.getAffectingInputs(tx, [], helpers.getTxFnStub([]))
-        .then(function (inputs) {
+  describe('getAffectingInputs', () => {
+    it('tag is null', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let tx = {
+            inputs: [{
+              prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
+              sequenceNumber: 4294967295
+            }]
+          }
+          let getTxFn = helpers.getTxFnStub([])
+          let inputs = await EPOBC.getAffectingInputs(tx, [], getTxFn)
           expect(inputs).to.deep.equal([])
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('genesis tag', function (done) {
-      var tx = {
-        inputs: [{
-          prevTxId: new Buffer(32),
-          sequenceNumber: 37
-        }]
-      }
-      EPOBC.getAffectingInputs(tx, [], helpers.getTxFnStub([]))
-        .then(function (inputs) {
+    it('genesis tag', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let tx = {
+            inputs: [{
+              prevTxId: new Buffer(32),
+              sequenceNumber: 37
+            }]
+          }
+          let getTxFn = helpers.getTxFnStub([])
+          let inputs = await EPOBC.getAffectingInputs(tx, [], getTxFn)
           expect(inputs).to.deep.equal([])
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('return affecting index', function (done) {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
-      helpers.tx.addOutput(tx1, 11)
+    it('return affecting index', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+          helpers.tx.addOutput(tx1, 11)
 
-      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
-      helpers.tx.addOutput(tx2, 10)
+          helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
+          helpers.tx.addOutput(tx2, 10)
 
-      EPOBC.getAffectingInputs(tx2, [0], helpers.getTxFnStub([tx1]))
-        .then(function (indices) {
+          let getTxFn = helpers.getTxFnStub([tx1])
+          let indices = await EPOBC.getAffectingInputs(tx2, [0], getTxFn)
           expect(indices).to.deep.equal([0])
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 })

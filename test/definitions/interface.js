@@ -1,93 +1,87 @@
-/* global describe, beforeEach, it */
-'use strict'
+import { expect } from 'chai'
 
-var _ = require('lodash')
-var expect = require('chai').expect
+import cclib from '../../src'
+let Interface = cclib.definitions.Interface
 
-var cclib = require('../../')
-var Interface = cclib.definitions.Interface
-
-describe('definitions.Interface', function () {
+describe('definitions.Interface', () => {
   var cdef
 
-  beforeEach(function () {
+  beforeEach(() => {
     cdef = new Interface(1)
   })
 
-  it('static getColorCode', function () {
+  it('static getColorCode', () => {
     expect(Interface.getColorCode).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('getColorCode', function () {
-    var fn = cdef.getColorCode.bind(cdef)
+  it('getColorCode', () => {
+    let fn = cdef.getColorCode.bind(cdef)
     expect(fn).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('colorId', function () {
+  it('colorId', () => {
     expect(cdef.getColorId()).to.equal(1)
   })
 
-  it('desc', function () {
-    var fn = cdef.getDesc.bind(cdef)
-    expect(fn).to.throw(cclib.errors.NotImplemented)
+  it('desc', () => {
+    expect(::cdef.getDesc).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('static fromDesc', function (done) {
+  it('static fromDesc', (done) => {
     Interface.fromDesc()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('static fromTx', function (done) {
+  it('static fromTx', (done) => {
     Interface.fromTx()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('isGenesis', function () {
-    expect(cdef.isGenesis.bind(cdef)).to.throw(
-      cclib.errors.NotImplemented)
+  it('isGenesis', () => {
+    expect(::cdef.isGenesis).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('runKernel', function (done) {
+  it('runKernel', (done) => {
     cdef.runKernel()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('static getAffectingInputs', function (done) {
+  it('static getAffectingInputs', (done) => {
     Interface.getAffectingInputs()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('static makeComposedTx', function (done) {
+  it('static makeComposedTx', (done) => {
     Interface.makeComposedTx()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 
-  it('static composeGenesisTx', function (done) {
+  it('static composeGenesisTx', (done) => {
     Interface.composeGenesisTx()
-      .asCallback(function (err) {
+      .then(() => { throw new Error('h1') })
+      .catch((err) => {
         expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-        done()
       })
-      .done(_.noop, _.noop)
+      .then(done, done)
   })
 })

@@ -1,74 +1,75 @@
-/* globals describe, beforeEach, it */
-'use strict'
+import bitcore from 'bitcore'
+import { expect } from 'chai'
 
-var expect = require('chai').expect
-var bitcore = require('bitcore')
+import cclib from '../../src'
 
-var cclib = require('../../')
+import { getTxFn } from '../helpers'
+import transactions from '../fixtures/transactions.json'
 
-var getTxFn = require('../helpers').getTxFn
-var transactions = require('../fixtures/transactions.json')
+describe('tx.FilledInputs', () => {
+  let fitx
 
-describe('tx.FilledInputs', function () {
-  var fitx
+  describe('isCoinbase', () => {
+    let txid = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
+    let rawtx = transactions[txid]
 
-  describe('isCoinbase', function () {
-    var txid = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
-    var rawtx = transactions[txid]
-
-    beforeEach(function (done) {
+    beforeEach((done) => {
       fitx = new cclib.tx.FilledInputs(rawtx, getTxFn)
-      fitx.ready.done(done, done)
+      fitx.ready.then(done, done)
     })
 
-    it('getTx', function () {
+    it('getTx', () => {
       expect(fitx.getTx().id).to.equal(txid)
     })
 
-    it('getInputTx', function (done) {
-      fitx.getInputTx(0)
-        .then(function (inputTx) {
+    it('getInputTx', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let inputTx = await fitx.getInputTx(0)
           expect(inputTx).to.be.null
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('getInputValue', function (done) {
-      fitx.getInputValue(0)
-        .then(function (inputValue) {
+    it('getInputValue', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let inputValue = await fitx.getInputValue(0)
           expect(inputValue).to.equal(0)
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 
-  describe('!isCoinbase', function () {
-    var txid = '27eba159ab0c50c3d2d1abad6ce83f501b34121fa96d7aa91fad2c3cfec68366'
-    var tx = bitcore.Transaction(transactions[txid])
+  describe('!isCoinbase', () => {
+    let txid = '27eba159ab0c50c3d2d1abad6ce83f501b34121fa96d7aa91fad2c3cfec68366'
+    let tx = bitcore.Transaction(transactions[txid])
 
-    beforeEach(function (done) {
+    beforeEach((done) => {
       fitx = new cclib.tx.FilledInputs(tx, getTxFn)
-      fitx.ready.done(done, done)
+      fitx.ready.then(done, done)
     })
 
-    it('getTx', function () {
+    it('getTx', () => {
       expect(fitx.getTx().id).to.equal(txid)
     })
 
-    it('getInputTx', function (done) {
-      fitx.getInputTx(0)
-        .then(function (inputTx) {
+    it('getInputTx', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let inputTx = await fitx.getInputTx(0)
           expect(inputTx.id).to.equal(tx.inputs[0].prevTxId.toString('hex'))
         })
-        .done(done, done)
+        .then(done, done)
     })
 
-    it('getInputValue', function (done) {
-      fitx.getInputValue(0)
-        .then(function (inputValue) {
+    it('getInputValue', (done) => {
+      Promise.resolve()
+        .then(async () => {
+          let inputValue = await fitx.getInputValue(0)
           expect(inputValue).to.equal(30838652979)
         })
-        .done(done, done)
+        .then(done, done)
     })
   })
 })

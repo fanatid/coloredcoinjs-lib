@@ -1,6 +1,6 @@
 {
   "name": "coloredcoinjs-lib",
-  "version": "0.3.6",
+  "version": "0.5.0",
   "description": "Colored coin JavaScript library for Bitcoin.",
   "keywords": [
     "bitcoin",
@@ -30,62 +30,61 @@
   ],
   "files": [
     "lib",
-    "index.js",
+    "src",
     "LICENSE",
     "README.md"
   ],
-  "main": "./index.js",
+  "main": "./lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/chromaway/coloredcoinjs-lib.git"
   },
   "scripts": {
-    "compile": "browserify index.js -s cclib -o cclib.js -g [ uglifyify --no-sourcemap ]",
-    "compile:debug": "browserify index.js -s cclib -o cclib.js -d",
-    "compile:test": "find test/ -type f -name \"*.js\" | xargs browserify -o cclib.test.js",
-    "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha --",
+    "prepublish": "npm run clean && npm run compile",
+    "compile": "babel --optional runtime -d lib src",
+    "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha -- --compilers js:babel/register",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "clean": "rm -f cclib.js cclib.test.js",
-    "karma": "./node_modules/karma/bin/karma start karma.conf.js",
-    "lint": "standard",
+    "clean": "rm -rf lib/*",
+    "lint": "eslint src test",
     "test": "npm run test:node && npm run test:browser",
-    "test:node": "find test/ -type f -name \"*.js\" | xargs istanbul test mocha -- --reporter spec",
-    "test:browser": "npm run compile:test && npm run karma"
+    "test:browser": "karma start karma.conf.js",
+    "test:node": "find test/ -type f -name \"*.js\" | xargs istanbul test mocha -- --compilers js:babel/register --reporter spec"
   },
   "dependencies": {
-    "bluebird": "^2.9.30",
+    "babel-runtime": "^5.8.20",
     "bs58": "^2.0.1",
-    "error-system": "^0.1.0",
-    "lodash": "^3.9.3",
-    "make-concurrent": "^0.0.4",
-    "odd-storage": "0.0.2",
-    "ready-mixin": "^0.0.5"
+    "error-system": "^1.0.0",
+    "lodash": "^3.10.1",
+    "make-concurrent": "^0.2.0",
+    "odd-storage": "^0.3.1",
+    "ready-mixin": "^0.1.0"
   },
   "peerDependencies": {
-    "bitcore": "=0.12.9"
+    "bitcore": "=0.12.15"
   },
   "devDependencies": {
-    "browserify": "^10.2.4",
-    "chai": "^2.3.0",
-    "coveralls": "^2.11.2",
-    "istanbul": "^0.3.14",
-    "karma": "^0.12.35",
-    "karma-chrome-launcher": "^0.1.12",
-    "karma-detect-browsers": "^2.0.0",
+    "babel": "^5.8.21",
+    "babel-core": "^5.8.22",
+    "babel-eslint": "^4.0.5",
+    "babelify": "^6.1.3",
+    "chai": "^3.2.0",
+    "coveralls": "^2.11.3",
+    "eslint": "^1.0.0",
+    "eslint-config-standard": "^4.0.0",
+    "eslint-plugin-standard": "^1.2.0",
+    "istanbul": "^0.3.17",
+    "karma": "^0.13.8",
+    "karma-browserify": "^4.3.0",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-detect-browsers": "^2.0.1",
     "karma-firefox-launcher": "^0.1.6",
-    "karma-mocha": "^0.1.10",
-    "mocha": "^2.2.5",
-    "standard": "^4.0.0",
-    "uglifyify": "^3.0.1"
+    "karma-mocha": "^0.2.0",
+    "mocha": "^2.2.5"
   },
   "browser": {
     "./lib/storage/data/index.js": "./lib/storage/data/index-browser.js",
-    "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js"
-  },
-  "standard": {
-    "ignore": [
-      "cclib.js",
-      "cclib.test.js"
-    ]
+    "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js",
+    "./src/storage/data/index.js": "./src/storage/data/index-browser.js",
+    "./src/storage/definitions/index.js": "./src/storage/definitions/index-browser.js"
   }
 }

@@ -1,7 +1,6 @@
-/* global describe */
-'use strict'
+import runImplementationTest from './implementation'
 
-require('./implementation')({
+runImplementationTest({
   describe: describe,
   clsName: 'PostgreSQL',
   clsOpts: require('../../config/postgresql.json')
