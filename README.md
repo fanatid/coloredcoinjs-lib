@@ -10,6 +10,14 @@
 
 JavaScript Colored Coins library for node.js and browsers.
 
+## Examples
+
+  * [issue coins](https://github.com/chromaway/coloredcoinjs-lib/blob/master/test/integration/issuance.js)
+  * [transfer coins](https://github.com/chromaway/coloredcoinjs-lib/blob/master/test/integration/transfer.js)
+  * [calculate balance](https://github.com/chromaway/coloredcoinjs-lib/blob/master/test/integration/balance.js)
+
+Also you can see how we use *coloredcoinjs* in [colored coin scanner](https://github.com/chromaway/cc-scanner) and of course in [cc-wallet-core](https://github.com/chromaway/cc-wallet-core).
+
 ## License
 
 Code released under [the MIT license](LICENSE).
