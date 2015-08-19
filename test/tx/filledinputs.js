@@ -10,8 +10,8 @@ describe('tx.FilledInputs', () => {
   let fitx
 
   describe('isCoinbase', () => {
-    let txid = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
-    let rawtx = transactions[txid]
+    let txId = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
+    let rawtx = transactions[txId]
 
     beforeEach((done) => {
       fitx = new cclib.tx.FilledInputs(rawtx, getTxFn)
@@ -19,7 +19,7 @@ describe('tx.FilledInputs', () => {
     })
 
     it('getTx', () => {
-      expect(fitx.getTx().id).to.equal(txid)
+      expect(fitx.getTx().id).to.equal(txId)
     })
 
     it('getInputTx', (done) => {
@@ -42,8 +42,8 @@ describe('tx.FilledInputs', () => {
   })
 
   describe('!isCoinbase', () => {
-    let txid = '27eba159ab0c50c3d2d1abad6ce83f501b34121fa96d7aa91fad2c3cfec68366'
-    let tx = bitcore.Transaction(transactions[txid])
+    let txId = '27eba159ab0c50c3d2d1abad6ce83f501b34121fa96d7aa91fad2c3cfec68366'
+    let tx = bitcore.Transaction(transactions[txId])
 
     beforeEach((done) => {
       fitx = new cclib.tx.FilledInputs(tx, getTxFn)
@@ -51,7 +51,7 @@ describe('tx.FilledInputs', () => {
     })
 
     it('getTx', () => {
-      expect(fitx.getTx().id).to.equal(txid)
+      expect(fitx.getTx().id).to.equal(txId)
     })
 
     it('getInputTx', (done) => {

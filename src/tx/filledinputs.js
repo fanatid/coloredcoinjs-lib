@@ -12,7 +12,7 @@ import { promisify } from '../util/js'
 
 /**
  * @callback getTxFn
- * @param {string} txid
+ * @param {string} txId
  * @param {getTxFn~callback} callback
  */
 

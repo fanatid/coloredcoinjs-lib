@@ -13,14 +13,14 @@ export function extendGetTxFn (getTxFn, transactions) {
     }))
   }
 
-  return (txid, cb) => {
-    let rawtx = transactions[txid]
+  return (txId, cb) => {
+    let rawtx = transactions[txId]
     if (rawtx !== undefined) {
       setImmediate(() => { cb(null, rawtx) })
       return
     }
 
-    getTxFn(txid, cb)
+    getTxFn(txId, cb)
   }
 }
 

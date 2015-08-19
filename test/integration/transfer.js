@@ -24,8 +24,8 @@ describe('coloredcoinjs-lib (transfer)', () => {
           ],
           coins: {
             0: [{
-              txid: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
-              oidx: 0,
+              txId: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
+              outIndex: 0,
               value: 1000000
             }]
           },
@@ -39,8 +39,8 @@ describe('coloredcoinjs-lib (transfer)', () => {
         expect(comptx).to.be.instanceof(cclib.tx.Composed)
 
         expect(comptx.getInputs()).to.deep.equal([{
-          txid: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
-          oidx: 0
+          txId: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
+          outIndex: 0
         }])
 
         expect(comptx.getOutputs()).to.deep.equal([{
@@ -76,13 +76,13 @@ describe('coloredcoinjs-lib (transfer)', () => {
           ],
           coins: {
             0: [{
-              txid: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
-              oidx: 0,
+              txId: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
+              outIndex: 0,
               value: 250000
             }],
             1: [{
-              txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
-              oidx: 0,
+              txId: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
+              outIndex: 0,
               value: 500000
             }]
           },
@@ -97,12 +97,12 @@ describe('coloredcoinjs-lib (transfer)', () => {
         expect(comptx).to.be.instanceof(cclib.tx.Composed)
 
         expect(comptx.getInputs()).to.deep.equal([{
-          txid: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
-          oidx: 0,
+          txId: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
+          outIndex: 0,
           sequence: 51
         }, {
-          txid: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
-          oidx: 0
+          txId: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
+          outIndex: 0
         }])
 
         expect(comptx.getOutputs()).to.deep.equal([{

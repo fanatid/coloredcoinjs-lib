@@ -21,8 +21,8 @@ export default class ComposedTx {
 
   /**
    * @typedef {Object} ComposedTx~Input
-   * @property {string} txid
-   * @property {number} oidx
+   * @property {string} txId
+   * @property {number} outIndex
    * @property {string} [script]
    * @property {number} [sequence]
    */
@@ -51,8 +51,8 @@ export default class ComposedTx {
   addInputs (inputs) {
     for (let input of inputs) {
       this._inputs.push({
-        txid: input.txid,
-        oidx: input.oidx
+        txId: input.txId,
+        outIndex: input.outIndex
       })
 
       if (input.script !== undefined) {
@@ -133,7 +133,7 @@ export default class ComposedTx {
       bytes: 0
     }, extra)
 
-    // 40 -- txid, output index, sequence
+    // 40 -- txId, output index, sequence
     // 107 -- p2pkh scriptSig length (the most common redeem script)
     let inputSize = 40 + varIntSize(107) + 107
     let inputsSize = inputSize * (this._inputs.length + extra.inputs)

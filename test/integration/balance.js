@@ -30,17 +30,17 @@ describe('coloredcoinjs-lib (balance)', () => {
   it('EPOBC', (done) => {
     Promise.resolve()
       .then(async () => {
-        let txid = '694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c'
-        let tx = bitcore.Transaction(fixtures[txid])
-        let oidx = 0
+        let txId = '694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c'
+        let tx = bitcore.Transaction(fixtures[txId])
+        let outIndex = 0
 
         let data = await cdata.getOutputColorValue(
-          tx, oidx, EPOBC, helpers.getTxFn)
+          tx, outIndex, EPOBC, helpers.getTxFn)
         expect(data).to.be.an('array').and.to.have.length(1)
         let cv = data[0]
         expect(cv).to.be.instanceof(cclib.ColorValue)
         expect(cv.getColorDefinition()).to.be.instanceof(EPOBC)
-        expect(cv.getColorDefinition()._genesis.txid).to.equal(
+        expect(cv.getColorDefinition()._genesis.txId).to.equal(
           'b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170')
         expect(cv.getValue()).to.equal(100000)
       })

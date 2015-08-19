@@ -32,12 +32,12 @@ class FixedFeeOperationalTx extends cclib.tx.Operational {
 /**
  * @param {bitcore.Transaction} tx
  * @param {string|Buffer} hash
- * @param {number} oidx
+ * @param {number} outIndex
  * @param {number} sequence
  * @param {string} [address]
  * @return {bitcore.Transaction}
  */
-function addInput (tx, hash, oidx, sequence, address) {
+function addInput (tx, hash, outIndex, sequence, address) {
   if (_.isString(hash)) {
     hash = new Buffer(hash, 'hex')
   }
@@ -45,7 +45,7 @@ function addInput (tx, hash, oidx, sequence, address) {
 
   return tx.uncheckedAddInput(bitcore.Transaction.Input({
     prevTxId: new Buffer(hash),
-    outputIndex: oidx,
+    outputIndex: outIndex,
     sequenceNumber: sequence,
     script: bitcore.Script.fromAddress(address)
   }))
@@ -71,9 +71,9 @@ function addOutput (tx, value, address) {
  * @return {getTxFn}
  */
 function getTxFnStub (transactions) {
-  return cclib.util.tx.extendGetTxFn((txid, cb) => {
+  return cclib.util.tx.extendGetTxFn((txId, cb) => {
     setImmediate(() => {
-      cb(new Error(txid + ' not found'))
+      cb(new Error(txId + ' not found'))
     })
   }, transactions)
 }
@@ -86,28 +86,28 @@ function getRandomAddress () {
 }
 
 /**
- * @param {string} txid
+ * @param {string} txId
  * @param {number[]} inputs
  * @param {number[]} outputs
  * @param {(number|number[])} sequence
  * @return {{top: bitcore.Transaction, deps: bitcore.Transaction[]}}
  */
-function createRunKernelEnv (txid, inputs, outputs, sequence) {
+function createRunKernelEnv (txId, inputs, outputs, sequence) {
   let top = bitcore.Transaction()
   let deps = []
 
-  let txHash = Array.prototype.reverse.call(new Buffer(txid, 'hex'))
+  let txHash = Array.prototype.reverse.call(new Buffer(txId, 'hex'))
   top._getHash = () => { return txHash }
 
   for (let satoshis of inputs) {
-    let itxid = crypto.pseudoRandomBytes(32).toString('hex')
+    let inTxId = crypto.pseudoRandomBytes(32).toString('hex')
     top.uncheckedAddInput(bitcore.Transaction.Input({
-      prevTxId: itxid,
+      prevTxId: inTxId,
       outputIndex: 0,
       script: bitcore.Script.fromAddress(getRandomAddress())
     }))
 
-    let env = createRunKernelEnv(itxid, [], [satoshis], [0, 1, 4, 5, 6, 7])
+    let env = createRunKernelEnv(inTxId, [], [satoshis], [0, 1, 4, 5, 6, 7])
     deps = deps.concat(env.top, env.deps)
   }
 

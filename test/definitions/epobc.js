@@ -102,8 +102,8 @@ describe('definitions.EPOBC._Tag', () => {
 
 describe('definitions.EPOBC', () => {
   let genesis = {
-    txid: new Buffer(32).toString('hex'),
-    oidx: _.random(0, 10),
+    txId: new Buffer(32).toString('hex'),
+    outIndex: _.random(0, 10),
     height: _.random(100000, 400000)
   }
   let epobc
@@ -204,7 +204,7 @@ describe('definitions.EPOBC', () => {
 
   describe('getDesc', () => {
     it('#1', () => {
-      let items = [genesis.txid, genesis.oidx, genesis.height]
+      let items = [genesis.txId, genesis.outIndex, genesis.height]
       expect(epobc.getDesc()).to.equal('epobc:' + items.join(':'))
     })
   })
@@ -215,11 +215,11 @@ describe('definitions.EPOBC', () => {
         Promise.resolve()
           .then(async () => {
             if (f.description.indexOf('genesis') !== -1) {
-              epobc._genesis.txid = f.txid
+              epobc._genesis.txId = f.txId
             }
 
             let env = helpers.createRunKernelEnv(
-              f.txid, f.inputs, f.outputs, f.sequence)
+              f.txId, f.inputs, f.outputs, f.sequence)
 
             let inColorValues = f.inColorValues.map(function (cv) {
               if (cv !== null) {

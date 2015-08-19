@@ -96,7 +96,7 @@ export default class IColorDefinition {
    * @abstract
    * @static
    * @param {bitcore.Transaction} tx
-   * @param {number[]} oidxs
+   * @param {number[]} outIndices
    * @param {getTxFn} getTxFn
    * @return {Promise.<number[]>}
    */

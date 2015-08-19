@@ -152,8 +152,8 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @constructor
    * @param {number} colorId
    * @param {Object} genesis
-   * @param {string} genesis.txid
-   * @param {number} genesis.oidx
+   * @param {string} genesis.txId
+   * @param {number} genesis.outIndex
    * @param {number} genesis.height
    */
   constructor (colorId, genesis) {
@@ -176,8 +176,8 @@ class EPOBCColorDefinition extends IColorDefinition {
   getDesc () {
     let items = [
       'epobc',
-      this._genesis.txid,
-      this._genesis.oidx,
+      this._genesis.txId,
+      this._genesis.outIndex,
       this._genesis.height
     ]
     return items.join(':')
@@ -199,8 +199,8 @@ class EPOBCColorDefinition extends IColorDefinition {
 
     if (_.isNumber(resolver)) {
       return new EPOBCColorDefinition(resolver, {
-        txid: items[1],
-        oidx: parseInt(items[2], 10),
+        txId: items[1],
+        outIndex: parseInt(items[2], 10),
         height: parseInt(items[3], 10)
       })
     }
@@ -227,8 +227,8 @@ class EPOBCColorDefinition extends IColorDefinition {
 
     if (_.isNumber(resolver)) {
       return new EPOBCColorDefinition(resolver, {
-        txid: tx.id,
-        oidx: 0,
+        txId: tx.id,
+        outIndex: 0,
         height: 0
       })
     }
@@ -242,7 +242,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @return {boolean}
    */
   isGenesis (tx) {
-    return tx.id === this._genesis.txid
+    return tx.id === this._genesis.txId
   }
 
   /**
@@ -274,14 +274,14 @@ class EPOBCColorDefinition extends IColorDefinition {
     let padding = tag.getPadding()
     let ftx = new FilledInputsTx(tx, getTxFn)
     await ftx.ready
-    return await* tx.outputs.map(async (output, oidx) => {
+    return await* tx.outputs.map(async (output, outIndex) => {
       let outValueWop = output.satoshis - padding
       if (outValueWop <= 0) {
         return null
       }
 
       let ainputs = await EPOBCColorDefinition._getXferAffectingInputs(
-        ftx, padding, oidx)
+        ftx, padding, outIndex)
 
       let aiColorValue = new ColorValue(this, 0)
 
@@ -304,21 +304,21 @@ class EPOBCColorDefinition extends IColorDefinition {
 
   /**
    * Returns a Array of indices that correspond to the inputs
-   *  for an output in the transaction tx with output index oidx
+   *  for an output in the transaction tx with output index outIndex
    *  which has a padding of padding (2^n for some n > 0 or 0)
    *
    * @static
    * @private
    * @param {FilledInputsTx} ftx
    * @param {number} padding
-   * @param {number} oidx
+   * @param {number} outIndex
    * @return {Promise.<number[]>}
    */
-  static async _getXferAffectingInputs (ftx, padding, oidx) {
+  static async _getXferAffectingInputs (ftx, padding, outIndex) {
     let tx = ftx.getTx()
 
     let outPrecSum = 0
-    for (let oi = 0; oi < oidx; ++oi) {
+    for (let oi = 0; oi < outIndex; ++oi) {
       let valueWop = tx.outputs[oi].satoshis - padding
       if (valueWop <= 0) {
         return []
@@ -327,7 +327,7 @@ class EPOBCColorDefinition extends IColorDefinition {
       outPrecSum += valueWop
     }
 
-    let outValueWop = tx.outputs[oidx].satoshis - padding
+    let outValueWop = tx.outputs[outIndex].satoshis - padding
     if (outValueWop <= 0) {
       return []
     }
@@ -364,15 +364,15 @@ class EPOBCColorDefinition extends IColorDefinition {
 
   /**
    * Return array of input indices
-   *  for given tx and output indices given in oidxs
+   *  for given tx and output indices given in outIndices
    *
    * @static
    * @param {bitcore.Transaction} tx
-   * @param {number[]} oidxs
+   * @param {number[]} outIndices
    * @param {getTxFn} getTxFn
    * @return {Promise.<number[]>}
    */
-  static async getAffectingInputs (tx, oidxs, getTxFn) {
+  static async getAffectingInputs (tx, outIndices, getTxFn) {
     let tag = Tag.fromTx(tx)
     if (tag === null || tag.isGenesis()) {
       return []
@@ -382,8 +382,9 @@ class EPOBCColorDefinition extends IColorDefinition {
     await ftx.ready
 
     let padding = tag.getPadding()
-    let aindices = await* oidxs.map((oidx) => {
-      return EPOBCColorDefinition._getXferAffectingInputs(ftx, padding, oidx)
+    let aindices = await* outIndices.map((outIndex) => {
+      return EPOBCColorDefinition._getXferAffectingInputs(
+        ftx, padding, outIndex)
     })
 
     return _.uniq(_.flatten(aindices))

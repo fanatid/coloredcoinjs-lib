@@ -21,14 +21,14 @@ export default function (opts) {
     let records = _.times(3).map(() => {
       return {
         colorCode: 'epobc',
-        txid: getRandomBytes(32).toString('hex'),
-        oidx: 2,
+        txId: getRandomBytes(32).toString('hex'),
+        outIndex: 2,
         colorId: 1,
         value: 10
       }
     })
-    records[1].txid = records[0].txid
-    records[1].oidx += 1
+    records[1].txId = records[0].txId
+    records[1].outIndex += 1
 
     beforeEach((done) => {
       storage = new StorageCls(opts.clsOpts)
@@ -74,8 +74,8 @@ export default function (opts) {
       it('output not exists', (done) => {
         Promise.resolve()
           .then(async () => {
-            let txid = getRandomBytes(32).toString('hex')
-            let data = await storage.get({txid: txid})
+            let txId = getRandomBytes(32).toString('hex')
+            let data = await storage.get({txId: txId})
             expect(Array.from(data.keys())).to.have.length(0)
           })
           .then(done, done)
@@ -84,29 +84,29 @@ export default function (opts) {
       it('output exists', (done) => {
         Promise.resolve()
           .then(async () => {
-            let opts = {colorCode: records[0].colorCode, txid: records[0].txid}
+            let opts = {colorCode: records[0].colorCode, txId: records[0].txId}
             let data = await storage.get(opts)
             expect(Array.from(data.keys())).to.have.length(2)
-            expect(Array.from(data.get(records[0].oidx).keys())).to.have.length(1)
-            expect(data.get(records[0].oidx).get(records[0].colorId)).to.equal(records[0].value)
-            expect(Array.from(data.get(records[1].oidx).keys())).to.have.length(1)
-            expect(data.get(records[1].oidx).get(records[1].colorId)).to.equal(records[1].value)
+            expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
+            expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
+            expect(Array.from(data.get(records[1].outIndex).keys())).to.have.length(1)
+            expect(data.get(records[1].outIndex).get(records[1].colorId)).to.equal(records[1].value)
           })
           .then(done, done)
       })
 
-      it('output exists, specific oidx', (done) => {
+      it('output exists, specific outIndex', (done) => {
         Promise.resolve()
           .then(async () => {
             let opts = {
               colorCode: records[0].colorCode,
-              txid: records[0].txid,
-              oidx: records[0].oidx
+              txId: records[0].txId,
+              outIndex: records[0].outIndex
             }
             let data = await storage.get(opts)
             expect(Array.from(data.keys())).to.have.length(1)
-            expect(Array.from(data.get(records[0].oidx).keys())).to.have.length(1)
-            expect(data.get(records[0].oidx).get(records[0].colorId)).to.equal(records[0].value)
+            expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
+            expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
           })
           .then(done, done)
       })
@@ -120,23 +120,23 @@ export default function (opts) {
 
             let opts = {
               colorCode: records[0].colorCode,
-              txid: records[0].txid,
-              oidx: records[0].oidx
+              txId: records[0].txId,
+              outIndex: records[0].outIndex
             }
             let data = await storage.get(opts)
             expect(Array.from(data.keys())).to.have.length(1)
-            expect(Array.from(data.get(records[0].oidx).keys())).to.have.length(1)
-            expect(data.get(records[0].oidx).get(records[0].colorId)).to.equal(records[0].value)
+            expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
+            expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
 
             opts = {
               colorCode: records[0].colorCode,
-              txid: records[0].txid
+              txId: records[0].txId
             }
             await storage.remove(opts)
 
             opts = {
               colorCode: records[0].colorCode,
-              txid: records[0].txid
+              txId: records[0].txId
             }
             data = await storage.get(opts)
             expect(Array.from(data.keys())).to.have.length(0)

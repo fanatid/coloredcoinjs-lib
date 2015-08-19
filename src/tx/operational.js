@@ -62,8 +62,8 @@ export default class OperationalTx {
 
   /**
    * @typedef {Object} OperationalTx~AbstractRawCoin
-   * @property {string} txid
-   * @property {number} oidx
+   * @property {string} txId
+   * @property {number} outIndex
    * @property {number} value
    * @property {string} script
    */

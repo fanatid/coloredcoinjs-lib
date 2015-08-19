@@ -5,8 +5,8 @@ import errors from '../../errors'
 /**
  * @typedef {Object} IDataStorage~Record
  * @property {string} colorCode
- * @property {string} txid
- * @property {number} oidx
+ * @property {string} txId
+ * @property {number} outIndex
  * @property {number} colorId
  * @property {*} value
  */
@@ -33,8 +33,8 @@ export default class IDataStorage {
   /**
    * @param {Object} opts
    * @param {string} opts.colorCode
-   * @param {string} opts.txid
-   * @param {number} [opts.oidx]
+   * @param {string} opts.txId
+   * @param {number} [opts.outIndex]
    * @return {Promise.<Map<number, Map<number, *>>>}
    */
   async get () {
@@ -44,7 +44,7 @@ export default class IDataStorage {
   /**
    * @param {Object} opts
    * @param {string} opts.colorCode
-   * @param {string} opts.txid
+   * @param {string} opts.txId
    * @return {Promise}
    */
   async remove () {

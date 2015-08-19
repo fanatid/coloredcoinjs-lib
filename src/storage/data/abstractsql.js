@@ -47,13 +47,13 @@ SQL['SQLite'] = {
          '  WHERE ' +
          '    cclib_data_tx.color_code = $1 AND ' +
          '    cclib_data_tx.txid = $2',
-    oidxFilter: 'SELECT * FROM cclib_data_tx ' +
-                '  JOIN cclib_data_values ' +
-                '    ON cclib_data_values.tx_pk = cclib_data_tx.pk ' +
-                '  WHERE ' +
-                '    cclib_data_tx.color_code = $1 AND ' +
-                '    cclib_data_tx.txid = $2 AND ' +
-                '    cclib_data_values.oidx = $3'
+    outIndexFilter: 'SELECT * FROM cclib_data_tx ' +
+                    '  JOIN cclib_data_values ' +
+                    '    ON cclib_data_values.tx_pk = cclib_data_tx.pk ' +
+                    '  WHERE ' +
+                    '    cclib_data_tx.color_code = $1 AND ' +
+                    '    cclib_data_tx.txid = $2 AND ' +
+                    '    cclib_data_values.oidx = $3'
   },
   delete: {
     tx: 'DELETE FROM cclib_data_tx WHERE pk = $1',
@@ -125,10 +125,10 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   async add (data) {
     await this.ready
     await this._storage.withLock(async () => {
-      let args = [data.colorCode, data.txid, data.oidx, data.colorId]
+      let args = [data.colorCode, data.txId, data.outIndex, data.colorId]
       let value = JSON.stringify(data.value)
 
-      // are we have another value for colorCode, txid, oidx, colorId ?
+      // are we have another value for colorCode, txId, outIndex, colorId ?
       let rows = await this._storage.executeSQL(this._SQL.select.value, args)
       if (rows.length > 0) {
         if (rows[0].value === value) {
@@ -136,11 +136,11 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
         }
 
         throw new errors.Storage.ColorData.HaveAnotherValue(
-          data.txid, data.oidx, data.colorId, data.colorCode, rows[0].value)
+          data.txId, data.outIndex, data.colorId, data.colorCode, rows[0].value)
       }
 
       let getPK = async () => {
-        let args = [data.colorCode, data.txid]
+        let args = [data.colorCode, data.txId]
         let rows = await this._storage.executeSQL(this._SQL.select.pk, args)
         return rows.length === 0 ? null : rows[0].pk
       }
@@ -148,12 +148,12 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
       // save
       let pk = await getPK()
       if (pk === null) {
-        args = [data.colorCode, data.txid]
+        args = [data.colorCode, data.txId]
         await this._storage.executeSQL(this._SQL.insert.tx, args)
         pk = await getPK()
       }
 
-      args = [data.oidx, data.colorId, data.value, pk]
+      args = [data.outIndex, data.colorId, data.value, pk]
       return await this._storage.executeSQL(this._SQL.insert.value, args)
     })
   }
@@ -161,8 +161,8 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   /**
    * @param {Object} opts
    * @param {string} opts.colorCode
-   * @param {string} opts.txid
-   * @param {number} [opts.oidx]
+   * @param {string} opts.txId
+   * @param {number} [opts.outIndex]
    * @return {Promise.<Map<number, Map<number, *>>>}
    */
   async get (opts) {
@@ -170,11 +170,11 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
 
     let rows = await this._storage.withLock(() => {
       let sql = this._SQL.select.all
-      let args = [opts.colorCode, opts.txid]
+      let args = [opts.colorCode, opts.txId]
 
-      if (opts.oidx !== undefined) {
-        sql = this._SQL.select.oidxFilter
-        args = [opts.colorCode, opts.txid, opts.oidx]
+      if (opts.outIndex !== undefined) {
+        sql = this._SQL.select.outIndexFilter
+        args = [opts.colorCode, opts.txId, opts.outIndex]
       }
 
       return this._storage.executeSQL(sql, args)
@@ -193,13 +193,13 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   /**
    * @param {Object} opts
    * @param {string} opts.colorCode
-   * @param {string} opts.txid
+   * @param {string} opts.txId
    * @return {Promise}
    */
   async remove (opts) {
     await this.ready
     await this._storage.withLock(async (tx) => {
-      let args = [opts.colorCode, opts.txid]
+      let args = [opts.colorCode, opts.txId]
       let rows = await this._storage.executeSQL(this._SQL.select.pk, args)
       if (rows.length !== 1) {
         return

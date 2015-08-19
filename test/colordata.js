@@ -67,7 +67,7 @@ describe('ColorData', () => {
           let output = result.outputs[0]
           expect(output).to.be.an('object')
           expect(output.cdef).to.be.instanceof(EPOBC)
-          expect(output.cdef._genesis.txid).to.equal(tx1.id)
+          expect(output.cdef._genesis.txId).to.equal(tx1.id)
           expect(output.outputs).to.be.an('array').and.to.have.length(1)
 
           let ocvalue = output.outputs[0]
@@ -94,7 +94,7 @@ describe('ColorData', () => {
           expect(result.inputs).to.be.an('array').and.to.have.length(1)
           let input = result.inputs[0]
           expect(input.cdef).to.be.instanceof(EPOBC)
-          expect(input.cdef._genesis.txid).to.equal(tx1.id)
+          expect(input.cdef._genesis.txId).to.equal(tx1.id)
           expect(input.inputs).to.be.an('array').and.to.have.length(1)
           let icvalue = input.inputs[0]
           expect(icvalue).to.be.instanceof(cclib.ColorValue)
@@ -104,7 +104,7 @@ describe('ColorData', () => {
           expect(result.outputs).to.be.an('array').and.to.have.length(1)
           let output = result.outputs[0]
           expect(output.cdef).to.be.instanceof(EPOBC)
-          expect(output.cdef._genesis.txid).to.equal(tx1.id)
+          expect(output.cdef._genesis.txId).to.equal(tx1.id)
           expect(output.outputs).to.be.an('array').and.to.have.length(1)
           let ocvalue = output.outputs[0]
           expect(ocvalue).to.be.instanceof(cclib.ColorValue)
@@ -136,7 +136,7 @@ describe('ColorData', () => {
           expect(result).to.be.an('array').and.to.have.length(1)
           let cv = result[0]
           expect(cv).to.be.instanceof(cclib.ColorValue)
-          expect(cv.getColorDefinition()._genesis.txid).to.equal(tx1.id)
+          expect(cv.getColorDefinition()._genesis.txId).to.equal(tx1.id)
           expect(cv.getValue()).to.equal(5)
 
           result = await cdata.getOutputColorValue(tx3, 1, EPOBC, getTxFn)
@@ -146,7 +146,7 @@ describe('ColorData', () => {
           expect(result).to.be.an('array').and.to.have.length(1)
           cv = result[0]
           expect(cv).to.be.instanceof(cclib.ColorValue)
-          expect(cv.getColorDefinition()._genesis.txid).to.equal(tx2.id)
+          expect(cv.getColorDefinition()._genesis.txId).to.equal(tx2.id)
           expect(cv.getValue()).to.equal(10)
         })
         .then(done, done)
@@ -158,14 +158,14 @@ describe('ColorData', () => {
       .then(async () => {
         let data = {
           colorCode: EPOBC.getColorCode(),
-          txid: getRandomBytes(32).toString('hex'),
-          oidx: 0,
+          txId: getRandomBytes(32).toString('hex'),
+          outIndex: 0,
           colorId: 1,
           value: 10
         }
 
         await cdstorage.add(data)
-        await cdata.removeColorValues(data.txid, EPOBC)
+        await cdata.removeColorValues(data.txId, EPOBC)
         let result = await cdstorage.get(data)
         expect(Array.from(result.keys())).to.have.length(0)
       })

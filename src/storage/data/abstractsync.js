@@ -7,7 +7,7 @@ import errors from '../../errors'
  */
 export default class AbstractSyncColorDataStorage extends IDataStorage {
   /**
-   * scheme: [txid:colorCode][oidx][colorId] = value
+   * scheme: [txId:colorCode][outIndex][colorId] = value
    */
 
   /**
@@ -30,14 +30,14 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   async add (data) {
     await this.ready
     await this._storage.withLock(async () => {
-      let key = `${data.txid}:${data.colorCode}`
+      let key = `${data.txId}:${data.colorCode}`
       let value = JSON.stringify(data.value)
 
-      // get color values for given txid and colorCode
+      // get color values for given txId and colorCode
       let storedValue = await this._storage.get(key)
       let values = storedValue === null ? {} : JSON.parse(storedValue)
 
-      let outValues = values[data.oidx] || {}
+      let outValues = values[data.outIndex] || {}
 
       // throw error if value for given colorId already exists and have
       //   not same value
@@ -47,13 +47,13 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
         }
 
         throw new errors.Storage.ColorData.HaveAnotherValue(
-          data.txid, data.oidx,
+          data.txId, data.outIndex,
           data.colorId, data.colorCode, outValues[data.colorId])
       }
 
       // set value and save
       outValues[data.colorId] = value
-      values[data.oidx] = outValues
+      values[data.outIndex] = outValues
       await this._storage.set(key, JSON.stringify(values))
     })
   }
@@ -61,34 +61,34 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   /**
    * @param {Object} opts
    * @param {string} opts.colorCode
-   * @param {string} opts.txid
-   * @param {number} [opts.oidx]
+   * @param {string} opts.txId
+   * @param {number} [opts.outIndex]
    * @return {Promise.<Map<number, Map<number, *>>>}
    */
   async get (opts) {
     await this.ready
     return await this._storage.withLock(async () => {
-      let key = `${opts.txid}:${opts.colorCode}`
+      let key = `${opts.txId}:${opts.colorCode}`
       let storedValue = await this._storage.get(key)
 
       let values = storedValue === null ? {} : JSON.parse(storedValue)
-      if (opts.oidx !== undefined) {
+      if (opts.outIndex !== undefined) {
         let newValues = {}
-        if (values[opts.oidx] !== undefined) {
-          newValues[opts.oidx] = values[opts.oidx]
+        if (values[opts.outIndex] !== undefined) {
+          newValues[opts.outIndex] = values[opts.outIndex]
         }
 
         values = newValues
       }
 
       let result = new Map()
-      for (let oidx of Object.keys(values)) {
-        let ovalues = values[oidx]
+      for (let outIndex of Object.keys(values)) {
+        let ovalues = values[outIndex]
         let oresult = new Map()
         for (let colorId of Object.keys(ovalues)) {
           oresult.set(parseInt(colorId, 10), JSON.parse(ovalues[colorId]))
         }
-        result.set(parseInt(oidx, 10), oresult)
+        result.set(parseInt(outIndex, 10), oresult)
       }
 
       return result
@@ -98,13 +98,13 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   /**
    * @param {Object} opts
    * @param {string} opts.colorCode
-   * @param {string} opts.txid
+   * @param {string} opts.txId
    * @return {Promise}
    */
   async remove (opts) {
     await this.ready
     return await this._storage.withLock(() => {
-      return this._storage.remove(`${opts.txid}:${opts.colorCode}`)
+      return this._storage.remove(`${opts.txId}:${opts.colorCode}`)
     })
   }
 
