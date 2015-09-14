@@ -7,14 +7,14 @@ describe('ColorSet', () => {
   let cdstorage
   let cdmanager
 
-  beforeEach((done) => {
+  beforeEach(() => {
     cdstorage = new cclib.storage.definitions.Memory()
-    cdstorage.ready.then(done, done)
     cdmanager = new cclib.definitions.Manager(cdstorage)
+    return cdstorage.ready
   })
 
-  afterEach((done) => {
-    cdstorage.clear().then(done, done)
+  afterEach(() => {
+    return cdstorage.clear()
   })
 
   it('getColorHash', () => {
@@ -31,25 +31,17 @@ describe('ColorSet', () => {
     expect(cset.getColorDescs()).to.deep.equal([cdef.getDesc()])
   })
 
-  it('getColorDefinitions', (done) => {
-    Promise.resolve()
-      .then(async () => {
-        let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
-        await cset.ready
-        let cdefs = await cset.getColorDefinitions()
-        expect(cdefs).to.deep.equal([cdef])
-      })
-      .then(done, done)
+  it('getColorDefinitions', async () => {
+    let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
+    await cset.ready
+    let cdefs = await cset.getColorDefinitions()
+    expect(cdefs).to.deep.equal([cdef])
   })
 
-  it('getColorIds', (done) => {
-    Promise.resolve()
-      .then(async () => {
-        let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
-        await cset.ready
-        let cids = await cset.getColorIds()
-        expect(cids).to.deep.equal([cdef.getColorId()])
-      })
-      .then(done, done)
+  it('getColorIds', async () => {
+    let cset = new cclib.ColorSet(cdmanager, [cdef.getDesc()])
+    await cset.ready
+    let cids = await cset.getColorIds()
+    expect(cids).to.deep.equal([cdef.getColorId()])
   })
 })

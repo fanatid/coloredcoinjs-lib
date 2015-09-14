@@ -31,57 +31,57 @@ describe('definitions.Genesis', () => {
     expect(::cdef.getDesc).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('static fromDesc', (done) => {
-    Genesis.fromDesc()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('static fromDesc', async () => {
+    try {
+      await Genesis.fromDesc()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('fromTx', (done) => {
-    Genesis.fromTx()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('fromTx', async () => {
+    try {
+      await Genesis.fromTx()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('runKernel', (done) => {
-    cdef.runKernel()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('runKernel', async () => {
+    try {
+      await cdef.runKernel()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('static getAffectingInputs', (done) => {
-    Genesis.getAffectingInputs()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('static getAffectingInputs', async () => {
+    try {
+      await Genesis.getAffectingInputs()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('static makeComposedTx', (done) => {
-    Genesis.makeComposedTx()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('static makeComposedTx', async () => {
+    try {
+      await Genesis.makeComposedTx()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('static composeGenesisTx', (done) => {
-    Genesis.composeGenesisTx()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('static composeGenesisTx', async () => {
+    try {
+      await Genesis.composeGenesisTx()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 })

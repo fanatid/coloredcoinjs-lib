@@ -122,23 +122,18 @@ describe('definitions.EPOBC', () => {
   })
 
   describe('fromDesc', () => {
-    it('throw error', (done) => {
-      EPOBC.fromDesc('obc:11:2:3')
-        .then(() => { throw new Error('h1') })
-        .catch((err) => {
-          expect(err).to.be.instanceof(
-            cclib.errors.ColorDefinition.IncorrectDesc)
-        })
-        .then(done, done)
+    it('throw error', async () => {
+      try {
+        await EPOBC.fromDesc('obc:11:2:3')
+        throw new Error()
+      } catch (err) {
+        expect(err).to.be.instanceof(cclib.errors.ColorDefinition.IncorrectDesc)
+      }
     })
 
-    it('return EPOBCColorDefinition', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let epobc2 = await EPOBC.fromDesc(epobc.getDesc(), epobc.getColorId())
-          expect(epobc2).to.deep.equal(epobc)
-        })
-        .then(done, done)
+    it('return EPOBCColorDefinition', async () => {
+      let epobc2 = await EPOBC.fromDesc(epobc.getDesc(), epobc.getColorId())
+      expect(epobc2).to.deep.equal(epobc)
     })
   })
 
@@ -148,57 +143,45 @@ describe('definitions.EPOBC', () => {
       helpers.tx.addOutput(tx1, 9)
     })
 
-    it('return null', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          tx1.outputs[0].satoshis = 8
-          let epobc = await EPOBC.fromTx(tx1, 1)
-          expect(epobc).to.be.null
-        })
-        .then(done, done)
+    it('return null', async () => {
+      tx1.outputs[0].satoshis = 8
+      let epobc = await EPOBC.fromTx(tx1, 1)
+      expect(epobc).to.be.null
     })
 
-    it('from color id', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let epobc = await EPOBC.fromTx(tx1, 1)
-          expect(epobc).to.be.instanceof(EPOBC)
-          expect(epobc.getColorId()).to.equal(1)
-        })
-        .then(done, done)
+    it('from color id', async () => {
+      let epobc = await EPOBC.fromTx(tx1, 1)
+      expect(epobc).to.be.instanceof(EPOBC)
+      expect(epobc.getColorId()).to.equal(1)
     })
 
-    it('resolve with color definition manager', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdstorage = new cclib.storage.definitions.Memory()
-          let cdmanager = new cclib.definitions.Manager(cdstorage)
+    it('resolve with color definition manager', async () => {
+      let cdstorage = new cclib.storage.definitions.Memory()
+      let cdmanager = new cclib.definitions.Manager(cdstorage)
 
-          try {
-            let deferred
-            let promise = new Promise((resolve, reject) => {
-              deferred = {resolve: resolve, reject: reject}
-            })
-
-            cdmanager.on('new', function (cdef) {
-              Promise.resolve()
-                .then(() => {
-                  expect(cdef).to.be.instanceof(EPOBC)
-                  expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
-                })
-                .then(deferred.resolve, deferred.reject)
-            })
-
-            await cdstorage.ready
-            let epobc = await EPOBC.fromTx(tx1, cdmanager)
-            expect(epobc).to.be.instanceof(EPOBC)
-            expect(epobc.getDesc()).to.match(new RegExp(tx1.id))
-            await promise
-          } finally {
-            cdmanager.removeAllListeners()
-          }
+      try {
+        let deferred
+        let promise = new Promise((resolve, reject) => {
+          deferred = {resolve: resolve, reject: reject}
         })
-        .then(done, done)
+
+        cdmanager.on('new', (cdef) => {
+          Promise.resolve()
+            .then(() => {
+              expect(cdef).to.be.instanceof(EPOBC)
+              expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
+            })
+            .then(deferred.resolve, deferred.reject)
+        })
+
+        await cdstorage.ready
+        let epobc = await EPOBC.fromTx(tx1, cdmanager)
+        expect(epobc).to.be.instanceof(EPOBC)
+        expect(epobc.getDesc()).to.match(new RegExp(tx1.id))
+        await promise
+      } finally {
+        cdmanager.removeAllListeners()
+      }
     })
   })
 
@@ -211,90 +194,74 @@ describe('definitions.EPOBC', () => {
 
   describe('runKernel', () => {
     fixtures.runKernel.forEach(function (f) {
-      it(f.description, (done) => {
-        Promise.resolve()
-          .then(async () => {
-            if (f.description.indexOf('genesis') !== -1) {
-              epobc._genesis.txId = f.txId
-            }
+      it(f.description, async () => {
+        if (f.description.indexOf('genesis') !== -1) {
+          epobc._genesis.txId = f.txId
+        }
 
-            let env = helpers.createRunKernelEnv(
-              f.txId, f.inputs, f.outputs, f.sequence)
+        let env = helpers.createRunKernelEnv(
+          f.txId, f.inputs, f.outputs, f.sequence)
 
-            let inColorValues = f.inColorValues.map(function (cv) {
-              if (cv !== null) {
-                cv = new cclib.ColorValue(epobc, cv)
-              }
+        let inColorValues = f.inColorValues.map(function (cv) {
+          if (cv !== null) {
+            cv = new cclib.ColorValue(epobc, cv)
+          }
 
-              return cv
-            })
+          return cv
+        })
 
-            let getTxFn = helpers.getTxFnStub(env.deps)
-            let result = await epobc.runKernel(env.top, inColorValues, getTxFn)
-            expect(result).to.be.instanceof(Array)
+        let getTxFn = helpers.getTxFnStub(env.deps)
+        let result = await epobc.runKernel(env.top, inColorValues, getTxFn)
+        expect(result).to.be.instanceof(Array)
 
-            result = result.map(function (value) {
-              if (value !== null) {
-                value = value.getValue()
-              }
+        result = result.map(function (value) {
+          if (value !== null) {
+            value = value.getValue()
+          }
 
-              return value
-            })
+          return value
+        })
 
-            expect(result).to.deep.equal(f.expect)
-          })
-          .then(done, done)
+        expect(result).to.deep.equal(f.expect)
       })
     })
   })
 
   describe('getAffectingInputs', () => {
-    it('tag is null', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let tx = {
-            inputs: [{
-              prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
-              sequenceNumber: 4294967295
-            }]
-          }
-          let getTxFn = helpers.getTxFnStub([])
-          let inputs = await EPOBC.getAffectingInputs(tx, [], getTxFn)
-          expect(inputs).to.deep.equal([])
-        })
-        .then(done, done)
+    it('tag is null', async () => {
+      let tx = {
+        inputs: [{
+          prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
+          sequenceNumber: 4294967295
+        }]
+      }
+      let getTxFn = helpers.getTxFnStub([])
+      let inputs = await EPOBC.getAffectingInputs(tx, [], getTxFn)
+      expect(inputs).to.deep.equal([])
     })
 
-    it('genesis tag', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let tx = {
-            inputs: [{
-              prevTxId: new Buffer(32),
-              sequenceNumber: 37
-            }]
-          }
-          let getTxFn = helpers.getTxFnStub([])
-          let inputs = await EPOBC.getAffectingInputs(tx, [], getTxFn)
-          expect(inputs).to.deep.equal([])
-        })
-        .then(done, done)
+    it('genesis tag', async () => {
+      let tx = {
+        inputs: [{
+          prevTxId: new Buffer(32),
+          sequenceNumber: 37
+        }]
+      }
+      let getTxFn = helpers.getTxFnStub([])
+      let inputs = await EPOBC.getAffectingInputs(tx, [], getTxFn)
+      expect(inputs).to.deep.equal([])
     })
 
-    it('return affecting index', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
-          helpers.tx.addOutput(tx1, 11)
+    it('return affecting index', async () => {
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
+      helpers.tx.addOutput(tx1, 11)
 
-          helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
-          helpers.tx.addOutput(tx2, 10)
+      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
+      helpers.tx.addOutput(tx2, 10)
 
-          let getTxFn = helpers.getTxFnStub([tx1])
-          let indices = await EPOBC.getAffectingInputs(tx2, [0], getTxFn)
-          expect(indices).to.deep.equal([0])
-        })
-        .then(done, done)
+      let getTxFn = helpers.getTxFnStub([tx1])
+      let indices = await EPOBC.getAffectingInputs(tx2, [0], getTxFn)
+      expect(indices).to.deep.equal([0])
     })
   })
 })

@@ -13,31 +13,23 @@ describe('tx.FilledInputs', () => {
     let txId = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
     let rawtx = transactions[txId]
 
-    beforeEach((done) => {
+    beforeEach(() => {
       fitx = new cclib.tx.FilledInputs(rawtx, getTxFn)
-      fitx.ready.then(done, done)
+      return fitx.ready
     })
 
     it('getTx', () => {
       expect(fitx.getTx().id).to.equal(txId)
     })
 
-    it('getInputTx', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let inputTx = await fitx.getInputTx(0)
-          expect(inputTx).to.be.null
-        })
-        .then(done, done)
+    it('getInputTx', async () => {
+      let inputTx = await fitx.getInputTx(0)
+      expect(inputTx).to.be.null
     })
 
-    it('getInputValue', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let inputValue = await fitx.getInputValue(0)
-          expect(inputValue).to.equal(0)
-        })
-        .then(done, done)
+    it('getInputValue', async () => {
+      let inputValue = await fitx.getInputValue(0)
+      expect(inputValue).to.equal(0)
     })
   })
 
@@ -54,22 +46,14 @@ describe('tx.FilledInputs', () => {
       expect(fitx.getTx().id).to.equal(txId)
     })
 
-    it('getInputTx', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let inputTx = await fitx.getInputTx(0)
-          expect(inputTx.id).to.equal(tx.inputs[0].prevTxId.toString('hex'))
-        })
-        .then(done, done)
+    it('getInputTx', async () => {
+      let inputTx = await fitx.getInputTx(0)
+      expect(inputTx.id).to.equal(tx.inputs[0].prevTxId.toString('hex'))
     })
 
-    it('getInputValue', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let inputValue = await fitx.getInputValue(0)
-          expect(inputValue).to.equal(30838652979)
-        })
-        .then(done, done)
+    it('getInputValue', async () => {
+      let inputValue = await fitx.getInputValue(0)
+      expect(inputValue).to.equal(30838652979)
     })
   })
 })

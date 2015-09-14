@@ -32,78 +32,72 @@ describe('definitions.Uncolored', () => {
   })
 
   describe('fromDesc', () => {
-    it('fail, wrong color id', (done) => {
-      Uncolored.fromDesc('', 1)
-        .then(() => { throw new Error('h1') })
-        .catch((err) => {
-          expect(err).to.be.instanceof(
-            cclib.errors.ColorDefinition.IncorrectColorId)
-        })
-        .then(done, done)
+    it('fail, wrong color id', async () => {
+      try {
+        await Uncolored.fromDesc('', 1)
+        throw new Error()
+      } catch (err) {
+        expect(err).to.be.instanceof(
+          cclib.errors.ColorDefinition.IncorrectColorId)
+      }
     })
 
-    it('fail, wrong description', (done) => {
-      Uncolored.fromDesc('xxx', 0)
-        .then(() => { throw new Error('h1') })
-        .catch((err) => {
-          expect(err).to.be.instanceof(
-            cclib.errors.ColorDefinition.IncorrectDesc)
-        })
-        .then(done, done)
+    it('fail, wrong description', async () => {
+      try {
+        await Uncolored.fromDesc('xxx', 0)
+        throw new Error()
+      } catch (err) {
+        expect(err).to.be.instanceof(
+          cclib.errors.ColorDefinition.IncorrectDesc)
+      }
     })
 
-    it('successful #1', (done) => {
-      Uncolored.fromDesc('', 0)
-        .then((cdef) => {
-          expect(cdef.getColorId()).to.equal(0)
-        })
-        .then(done, done)
+    it('successful #1', async () => {
+      let cdef = await Uncolored.fromDesc('', 0)
+      expect(cdef.getColorId()).to.equal(0)
     })
 
-    it('successful #2', (done) => {
-      Uncolored.fromDesc('')
-        .then((cdef) => {
-          expect(cdef.getColorId()).to.equal(0)
-        })
-        .then(done, done)
+    it('successful #2', async () => {
+      let cdef = await Uncolored.fromDesc('')
+      expect(cdef.getColorId()).to.equal(0)
     })
   })
 
-  it('fromTx', (done) => {
-    Uncolored.fromTx()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('fromTx', async () => {
+    try {
+      await Uncolored.fromTx()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('runKernel', (done) => {
-    cdef.runKernel()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('runKernel', async () => {
+    try {
+      await cdef.runKernel()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('static getAffectingInputs', (done) => {
-    Uncolored.getAffectingInputs()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('static getAffectingInputs', async () => {
+    try {
+      await Uncolored.getAffectingInputs()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it.skip('static makeComposedTx', (done) => {})
+  it.skip('static makeComposedTx', () => {})
 
-  it('static composeGenesisTx', (done) => {
-    Uncolored.composeGenesisTx()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('static composeGenesisTx', async () => {
+    try {
+      await Uncolored.composeGenesisTx()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 })

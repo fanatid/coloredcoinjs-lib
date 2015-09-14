@@ -42,7 +42,7 @@ export default class SimpleOperationalTx extends OperationalTx {
     let totalValue = 0
 
     for (let coin of this._data.coins[colorValue.getColorId()]) {
-      coins.push({toRawCoin: () => { return _.cloneDeep(coin)}})
+      coins.push({toRawCoin: () => { return _.cloneDeep(coin) }})
       totalValue += coin.value
 
       let neededValue = colorValue.getValue()

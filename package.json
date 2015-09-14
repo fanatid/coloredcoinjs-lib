@@ -41,10 +41,10 @@
   },
   "scripts": {
     "prepublish": "npm run clean && npm run compile",
+    "clean": "rm -rf lib/*",
     "compile": "babel --optional runtime -d lib src",
     "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha -- --compilers js:babel/register",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "clean": "rm -rf lib/*",
     "lint": "eslint src test",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
@@ -60,7 +60,7 @@
     "ready-mixin": "^0.1.0"
   },
   "peerDependencies": {
-    "bitcore": "=0.12.15"
+    "bitcore": "^0.13.3"
   },
   "devDependencies": {
     "babel": "^5.8.21",

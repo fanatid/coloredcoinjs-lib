@@ -30,118 +30,95 @@ export default function (opts) {
     records[1].txId = records[0].txId
     records[1].outIndex += 1
 
-    beforeEach((done) => {
+    beforeEach(() => {
       storage = new StorageCls(opts.clsOpts)
-      storage.ready.then(done, done)
+      return storage.ready
     })
 
-    afterEach((done) => {
-      storage.clear().then(done, done)
+    afterEach(() => {
+      return storage.clear()
     })
 
     describe('#add', () => {
-      it('same output for given color id already exists', (done) => {
-        Promise.resolve()
-          .then(async () => {
-            await storage.add(records[0])
+      it('same output for given color id already exists', async () => {
+        await storage.add(records[0])
 
-            let newRecord = _.defaults({
-              value: records[0].value + 1
-            }, records[0])
-            try {
-              await storage.add(newRecord)
-              throw new Error('h1')
-            } catch (err) {
-              expect(err).to.be.instanceof(
-                cclib.errors.Storage.ColorData.HaveAnotherValue)
-            }
-          })
-          .then(done, done)
+        let newRecord = _.defaults({
+          value: records[0].value + 1
+        }, records[0])
+
+        try {
+          await storage.add(newRecord)
+          throw new Error()
+        } catch (err) {
+          expect(err).to.be.instanceof(
+            cclib.errors.Storage.ColorData.HaveAnotherValue)
+        }
       })
     })
 
     describe('#get', () => {
-      beforeEach((done) => {
-        Promise.resolve()
-          .then(async () => {
-            await* records.map((record) => {
-              return storage.add(record)
-            })
-          })
-          .then(done, done)
+      beforeEach(() => {
+        return Promise.all(records.map((record) => {
+          return storage.add(record)
+        }))
       })
 
-      it('output not exists', (done) => {
-        Promise.resolve()
-          .then(async () => {
-            let txId = getRandomBytes(32).toString('hex')
-            let data = await storage.get({txId: txId})
-            expect(Array.from(data.keys())).to.have.length(0)
-          })
-          .then(done, done)
+      it('output not exists', async () => {
+        let txId = getRandomBytes(32).toString('hex')
+        let data = await storage.get({txId: txId})
+        expect(Array.from(data.keys())).to.have.length(0)
       })
 
-      it('output exists', (done) => {
-        Promise.resolve()
-          .then(async () => {
-            let opts = {colorCode: records[0].colorCode, txId: records[0].txId}
-            let data = await storage.get(opts)
-            expect(Array.from(data.keys())).to.have.length(2)
-            expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
-            expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
-            expect(Array.from(data.get(records[1].outIndex).keys())).to.have.length(1)
-            expect(data.get(records[1].outIndex).get(records[1].colorId)).to.equal(records[1].value)
-          })
-          .then(done, done)
+      it('output exists', async () => {
+        let opts = {colorCode: records[0].colorCode, txId: records[0].txId}
+        let data = await storage.get(opts)
+        expect(Array.from(data.keys())).to.have.length(2)
+        expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
+        expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
+        expect(Array.from(data.get(records[1].outIndex).keys())).to.have.length(1)
+        expect(data.get(records[1].outIndex).get(records[1].colorId)).to.equal(records[1].value)
       })
 
-      it('output exists, specific outIndex', (done) => {
-        Promise.resolve()
-          .then(async () => {
-            let opts = {
-              colorCode: records[0].colorCode,
-              txId: records[0].txId,
-              outIndex: records[0].outIndex
-            }
-            let data = await storage.get(opts)
-            expect(Array.from(data.keys())).to.have.length(1)
-            expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
-            expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
-          })
-          .then(done, done)
+      it('output exists, specific outIndex', async () => {
+        let opts = {
+          colorCode: records[0].colorCode,
+          txId: records[0].txId,
+          outIndex: records[0].outIndex
+        }
+        let data = await storage.get(opts)
+        expect(Array.from(data.keys())).to.have.length(1)
+        expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
+        expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
       })
     })
 
     describe('#remove', () => {
-      it('add/get/delete/get', (done) => {
-        Promise.resolve()
-          .then(async () => {
-            await storage.add(records[0])
+      it('add/get/delete/get', async () => {
+        await storage.add(records[0])
 
-            let opts = {
-              colorCode: records[0].colorCode,
-              txId: records[0].txId,
-              outIndex: records[0].outIndex
-            }
-            let data = await storage.get(opts)
-            expect(Array.from(data.keys())).to.have.length(1)
-            expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
-            expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
+        let opts = {
+          colorCode: records[0].colorCode,
+          txId: records[0].txId,
+          outIndex: records[0].outIndex
+        }
+        let data = await storage.get(opts)
+        expect(Array.from(data.keys())).to.have.length(1)
+        expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
+        expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
 
-            opts = {
-              colorCode: records[0].colorCode,
-              txId: records[0].txId
-            }
-            await storage.remove(opts)
+        opts = {
+          colorCode: records[0].colorCode,
+          txId: records[0].txId
+        }
+        await storage.remove(opts)
 
-            opts = {
-              colorCode: records[0].colorCode,
-              txId: records[0].txId
-            }
-            data = await storage.get(opts)
-            expect(Array.from(data.keys())).to.have.length(0)
-          })
-          .then(done, done)
+        opts = {
+          colorCode: records[0].colorCode,
+          txId: records[0].txId
+        }
+        data = await storage.get(opts)
+        expect(Array.from(data.keys())).to.have.length(0)
       })
     })
   })

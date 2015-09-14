@@ -10,10 +10,10 @@ describe('ColorDefinitionManager', () => {
   let epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
   let epobcDesc2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
-  beforeEach((done) => {
+  beforeEach(() => {
     cdstorage = new cclib.storage.definitions.Memory()
-    cdstorage.ready.then(done, done)
     cdmanager = new cclib.definitions.Manager(cdstorage)
+    return cdstorage.ready
   })
 
   it('inherit EventEmitter', () => {
@@ -59,124 +59,84 @@ describe('ColorDefinitionManager', () => {
   })
 
   describe('resolve', () => {
-    it('add new record', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdef = await cdmanager.resolve(epobcDesc1)
-          expect(cdef.getDesc()).to.equal(epobcDesc1)
-        })
-        .then(done, done)
+    it('add new record', async () => {
+      let cdef = await cdmanager.resolve(epobcDesc1)
+      expect(cdef.getDesc()).to.equal(epobcDesc1)
     })
 
-    it('generate event on adding new defintion', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          try {
-            let deferred
-            let promise = new Promise((resolve, reject) => {
-              deferred = {resolve: resolve, reject: reject}
+    it('generate event on adding new defintion', async () => {
+      try {
+        let deferred
+        let promise = new Promise((resolve, reject) => {
+          deferred = {resolve: resolve, reject: reject}
+        })
+
+        cdmanager.on('new', (cdef) => {
+          Promise.resolve()
+            .then(() => {
+              expect(cdef).to.be.instanceof(cclib.definitions.Interface)
+              expect(cdef.getDesc()).to.equal(epobcDesc1)
             })
-
-            cdmanager.on('new', (cdef) => {
-              Promise.resolve()
-                .then(() => {
-                  expect(cdef).to.be.instanceof(cclib.definitions.Interface)
-                  expect(cdef.getDesc()).to.equal(epobcDesc1)
-                })
-                .then(deferred.resolve, deferred.reject)
-            })
-
-            let cdef = await cdmanager.resolve(epobcDesc1)
-            expect(cdef.getDesc()).to.equal(epobcDesc1)
-            await promise
-          } finally {
-            cdmanager.removeAllListeners()
-          }
+            .then(deferred.resolve, deferred.reject)
         })
-        .then(done, done)
+
+        let cdef = await cdmanager.resolve(epobcDesc1)
+        expect(cdef.getDesc()).to.equal(epobcDesc1)
+        await promise
+      } finally {
+        cdmanager.removeAllListeners()
+      }
     })
 
-    it('record is not null', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let data = await cdstorage.resolve(epobcDesc1)
-          let cdef = await cdmanager.resolve(data.record.desc)
-          expect(cdef.getColorId()).to.equal(data.record.id)
-          expect(cdef.getDesc()).to.equal(data.record.desc)
-        })
-        .then(done, done)
+    it('record is not null', async () => {
+      let data = await cdstorage.resolve(epobcDesc1)
+      let cdef = await cdmanager.resolve(data.record.desc)
+      expect(cdef.getColorId()).to.equal(data.record.id)
+      expect(cdef.getDesc()).to.equal(data.record.desc)
     })
 
-    it('record is null, autoAdd is false', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdef = await cdmanager.resolve(epobcDesc1, {autoAdd: false})
-          expect(cdef).to.be.null
-        })
-        .then(done, done)
+    it('record is null, autoAdd is false', async () => {
+      let cdef = await cdmanager.resolve(epobcDesc1, {autoAdd: false})
+      expect(cdef).to.be.null
     })
 
-    it('return uncolored', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdef = await cdmanager.resolve('')
-          expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
-        })
-        .then(done, done)
+    it('return uncolored', async () => {
+      let cdef = await cdmanager.resolve('')
+      expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
     })
   })
 
   describe('get', () => {
-    it('return null', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdef = await cdmanager.get({id: 10})
-          expect(cdef).to.be.null
-        })
-        .then(done, done)
+    it('return null', async () => {
+      let cdef = await cdmanager.get({id: 10})
+      expect(cdef).to.be.null
     })
 
-    it('return uncolred', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdef = await cdmanager.get({id: 0})
-          expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
-        })
-        .then(done, done)
+    it('return uncolred', async () => {
+      let cdef = await cdmanager.get({id: 0})
+      expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
     })
 
-    it('return ColorDefinition', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let data = await cdstorage.resolve(epobcDesc1)
-          let cdef = await cdmanager.get({id: data.record.id})
-          expect(cdef.getDesc()).to.equal(data.record.desc)
-          expect(cdef.getColorId()).to.equal(data.record.id)
-        })
-        .then(done, done)
+    it('return ColorDefinition', async () => {
+      let data = await cdstorage.resolve(epobcDesc1)
+      let cdef = await cdmanager.get({id: data.record.id})
+      expect(cdef.getDesc()).to.equal(data.record.desc)
+      expect(cdef.getColorId()).to.equal(data.record.id)
     })
 
-    it('return empty Array', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          let cdefs = await cdmanager.get()
-          expect(cdefs).to.deep.equal([])
-        })
-        .then(done, done)
+    it('return empty Array', async () => {
+      let cdefs = await cdmanager.get()
+      expect(cdefs).to.deep.equal([])
     })
 
-    it('return 2 items', (done) => {
-      Promise.resolve()
-        .then(async () => {
-          await* [
-            cdmanager.resolve(epobcDesc1),
-            cdmanager.resolve(epobcDesc2)
-          ]
-          let cdefs = await cdmanager.get()
-          let result = _.invoke(cdefs, 'getDesc').sort()
-          expect(result).to.deep.equal([epobcDesc1, epobcDesc2].sort())
-        })
-        .then(done, done)
+    it('return 2 items', async () => {
+      await* [
+        cdmanager.resolve(epobcDesc1),
+        cdmanager.resolve(epobcDesc2)
+      ]
+      let cdefs = await cdmanager.get()
+      let result = _.invoke(cdefs, 'getDesc').sort()
+      expect(result).to.deep.equal([epobcDesc1, epobcDesc2].sort())
     })
   })
 })

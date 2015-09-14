@@ -13,30 +13,30 @@ describe('storage.definitions.Interface', () => {
     expect(cclib.storage.definitions.Interface.isAvailable()).to.be.false
   })
 
-  it('#resolve', (done) => {
-    storage.resolve()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('#resolve', async () => {
+    try {
+      await storage.resolve()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('#get', function (done) {
-    storage.get()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('#get', async () => {
+    try {
+      await storage.get()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 
-  it('#clear', function (done) {
-    storage.clear()
-      .then(() => { throw new Error('h1') })
-      .catch((err) => {
-        expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-      })
-      .then(done, done)
+  it('#clear', async () => {
+    try {
+      await storage.clear()
+      throw new Error()
+    } catch (err) {
+      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
+    }
   })
 })
