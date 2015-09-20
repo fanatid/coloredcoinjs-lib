@@ -18,6 +18,7 @@ SQL['SQLite'] = {
               '  oidx INTEGER NOT NULL, ' +
               '  color_id INTEGER NOT NULL, ' +
               '  value TEXT NOT NULL, ' +
+              '  out_address TEXT NOT NULL, ' +
               '  tx_pk INTEGER NOT NULL, ' +
               '  FOREIGN KEY (tx_pk) REFERENCES cclib_data_tx(pk))'
     },
@@ -28,8 +29,8 @@ SQL['SQLite'] = {
   },
   insert: {
     tx: 'INSERT INTO cclib_data_tx (color_code, txid) VALUES ($1, $2)',
-    value: 'INSERT INTO cclib_data_values (oidx, color_id, value, tx_pk) ' +
-           '  VALUES ($1, $2, $3, $4)'
+    value: 'INSERT INTO cclib_data_values (oidx, color_id, value, out_address, tx_pk) ' +
+           '  VALUES ($1, $2, $3, $4, $5)'
   },
   select: {
     pk: 'SELECT pk FROM cclib_data_tx WHERE color_code = $1 AND txid = $2',
@@ -153,8 +154,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
         pk = await getPK()
       }
 
-      args = [data.outIndex, data.colorId, data.value, pk]
-      return await this._storage.executeSQL(this._SQL.insert.value, args)
+      args = [data.outIndex, data.colorId, data.value, data.outAddress, pk]
     })
   }
 
