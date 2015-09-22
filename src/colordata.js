@@ -194,12 +194,14 @@ export default class ColorData {
               return
             }
 
+            let outAddress = tx.outputs[outIndex].script.toAddress().toString()
             await this._storage.add({
               colorCode: colorCode,
               txId: txId,
               outIndex: outIndex,
               colorId: colorId,
-              value: cvalue.getValue()
+              value: cvalue.getValue(),
+              outAddress: outAddress
             })
           })
         }
