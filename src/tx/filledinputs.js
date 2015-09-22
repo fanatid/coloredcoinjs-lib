@@ -1,8 +1,8 @@
 import initReadyMixin from 'ready-mixin'
 import { Transaction } from 'bitcore'
+import { promisify } from 'promise-useful-utils'
 
 import { ZERO_HASH } from '../util/const'
-import { promisify } from '../util/js'
 
 /**
  * @callback getTxFn~callback

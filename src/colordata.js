@@ -1,8 +1,8 @@
 import _ from 'lodash'
 import bitcore from 'bitcore'
+import { promisify } from 'promise-useful-utils'
 
 import ColorValue from './colorvalue'
-import { getArrayOfNull, promisify } from './util/js'
 
 /**
  * @class ColorData
@@ -65,7 +65,7 @@ export default class ColorData {
 
       return [{
         cdef: cdef,
-        inputs: getArrayOfNull(tx.inputs.length)
+        inputs: new Array(tx.inputs.length).fill(null)
       }]
     }
 
@@ -102,7 +102,7 @@ export default class ColorData {
         if (row === undefined) {
           row = {
             cdef: item.cdef,
-            inputs: getArrayOfNull(tx.inputs.length)
+            inputs: new Array(tx.inputs.length).fill(null)
           }
         }
 
@@ -160,7 +160,7 @@ export default class ColorData {
             // and define row
             row = {
               cdef: cdef,
-              outputs: getArrayOfNull(tx.outputs.length)
+              outputs: new Array(tx.outputs.length).fill(null)
             }
           }
 
@@ -300,7 +300,7 @@ export default class ColorData {
 
           rows[colorId] = {
             cdef: cdef,
-            inputs: getArrayOfNull(tx.inputs.length)
+            inputs: new Array(tx.inputs.length).fill(null)
           }
         }
 
