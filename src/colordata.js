@@ -3,6 +3,7 @@ import bitcore from 'bitcore'
 import { promisify } from 'promise-useful-utils'
 
 import ColorValue from './colorvalue'
+import { getArrayOfNull } from './util/js'
 
 /**
  * @class ColorData
@@ -65,7 +66,7 @@ export default class ColorData {
 
       return [{
         cdef: cdef,
-        inputs: new Array(tx.inputs.length).fill(null)
+        inputs: getArrayOfNull(tx.inputs.length)
       }]
     }
 
@@ -102,7 +103,7 @@ export default class ColorData {
         if (row === undefined) {
           row = {
             cdef: item.cdef,
-            inputs: new Array(tx.inputs.length).fill(null)
+            inputs: getArrayOfNull(tx.inputs.length)
           }
         }
 
@@ -160,7 +161,7 @@ export default class ColorData {
             // and define row
             row = {
               cdef: cdef,
-              outputs: new Array(tx.outputs.length).fill(null)
+              outputs: getArrayOfNull(tx.outputs.length)
             }
           }
 
@@ -300,7 +301,7 @@ export default class ColorData {
 
           rows[colorId] = {
             cdef: cdef,
-            inputs: new Array(tx.inputs.length).fill(null)
+            inputs: getArrayOfNull(tx.inputs.length)
           }
         }
 

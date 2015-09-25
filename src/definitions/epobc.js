@@ -8,6 +8,7 @@ import ColorTarget from '../colortarget'
 import FilledInputsTx from '../tx/filledinputs'
 import errors from '../errors'
 import { ZERO_HASH } from '../util/const'
+import { getArrayOfNull } from '../util/js'
 
 /**
  *
@@ -255,7 +256,7 @@ class EPOBCColorDefinition extends IColorDefinition {
   async runKernel (tx, inColorValues, getTxFn) {
     let tag = Tag.fromTx(tx)
     if (tag === null || tag.isGenesis()) {
-      let outColorValues = new Array(tx.outputs.length).fill(null)
+      let outColorValues = getArrayOfNull(tx.outputs.length)
 
       let isValidColorTx = tag !== null &&
                            this.isGenesis(tx) &&
