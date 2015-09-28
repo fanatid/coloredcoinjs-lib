@@ -17,7 +17,7 @@ export default class ColorData {
   constructor (storage, cdmanager) {
     this._storage = storage
     this._cdmanager = cdmanager
-    this._scanProcesses = new Map()
+    this._scanProcesses = {}
   }
 
   /**
@@ -27,21 +27,21 @@ export default class ColorData {
    * @return {Promise}
    */
   async _scheduleScanProcess (key, fn) {
-    if (this._scanProcesses.has(key)) {
-      await new Promise((resolve) => {
-        this._scanProcesses.get(key).push({resolve: resolve})
-      })
+    if (this._scanProcesses[key] === undefined) {
+      this._scanProcesses[key] = []
     } else {
-      this._scanProcesses.set(key, [])
+      await new Promise((resolve) => {
+        this._scanProcesses[key].push({resolve: resolve})
+      })
     }
 
     try {
       return await fn()
     } finally {
-      if (this._scanProcesses.get(key).length > 0) {
-        this._scanProcesses.get(key).shift().resolve()
+      if (this._scanProcesses[key].length > 0) {
+        this._scanProcesses[key].shift().resolve()
       } else {
-        this._scanProcesses.delete(key)
+        delete this._scanProcesses[key]
       }
     }
   }
