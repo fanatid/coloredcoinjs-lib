@@ -189,6 +189,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @param {(number|ColorDefinitionManager)} resolver
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<EPOBCColorDefinition>}
    */
   static async fromDesc (desc, resolver, opts) {
@@ -205,7 +206,7 @@ class EPOBCColorDefinition extends IColorDefinition {
       })
     }
 
-    return await resolver.resolve(desc, _.extend({autoAdd: true}, opts))
+    return await resolver.resolve(desc, opts)
   }
 
   /**
@@ -214,6 +215,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @param {(number|ColorDefinitionManager)} resolver
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<?EPOBCColorDefinition>}
    */
   static async fromTx (tx, resolver, opts) {
@@ -234,7 +236,7 @@ class EPOBCColorDefinition extends IColorDefinition {
     }
 
     let desc = ['epobc', tx.id, 0, 0].join(':')
-    return await resolver.resolve(desc, _.extend({autoAdd: true}, opts))
+    return await resolver.resolve(desc, opts)
   }
 
   /**

@@ -95,28 +95,22 @@ export default function (opts) {
 
     describe('#remove', () => {
       it('add/get/delete/get', async () => {
-        await storage.add(records[0])
+        let record = records[0]
+        await storage.add(record)
 
         let opts = {
-          colorCode: records[0].colorCode,
-          txId: records[0].txId,
-          outIndex: records[0].outIndex
+          colorCode: record.colorCode,
+          txId: record.txId,
+          outIndex: record.outIndex
         }
         let data = await storage.get(opts)
         expect(Array.from(data.keys())).to.have.length(1)
-        expect(Array.from(data.get(records[0].outIndex).keys())).to.have.length(1)
-        expect(data.get(records[0].outIndex).get(records[0].colorId)).to.equal(records[0].value)
+        expect(Array.from(data.get(record.outIndex).keys())).to.have.length(1)
+        expect(data.get(record.outIndex).get(record.colorId)).to.equal(record.value)
 
-        opts = {
-          colorCode: records[0].colorCode,
-          txId: records[0].txId
-        }
+        opts = {colorCode: record.colorCode, txId: record.txId}
         await storage.remove(opts)
 
-        opts = {
-          colorCode: records[0].colorCode,
-          txId: records[0].txId
-        }
         data = await storage.get(opts)
         expect(Array.from(data.keys())).to.have.length(0)
       })

@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import IColorDefinitionStorage from './interface'
 
 /**
@@ -20,13 +21,14 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
 
     this._storage = new StorageCls(storageOpts)
     this._storage.open()
-      .then(() => { this._ready() }, (err) => { this._ready(err) })
+      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
   }
 
   /**
    * @param {string} desc
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
    */
   async resolve (desc, opts) {
@@ -39,8 +41,8 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
       }
 
       // autoAdd = false
-      let autoAdd = Object(opts).autoAdd
-      if (!autoAdd && autoAdd !== undefined) {
+      let autoAdd = _.get(opts, 'autoAdd', true)
+      if (!autoAdd) {
         return {record: null, new: null}
       }
 
@@ -69,23 +71,24 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
   }
 
   /**
+   * @param {Object} data
+   * @param {number} [data.id]
    * @param {Object} [opts]
-   * @param {number} [opts.id]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<(
    *   ?IColorDefinitionStorage~Record|
    *   IColorDefinitionStorage~Record[]
    * )>}
    */
-  async get (opts) {
+  async get (data) {
     await this.ready
     return await this._storage.withLock(async () => {
-      let id = Object(opts).id
-      if (id !== undefined) {
+      if (_.has(data, 'id')) {
         let record = null
         for (let [key, value] of await this._storage.entries()) {
           value = parseInt(value, 10)
-          if (value === id) {
-            record = {id: id, desc: key}
+          if (value === data.id) {
+            record = {id: value, desc: key}
           }
         }
         return record
@@ -103,6 +106,8 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
   }
 
   /**
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async clear () {

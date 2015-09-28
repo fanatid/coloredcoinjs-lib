@@ -1,4 +1,4 @@
-import initReadyMixin from 'ready-mixin'
+import readyMixin from 'ready-mixin'
 
 import errors from '../../errors'
 
@@ -23,6 +23,7 @@ export default class IColorDefinitionStorage {
    * @param {string} desc
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
    */
   async resolve () {
@@ -30,8 +31,10 @@ export default class IColorDefinitionStorage {
   }
 
   /**
+   * @param {Object} data
+   * @param {number} [data.id]
    * @param {Object} [opts]
-   * @param {number} [opts.id]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<(
    *   ?IColorDefinitionStorage~Record|
    *   IColorDefinitionStorage~Record[]
@@ -42,6 +45,8 @@ export default class IColorDefinitionStorage {
   }
 
   /**
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async clear () {
@@ -49,5 +54,4 @@ export default class IColorDefinitionStorage {
   }
 }
 
-let ReadyMixin = initReadyMixin(Promise)
-ReadyMixin(IColorDefinitionStorage.prototype)
+readyMixin(IColorDefinitionStorage.prototype)

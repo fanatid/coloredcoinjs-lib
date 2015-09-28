@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import base58 from 'bs58'
 import crypto from 'crypto'
-import initReadyMixin from 'ready-mixin'
+import readyMixin from 'ready-mixin'
 
 /**
  * @class ColorSet
@@ -22,7 +22,7 @@ export default class ColorSet {
           return cdmanager.resolve(cdesc, {autoAdd: true})
         })
       })
-      .then(() => { this._ready() }, (err) => { this._ready(err) })
+      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
   }
 
   /**
@@ -61,5 +61,4 @@ export default class ColorSet {
   }
 }
 
-let ReadyMixin = initReadyMixin(Promise)
-ReadyMixin(ColorSet.prototype)
+readyMixin(ColorSet.prototype)

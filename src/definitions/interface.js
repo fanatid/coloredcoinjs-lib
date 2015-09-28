@@ -53,6 +53,7 @@ export default class IColorDefinition {
    * @param {(number|ColorDefinitionManager)} resolver
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<IColorDefinition>}
    */
   static async fromDesc () {
@@ -66,6 +67,7 @@ export default class IColorDefinition {
    * @param {(number|ColorDefinitionManager)} resolver
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<?IColorDefinition>}
    */
   static async fromTx () {

@@ -1,4 +1,4 @@
-import initReadyMixin from 'ready-mixin'
+import readyMixin from 'ready-mixin'
 import { Transaction } from 'bitcore'
 import { promisify } from 'promise-useful-utils'
 
@@ -52,7 +52,7 @@ export default class FilledInputsTx {
           this._prevValues[index] = tx.outputs[input.outputIndex].satoshis
         })
       })
-      .then(() => { this._ready() }, (err) => { this._ready(err) })
+      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
   }
 
   /**
@@ -87,5 +87,4 @@ export default class FilledInputsTx {
   }
 }
 
-let ReadyMixin = initReadyMixin(Promise)
-ReadyMixin(FilledInputsTx.prototype)
+readyMixin(FilledInputsTx.prototype)

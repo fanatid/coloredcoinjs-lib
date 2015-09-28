@@ -52,13 +52,12 @@
   },
   "dependencies": {
     "babel-runtime": "^5.8.20",
-    "bs58": "^2.0.1",
+    "bs58": "^3.0.0",
     "error-system": "^1.0.0",
     "lodash": "^3.10.1",
-    "make-concurrent": "^0.2.0",
-    "odd-storage": "^0.3.1",
+    "odd-storage": "^0.4.1",
     "promise-useful-utils": "^0.2.1",
-    "ready-mixin": "^0.1.0"
+    "ready-mixin": "^1.0.0"
   },
   "peerDependencies": {
     "bitcore": "^0.13.3"

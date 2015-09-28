@@ -52,14 +52,16 @@ export default class ColorData {
    * @param {number[]} outIndices
    * @param {definitions.IColorDefinition} cdefCls
    * @param {getTxFn} getTxFn
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>>}
    */
-  async _getAffectingInputs (tx, outIndices, cdefCls, getTxFn) {
+  async _getAffectingInputs (tx, outIndices, cdefCls, getTxFn, opts) {
     let ainputs = await cdefCls.getAffectingInputs(tx, outIndices, getTxFn)
 
     // haven't affecting inputs in tx, may be it's genesis?
     if (ainputs.length === 0) {
-      let cdef = await cdefCls.fromTx(tx, this._cdmanager)
+      let cdef = await cdefCls.fromTx(tx, this._cdmanager, opts)
       if (cdef === null) {
         return []
       }
@@ -91,7 +93,7 @@ export default class ColorData {
       let inputTx = new bitcore.Transaction(rawtx)
       let inputOutIndices = _.pluck(inputs, 'outIndex')
       let items = await this._getColorOutputsOrScan(
-        inputTx, inputOutIndices, cdefCls, getTxFn)
+        inputTx, inputOutIndices, cdefCls, getTxFn, opts)
 
       // save color values of affecting input transactions to rows
       if (items.length === 0) {
@@ -126,12 +128,14 @@ export default class ColorData {
    * @param {getTxFn} getTxFn
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>>}
    */
   _getColorOutputsOrScan (tx, outIndices, cdefCls, getTxFn, opts) {
     let txId = tx.id
     let colorCode = cdefCls.getColorCode()
-    let save = Object(opts).save !== false
+    let save = !!_.get(opts, 'save', true)
+    let executeOpts = _.get(opts, 'executeOpts')
 
     // only one process for one tx at one moment
     return this._scheduleScanProcess(`${tx.id}:${colorCode}`, async () => {
@@ -141,7 +145,7 @@ export default class ColorData {
         opts.outIndex = outIndices[0]
       }
 
-      let colorData = await this._storage.get(opts)
+      let colorData = await this._storage.get(opts, {executeOpts: executeOpts})
 
       let colorOutputs = {}
       // check data for every outIndex
@@ -157,7 +161,7 @@ export default class ColorData {
           let row = colorOutputs[colorId]
           if (row === undefined) {
             // cdef undefined yet, resolve
-            let cdef = await this._cdmanager.get({id: colorId})
+            let cdef = await this._cdmanager.get({id: colorId}, {executeOpts: executeOpts})
             // and define row
             row = {
               cdef: cdef,
@@ -181,7 +185,7 @@ export default class ColorData {
 
       // extract affecting inputs for each output index
       let colorInputs = await this._getAffectingInputs(
-        tx, outIndices, cdefCls, getTxFn)
+        tx, outIndices, cdefCls, getTxFn, {executeOpts: executeOpts})
 
       // run runKernel for each color definition
       let newColorValues = await* colorInputs.map(async (item) => {
@@ -201,7 +205,7 @@ export default class ColorData {
               outIndex: outIndex,
               colorId: colorId,
               value: cvalue.getValue()
-            })
+            }, {executeOpts: executeOpts})
           })
         }
 
@@ -238,11 +242,13 @@ export default class ColorData {
    * @param {bitcore.Transaction} tx
    * @param {defintions.IColorDefinition} cdefCls
    * @param {getTxFn} getTxFn
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
-  async fullScanTx (tx, cdefCls, getTxFn) {
+  async fullScanTx (tx, cdefCls, getTxFn, opts) {
     let outIndices = _.range(tx.outputs.length)
-    await this._getColorOutputsOrScan(tx, outIndices, cdefCls, getTxFn)
+    await this._getColorOutputsOrScan(tx, outIndices, cdefCls, getTxFn, opts)
   }
 
   /**
@@ -252,6 +258,7 @@ export default class ColorData {
    * @param {getTxFn} getTxFn
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<{
    *   inputs: Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>,
    *   outputs: Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>
@@ -262,6 +269,8 @@ export default class ColorData {
       outIndices = _.range(tx.outputs.length)
     }
 
+    let executeOpts = _.get(opts, 'executeOpts')
+
     let cOutputValues = await this._getColorOutputsOrScan(
       tx, outIndices, cdefCls, getTxFn, opts)
 
@@ -271,7 +280,7 @@ export default class ColorData {
         colorCode: colorCode,
         txId: input.prevTxId.toString('hex'),
         outIndex: input.outputIndex
-      })
+      }, {executeOpts: executeOpts})
 
       let value = data.get(input.outputIndex)
       if (value === undefined) {
@@ -296,7 +305,8 @@ export default class ColorData {
         if (rows[colorId] === undefined) {
           let cdef = cdefs[colorId]
           if (cdef === undefined) {
-            cdef = await this._cdmanager.get({id: colorId})
+            cdef = await this._cdmanager.get(
+              {id: colorId}, {executeOpts: executeOpts})
           }
 
           rows[colorId] = {
@@ -320,6 +330,7 @@ export default class ColorData {
    * @param {getTxFn} getTxFn
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<ColorValue[]>}
    */
   async getOutputColorValue (tx, outIndex, cdefCls, getTxFn, opts) {
@@ -338,10 +349,12 @@ export default class ColorData {
   /**
    * @param {string} txId
    * @param {definitions.IColorDefinition} cdefCls
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
-  async removeColorValues (txId, cdefCls) {
-    let opts = {colorCode: cdefCls.getColorCode(), txId: txId}
-    await this._storage.remove(opts)
+  async removeColorValues (txId, cdefCls, opts) {
+    await this._storage.remove(
+      {colorCode: cdefCls.getColorCode(), txId: txId}, opts)
   }
 }

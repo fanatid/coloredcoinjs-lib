@@ -1,4 +1,4 @@
-import initReadyMixin from 'ready-mixin'
+import readyMixin from 'ready-mixin'
 
 import errors from '../../errors'
 
@@ -24,6 +24,8 @@ export default class IDataStorage {
 
   /**
    * @param {IDataStorage~Record} data
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async add () {
@@ -31,10 +33,12 @@ export default class IDataStorage {
   }
 
   /**
-   * @param {Object} opts
-   * @param {string} opts.colorCode
-   * @param {string} opts.txId
-   * @param {number} [opts.outIndex]
+   * @param {Object} data
+   * @param {string} data.colorCode
+   * @param {string} data.txId
+   * @param {number} [data.outIndex]
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<Map<number, Map<number, *>>>}
    */
   async get () {
@@ -42,9 +46,11 @@ export default class IDataStorage {
   }
 
   /**
-   * @param {Object} opts
-   * @param {string} opts.colorCode
-   * @param {string} opts.txId
+   * @param {Object} data
+   * @param {string} data.colorCode
+   * @param {string} data.txId
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async remove () {
@@ -52,6 +58,8 @@ export default class IDataStorage {
   }
 
   /**
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async clear () {
@@ -59,5 +67,4 @@ export default class IDataStorage {
   }
 }
 
-let ReadyMixin = initReadyMixin(Promise)
-ReadyMixin(IDataStorage.prototype)
+readyMixin(IDataStorage.prototype)

@@ -38,6 +38,9 @@ export default class UncoloredColorDefinition extends IColorDefinition {
    * @static
    * @param {string} desc
    * @param {(number|ColorDefinitionManager)} resolver
+   * @param {Object} [opts]
+   * @param {boolean} [opts.autoAdd=true]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<UncoloredColorDefinition>}
    */
   static async fromDesc (desc, resolver) {

@@ -20,11 +20,13 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
 
     this._storage = new StorageCls(storageOpts)
     this._storage.open()
-      .then(() => { this._ready() }, (err) => { this._ready(err) })
+      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
   }
 
   /**
    * @param {IDataStorage~Record} data
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async add (data) {
@@ -59,23 +61,25 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   }
 
   /**
-   * @param {Object} opts
-   * @param {string} opts.colorCode
-   * @param {string} opts.txId
-   * @param {number} [opts.outIndex]
+   * @param {Object} data
+   * @param {string} data.colorCode
+   * @param {string} data.txId
+   * @param {number} [data.outIndex]
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise.<Map<number, Map<number, *>>>}
    */
-  async get (opts) {
+  async get (data) {
     await this.ready
     return await this._storage.withLock(async () => {
-      let key = `${opts.txId}:${opts.colorCode}`
+      let key = `${data.txId}:${data.colorCode}`
       let storedValue = await this._storage.get(key)
 
       let values = storedValue === null ? {} : JSON.parse(storedValue)
-      if (opts.outIndex !== undefined) {
+      if (data.outIndex !== undefined) {
         let newValues = {}
-        if (values[opts.outIndex] !== undefined) {
-          newValues[opts.outIndex] = values[opts.outIndex]
+        if (values[data.outIndex] !== undefined) {
+          newValues[data.outIndex] = values[data.outIndex]
         }
 
         values = newValues
@@ -96,19 +100,23 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   }
 
   /**
-   * @param {Object} opts
-   * @param {string} opts.colorCode
-   * @param {string} opts.txId
+   * @param {Object} data
+   * @param {string} data.colorCode
+   * @param {string} data.txId
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
-  async remove (opts) {
+  async remove (data) {
     await this.ready
     return await this._storage.withLock(() => {
-      return this._storage.remove(`${opts.txId}:${opts.colorCode}`)
+      return this._storage.remove(`${data.txId}:${data.colorCode}`)
     })
   }
 
   /**
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async clear () {

@@ -37,9 +37,9 @@ describe('tx.FilledInputs', () => {
     let txId = '27eba159ab0c50c3d2d1abad6ce83f501b34121fa96d7aa91fad2c3cfec68366'
     let tx = bitcore.Transaction(transactions[txId])
 
-    beforeEach((done) => {
+    beforeEach(() => {
       fitx = new cclib.tx.FilledInputs(tx, getTxFn)
-      fitx.ready.then(done, done)
+      return fitx.ready
     })
 
     it('getTx', () => {
