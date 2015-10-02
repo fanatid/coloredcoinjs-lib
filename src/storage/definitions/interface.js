@@ -1,4 +1,5 @@
-import readyMixin from 'ready-mixin'
+import { mixin } from 'core-decorators'
+import ReadyMixin from 'ready-mixin'
 
 import errors from '../../errors'
 
@@ -12,6 +13,7 @@ import errors from '../../errors'
  * @class IColorDefinitionStorage
  * @mixes ReadyMixin
  */
+@mixin(ReadyMixin)
 export default class IColorDefinitionStorage {
   /**
    * @static
@@ -53,5 +55,3 @@ export default class IColorDefinitionStorage {
     throw new errors.NotImplemented(this.constructor.name + '.clear')
   }
 }
-
-readyMixin(IColorDefinitionStorage.prototype)

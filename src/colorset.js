@@ -1,12 +1,14 @@
 import _ from 'lodash'
 import base58 from 'bs58'
 import crypto from 'crypto'
-import readyMixin from 'ready-mixin'
+import { mixin } from 'core-decorators'
+import ReadyMixin from 'ready-mixin'
 
 /**
  * @class ColorSet
  * @mixes ReadyMixin
  */
+@mixin(ReadyMixin)
 export default class ColorSet {
   /**
    * @constructor
@@ -60,5 +62,3 @@ export default class ColorSet {
     return _.invoke(this._cdefs, 'getColorId')
   }
 }
-
-readyMixin(ColorSet.prototype)

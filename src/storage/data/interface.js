@@ -1,4 +1,5 @@
-import readyMixin from 'ready-mixin'
+import { mixin } from 'core-decorators'
+import ReadyMixin from 'ready-mixin'
 
 import errors from '../../errors'
 
@@ -15,6 +16,7 @@ import errors from '../../errors'
  * @class IDataStorage
  * @mixes ReadyMixin
  */
+@mixin(ReadyMixin)
 export default class IDataStorage {
   /**
    * @static
@@ -66,5 +68,3 @@ export default class IDataStorage {
     throw new errors.NotImplemented(this.constructor.name + '.clear')
   }
 }
-
-readyMixin(IDataStorage.prototype)

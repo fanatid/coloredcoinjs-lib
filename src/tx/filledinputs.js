@@ -1,4 +1,5 @@
-import readyMixin from 'ready-mixin'
+import { mixin } from 'core-decorators'
+import ReadyMixin from 'ready-mixin'
 import { Transaction } from 'bitcore'
 import { promisify } from 'promise-useful-utils'
 
@@ -20,6 +21,7 @@ import { ZERO_HASH } from '../util/const'
  * @class FilledInputsTx
  * @mixes ReadyMixin
  */
+@mixin(ReadyMixin)
 export default class FilledInputsTx {
   /**
    * @constructor
@@ -86,5 +88,3 @@ export default class FilledInputsTx {
     return this._prevValues[index]
   }
 }
-
-readyMixin(FilledInputsTx.prototype)
