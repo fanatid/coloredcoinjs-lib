@@ -190,7 +190,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<EPOBCColorDefinition>}
+   * @return {Promise<EPOBCColorDefinition>}
    */
   static async fromDesc (desc, resolver, opts) {
     let items = desc.split(':')
@@ -216,7 +216,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<?EPOBCColorDefinition>}
+   * @return {Promise<?EPOBCColorDefinition>}
    */
   static async fromTx (tx, resolver, opts) {
     let tag = Tag.fromTx(tx)
@@ -273,9 +273,10 @@ class EPOBCColorDefinition extends IColorDefinition {
       return outColorValues
     }
 
-    let padding = tag.getPadding()
     let ftx = new FilledInputsTx(tx, getTxFn)
     await ftx.ready
+
+    let padding = tag.getPadding()
     return await* tx.outputs.map(async (output, outIndex) => {
       let outValueWop = output.satoshis - padding
       if (outValueWop <= 0) {
@@ -314,7 +315,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @param {FilledInputsTx} ftx
    * @param {number} padding
    * @param {number} outIndex
-   * @return {Promise.<number[]>}
+   * @return {Promise<number[]>}
    */
   static async _getXferAffectingInputs (ftx, padding, outIndex) {
     let tx = ftx.getTx()
@@ -372,7 +373,7 @@ class EPOBCColorDefinition extends IColorDefinition {
    * @param {bitcore.Transaction} tx
    * @param {number[]} outIndices
    * @param {getTxFn} getTxFn
-   * @return {Promise.<number[]>}
+   * @return {Promise<number[]>}
    */
   static async getAffectingInputs (tx, outIndices, getTxFn) {
     let tag = Tag.fromTx(tx)
@@ -395,7 +396,7 @@ class EPOBCColorDefinition extends IColorDefinition {
   /**
    * @static
    * @param {OperationalTx} optx
-   * @return {Promise.<ComposedTx>}
+   * @return {Promise<ComposedTx>}
    */
   static async makeComposedTx (optx) {
     let targetsByColor = ColorTarget.groupByColorId(optx.getTargets(),
@@ -489,7 +490,7 @@ class EPOBCColorDefinition extends IColorDefinition {
   /**
    * @static
    * @param {OperationalTx} optx
-   * @return {Promise.<ComposedTx>}
+   * @return {Promise<ComposedTx>}
    */
   static async composeGenesisTx (optx) {
     if (optx.getTargets().length !== 1) {

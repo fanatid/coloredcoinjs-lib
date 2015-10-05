@@ -67,7 +67,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    * @param {number} [data.outIndex]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<Map<number, Map<number, *>>>}
+   * @return {Promise<Map<number, Map<number, *>>>}
    */
   async get (data) {
     await this.ready

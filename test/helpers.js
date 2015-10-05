@@ -71,11 +71,24 @@ function addOutput (tx, value, address) {
  * @return {getTxFn}
  */
 function getTxFnStub (transactions) {
-  return cclib.util.tx.extendGetTxFn((txId, cb) => {
-    setImmediate(() => {
-      cb(new Error(txId + ' not found'))
-    })
-  }, transactions)
+  if (_.isArray(transactions)) {
+    transactions = _.zipObject(transactions.map((tx) => {
+      if (!(tx instanceof bitcore.Transaction)) {
+        tx = bitcore.Transaction(tx)
+      }
+
+      return [tx.id, tx]
+    }))
+  }
+
+  return (txId) => {
+    let tx = transactions[txId]
+    if (tx !== undefined) {
+      return Promise.resolve(tx)
+    }
+
+    return Promise.reject(new Error(`${txId} not found`))
+  }
 }
 
 /**

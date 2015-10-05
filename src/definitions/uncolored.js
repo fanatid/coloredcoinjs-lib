@@ -41,7 +41,7 @@ export default class UncoloredColorDefinition extends IColorDefinition {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<UncoloredColorDefinition>}
+   * @return {Promise<UncoloredColorDefinition>}
    */
   static async fromDesc (desc, resolver) {
     if (desc !== '') {
@@ -58,7 +58,7 @@ export default class UncoloredColorDefinition extends IColorDefinition {
   /**
    * @static
    * @param {OperationalTx} optx
-   * @return {Promise.<ComposedTx>}
+   * @return {Promise<ComposedTx>}
    */
   static async makeComposedTx (optx) {
     let targets = optx.getTargets()

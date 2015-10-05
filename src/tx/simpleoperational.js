@@ -30,7 +30,7 @@ export default class SimpleOperationalTx extends OperationalTx {
   /**
    * @param {ColorValue} cvalue
    * @param {FeeEstimator} [feeEstimator]
-   * @return {Promise.<OperationalTx~selectCoinsResult>}
+   * @return {Promise<OperationalTx~selectCoinsResult>}
    */
   async selectCoins (colorValue, feeEstimator = null) {
     if (feeEstimator !== null && !colorValue.isUncolored()) {
@@ -64,7 +64,7 @@ export default class SimpleOperationalTx extends OperationalTx {
 
   /**
    * @param {IColorDefinition} cdef
-   * @return {Promise.<string>}
+   * @return {Promise<string>}
    */
   getChangeAddress (cdef) {
     return Promise.resolve(this._data.changeAddresses[cdef.getColorId()])

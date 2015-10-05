@@ -1,20 +1,14 @@
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
 import { Transaction } from 'bitcore'
-import { promisify } from 'promise-useful-utils'
+import PUtils from 'promise-useful-utils'
 
 import { ZERO_HASH } from '../util/const'
 
 /**
- * @callback getTxFn~callback
- * @param {Error} err
- * @param {string} rawTx
- */
-
-/**
  * @callback getTxFn
  * @param {string} txId
- * @param {getTxFn~callback} callback
+ * @return {Promise<bitcore.Transaction>}
  */
 
 /**
@@ -25,55 +19,53 @@ import { ZERO_HASH } from '../util/const'
 export default class FilledInputsTx {
   /**
    * @constructor
-   * @param {string} rawtx
+   * @param {string} rawTx
    * @param {getTxFn} getTxFn
    */
-  constructor (rawtx, getTxFn) {
-    Promise.resolve()
-      .then(async () => {
-        this._tx = new Transaction(rawtx)
-        this._prevTxs = []
-        this._prevValues = []
+  constructor (rawTx, getTxFn) {
+    PUtils.try(async () => {
+      this._tx = new Transaction(rawTx)
+      this._prevTxs = []
+      this._prevValues = []
 
-        let getTx = promisify(getTxFn)
-        await* this._tx.inputs.map(async (input, index) => {
-          let inputTxId = input.prevTxId.toString('hex')
+      await* this._tx.inputs.map(async (input, index) => {
+        let inputTxId = input.prevTxId.toString('hex')
 
-          let isCoinbase = index === 0 &&
-                           input.outputIndex === 4294967295 &&
-                           inputTxId === ZERO_HASH
-          if (isCoinbase) {
-            this._prevTxs[index] = null
-            this._prevValues[index] = 0
-            return
-          }
+        let isCoinbase = index === 0 &&
+                         input.outputIndex === 4294967295 &&
+                         inputTxId === ZERO_HASH
+        if (isCoinbase) {
+          this._prevTxs[index] = null
+          this._prevValues[index] = 0
+          return
+        }
 
-          let rawtx = await getTx(inputTxId)
-          let tx = new Transaction(rawtx)
-          this._prevTxs[index] = tx
-          this._prevValues[index] = tx.outputs[input.outputIndex].satoshis
-        })
+        let rawTx = await getTxFn(inputTxId)
+        let tx = new Transaction(rawTx)
+        this._prevTxs[index] = tx
+        this._prevValues[index] = tx.outputs[input.outputIndex].satoshis
       })
-      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
+    })
+    .then(() => { this._ready(null) }, (err) => { this._ready(err) })
   }
 
   /**
    * @return {bitcore.Transaction}
    */
   getTx () {
-    return Transaction.shallowCopy(this._tx)
+    return Transaction(this._tx.toObject())
   }
 
   /**
    * @param {number} index
-   * @return {Promise.<?bitcore.Transaction>}
+   * @return {Promise<?bitcore.Transaction>}
    */
   async getInputTx (index) {
     await this.ready
 
-    let tx = this._prevTxs[index]
+    let tx = this._prevTxs[index] || null
     if (tx !== null) {
-      tx = Transaction.shallowCopy(tx)
+      tx = Transaction(tx.toObject())
     }
 
     return tx
@@ -81,10 +73,16 @@ export default class FilledInputsTx {
 
   /**
    * @param {number} index
-   * @return {Promise.<number>}
+   * @return {Promise<?number>}
    */
   async getInputValue (index) {
     await this.ready
-    return this._prevValues[index]
+
+    let value = this._prevValues[index]
+    if (value === undefined) {
+      value = null
+    }
+
+    return value
   }
 }

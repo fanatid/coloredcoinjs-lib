@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import bitcore from 'bitcore'
-import { promisify } from 'promise-useful-utils'
 
 import ColorValue from './colorvalue'
 import { getArrayOfNull } from './util/js'
@@ -54,7 +53,7 @@ export default class ColorData {
    * @param {getTxFn} getTxFn
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>>}
+   * @return {Promise<Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>>}
    */
   async _getAffectingInputs (tx, outIndices, cdefCls, getTxFn, opts) {
     let ainputs = await cdefCls.getAffectingInputs(tx, outIndices, getTxFn)
@@ -86,11 +85,10 @@ export default class ColorData {
       .value()
 
     // scan all affecting input transactions
-    let getTx = promisify(getTxFn)
     let rows = {}
     await* inputss.map(async (inputs) => {
-      let rawtx = await getTx(inputs[0].txId)
-      let inputTx = new bitcore.Transaction(rawtx)
+      let rawTx = await getTxFn(inputs[0].txId)
+      let inputTx = bitcore.Transaction(rawTx)
       let inputOutIndices = _.pluck(inputs, 'outIndex')
       let items = await this._getColorOutputsOrScan(
         inputTx, inputOutIndices, cdefCls, getTxFn, opts)
@@ -129,7 +127,7 @@ export default class ColorData {
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>>}
+   * @return {Promise<Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>>}
    */
   _getColorOutputsOrScan (tx, outIndices, cdefCls, getTxFn, opts) {
     let txId = tx.id
@@ -259,7 +257,7 @@ export default class ColorData {
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<{
+   * @return {Promise<{
    *   inputs: Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>,
    *   outputs: Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>
    *  }>}
@@ -331,7 +329,7 @@ export default class ColorData {
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<ColorValue[]>}
+   * @return {Promise<ColorValue[]>}
    */
   async getOutputColorValue (tx, outIndex, cdefCls, getTxFn, opts) {
     let rows = await this._getColorOutputsOrScan(

@@ -42,7 +42,17 @@ export default class ComposedTx {
    * @param {ComposedTx~Input} input
    */
   addInput (input) {
-    this.addInputs([input])
+    let obj = {txId: input.txId, outIndex: input.outIndex}
+
+    if (input.script !== undefined) {
+      obj.script = input.script
+    }
+
+    if (input.sequence !== undefined) {
+      obj.sequence = input.sequence
+    }
+
+    this._inputs.push(obj)
   }
 
   /**
@@ -50,18 +60,7 @@ export default class ComposedTx {
    */
   addInputs (inputs) {
     for (let input of inputs) {
-      this._inputs.push({
-        txId: input.txId,
-        outIndex: input.outIndex
-      })
-
-      if (input.script !== undefined) {
-        _.last(this._inputs).script = input.script
-      }
-
-      if (input.sequence !== undefined) {
-        _.last(this._inputs).sequence = input.sequence
-      }
+      this.addInput(input)
     }
   }
 
@@ -89,7 +88,16 @@ export default class ComposedTx {
    * @param {(ComposedTx~OutputTarget|ComposedTx~OutputScriptValue)} output
    */
   addOutput (output) {
-    this.addOutputs([output])
+    let target = output.target
+    if (target !== undefined) {
+      if (target.isUncolored() !== true) {
+        throw new errors.Tx.Composed.UncoloredOutput()
+      }
+
+      output = {script: target.getScript(), value: target.getValue()}
+    }
+
+    this._outputs.push({script: output.script, value: output.value})
   }
 
   /**
@@ -97,17 +105,7 @@ export default class ComposedTx {
    */
   addOutputs (outputs) {
     for (let output of outputs) {
-      let target = output.target
-      if (target !== undefined) {
-        if (target.isUncolored() !== true) {
-          throw new errors.Tx.Composed.UncoloredOutput()
-        }
-
-        output = {script: target.getScript(), value: target.getValue()}
-      }
-
-      let data = {script: output.script, value: output.value}
-      return this._outputs.push(data)
+      this.addOutput(output)
     }
   }
 

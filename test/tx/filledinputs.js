@@ -11,10 +11,10 @@ describe('tx.FilledInputs', () => {
 
   describe('isCoinbase', () => {
     let txId = '548be1cc68780cbe0ce7e4b46c06dbe38ecd509a3f448e5ca68cc294679c27b1'
-    let rawtx = transactions[txId]
+    let rawTx = transactions[txId]
 
     beforeEach(() => {
-      fitx = new cclib.tx.FilledInputs(rawtx, getTxFn)
+      fitx = new cclib.tx.FilledInputs(rawTx, getTxFn)
       return fitx.ready
     })
 

@@ -33,7 +33,7 @@ describe('ColorData', () => {
   })
 
   describe('getTxColorValues', () => {
-    it('not a color tx', async () => {
+    it.only('not a color tx', async () => {
       helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
       helpers.tx.addOutput(tx1, _.random(1, 1000))
 

@@ -41,7 +41,7 @@ export default class IDataStorage {
    * @param {number} [data.outIndex]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<Map<number, Map<number, *>>>}
+   * @return {Promise<Map<number, Map<number, *>>>}
    */
   async get () {
     throw new errors.NotImplemented(this.constructor.name + '.get')

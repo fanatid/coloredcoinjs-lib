@@ -36,6 +36,5 @@ cclib.tx.SimpleOperational = require('./tx/simpleoperational')
 cclib.util = {}
 cclib.util.bitcoin = require('./util/bitcoin')
 cclib.util.const = require('./util/const')
-cclib.util.tx = require('./util/tx')
 
 export default cclib

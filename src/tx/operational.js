@@ -19,7 +19,7 @@ export default class OperationalTx {
    * @param {ColorTarget} ctarget
    */
   addTarget (target) {
-    this.addTargets([target])
+    this._targets.push(target)
   }
 
   /**
@@ -27,7 +27,7 @@ export default class OperationalTx {
    */
   addTargets (targets) {
     for (let target of targets) {
-      this._targets.push(target)
+      this.addTarget(target)
     }
   }
 
@@ -35,7 +35,7 @@ export default class OperationalTx {
    * @return {ColorTarget[]}
    */
   getTargets () {
-    return this._targets.slice()
+    return this._targets
   }
 
   /**
@@ -94,7 +94,7 @@ export default class OperationalTx {
    * @abstract
    * @param {ColorValue} cvalue
    * @param {OperationalTx~FeeEstimator} [feeEstimator]
-   * @return {Promise.<OperationalTx~selectCoinsResult>}
+   * @return {Promise<OperationalTx~selectCoinsResult>}
    */
   async selectCoins () {
     throw new NotImplemented(this.constructor.name + '.selectCoins')
@@ -105,7 +105,7 @@ export default class OperationalTx {
    *
    * @abstract
    * @param {IColorDefinition} cdef
-   * @return {Promise.<string>}
+   * @return {Promise<string>}
    */
   async getChangeAddress () {
     throw new NotImplemented(this.constructor.name + '.getChangeAddress')

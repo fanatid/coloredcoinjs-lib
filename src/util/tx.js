@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { Transaction } from 'bitcore'
 import { setImmediate } from 'timers'
 
 /**
@@ -9,18 +10,18 @@ import { setImmediate } from 'timers'
 export function extendGetTxFn (getTxFn, transactions) {
   if (_.isArray(transactions)) {
     transactions = _.zipObject(transactions.map((tx) => {
-      return [tx.id, tx.toString()]
+      return [tx.id, Transaction(tx.toObject())]
     }))
   }
 
-  return (txId, cb) => {
-    let rawtx = transactions[txId]
-    if (rawtx !== undefined) {
-      setImmediate(() => { cb(null, rawtx) })
-      return
+  return (txId) => {
+    let tx = transactions[txId]
+    if (tx !== undefined) {
+      tx = Transaction(tx.toObject())
+      return Promise.resolve(tx)
     }
 
-    getTxFn(txId, cb)
+    return getTxFn(txId)
   }
 }
 

@@ -54,7 +54,7 @@ export default class IColorDefinition {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<IColorDefinition>}
+   * @return {Promise<IColorDefinition>}
    */
   static async fromDesc () {
     throw new errors.NotImplemented('IColorDefinition.fromDesc')
@@ -68,7 +68,7 @@ export default class IColorDefinition {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<?IColorDefinition>}
+   * @return {Promise<?IColorDefinition>}
    */
   static async fromTx () {
     throw new errors.NotImplemented('IColorDefinition.fromTx')
@@ -100,7 +100,7 @@ export default class IColorDefinition {
    * @param {bitcore.Transaction} tx
    * @param {number[]} outIndices
    * @param {getTxFn} getTxFn
-   * @return {Promise.<number[]>}
+   * @return {Promise<number[]>}
    */
   static async getAffectingInputs () {
     throw new errors.NotImplemented('IColorDefinition.getAffectingInputs')
@@ -110,7 +110,7 @@ export default class IColorDefinition {
    * @abstract
    * @static
    * @param {OperationalTx} operationalTx
-   * @return {Promise.<ComposedTx>}
+   * @return {Promise<ComposedTx>}
    */
   static async makeComposedTx () {
     throw new errors.NotImplemented('IColorDefinition.makeComposedTx')
@@ -120,7 +120,7 @@ export default class IColorDefinition {
    * @abstract
    * @static
    * @param {OperationalTx} operationalTx
-   * @return {Promise.<ComposedTx>}
+   * @return {Promise<ComposedTx>}
    */
   static async composeGenesisTx () {
     throw new errors.NotImplemented('IColorDefinition.composeGenesisTx')

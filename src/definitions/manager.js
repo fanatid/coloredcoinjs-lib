@@ -80,7 +80,7 @@ export default class ColorDefinitionManager extends EventEmitter {
   /**
    * @private
    * @param {IColorDefinitionStorage~Record} record
-   * @return {Promise.<?ColorDefinition>}
+   * @return {Promise<?ColorDefinition>}
    */
   async _record2ColorDefinition (record) {
     let code = record.desc.split(':')[0]
@@ -101,7 +101,7 @@ export default class ColorDefinitionManager extends EventEmitter {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<?ColorDefinition>}
+   * @return {Promise<?ColorDefinition>}
    */
   async resolve (desc, opts) {
     if (desc === this._uncolored.getDesc()) {
@@ -130,7 +130,7 @@ export default class ColorDefinitionManager extends EventEmitter {
    * @param {Object} [opts]
    * @param {number} [opts.id]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<(?ColorDefinition|ColorDefinition[])>}
+   * @return {Promise<(?ColorDefinition|ColorDefinition[])>}
    */
   async get (opts) {
     if (_.has(opts, 'id')) {

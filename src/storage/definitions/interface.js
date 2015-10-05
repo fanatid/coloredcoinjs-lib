@@ -26,7 +26,7 @@ export default class IColorDefinitionStorage {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
+   * @return {Promise<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
    */
   async resolve () {
     throw new errors.NotImplemented(this.constructor.name + '.resolve')
@@ -37,7 +37,7 @@ export default class IColorDefinitionStorage {
    * @param {number} [data.id]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<(
+   * @return {Promise<(
    *   ?IColorDefinitionStorage~Record|
    *   IColorDefinitionStorage~Record[]
    * )>}

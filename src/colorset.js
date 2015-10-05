@@ -47,7 +47,7 @@ export default class ColorSet {
   }
 
   /**
-   * @return {Promise.<ColorDefinition[]>}
+   * @return {Promise<ColorDefinition[]>}
    */
   async getColorDefinitions () {
     await this.ready
@@ -55,7 +55,7 @@ export default class ColorSet {
   }
 
   /**
-   * @return {Promise.<number[]>}
+   * @return {Promise<number[]>}
    */
   async getColorIds () {
     await this.ready

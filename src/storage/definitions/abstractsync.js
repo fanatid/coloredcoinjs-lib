@@ -29,7 +29,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
+   * @return {Promise<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
    */
   async resolve (desc, opts) {
     await this.ready
@@ -75,7 +75,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
    * @param {number} [data.id]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise.<(
+   * @return {Promise<(
    *   ?IColorDefinitionStorage~Record|
    *   IColorDefinitionStorage~Record[]
    * )>}
