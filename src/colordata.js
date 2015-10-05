@@ -53,22 +53,20 @@ export default class ColorData {
    * @param {getTxFn} getTxFn
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise<Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>>}
+   * @return {Promise<Map<IColorDefinition, ColorValue[]>>}
    */
   async _getAffectingInputs (tx, outIndices, cdefCls, getTxFn, opts) {
+    let inputValues = new Map()
     let ainputs = await cdefCls.getAffectingInputs(tx, outIndices, getTxFn)
 
     // haven't affecting inputs in tx, may be it's genesis?
     if (ainputs.length === 0) {
       let cdef = await cdefCls.fromTx(tx, this._cdmanager, opts)
-      if (cdef === null) {
-        return []
+      if (cdef !== null) {
+        inputValues.set(cdef, getArrayOfNull(tx.inputs.length))
       }
 
-      return [{
-        cdef: cdef,
-        inputs: getArrayOfNull(tx.inputs.length)
-      }]
+      return inputValues
     }
 
     // group all affecting inputs by previous txId
@@ -85,37 +83,30 @@ export default class ColorData {
       .value()
 
     // scan all affecting input transactions
-    let rows = {}
     await* inputss.map(async (inputs) => {
       let rawTx = await getTxFn(inputs[0].txId)
       let inputTx = bitcore.Transaction(rawTx)
       let inputOutIndices = _.pluck(inputs, 'outIndex')
-      let items = await this._getColorOutputsOrScan(
+      let outputValues = await this._getColorOutputsOrScan(
         inputTx, inputOutIndices, cdefCls, getTxFn, opts)
 
-      // save color values of affecting input transactions to rows
-      if (items.length === 0) {
+      if (outputValues.size === 0) {
         return
       }
 
-      for (let item of items) {
-        let row = rows[item.cdef.getColorId()]
-        if (row === undefined) {
-          row = {
-            cdef: item.cdef,
-            inputs: getArrayOfNull(tx.inputs.length)
-          }
+      for (let [cdef, outputs] of outputValues.entries()) {
+        if (!inputValues.has(cdef)) {
+          inputValues.set(cdef, getArrayOfNull(tx.inputs.length))
         }
 
+        let inputColorValues = inputValues.get(cdef)
         for (let input of inputs) {
-          row.inputs[input.ainput] = item.outputs[input.outIndex]
+          inputColorValues[input.ainput] = outputs[input.outIndex]
         }
-
-        rows[item.cdef.getColorId()] = row
       }
     })
 
-    return _.values(rows)
+    return inputValues
   }
 
   /**
@@ -127,7 +118,7 @@ export default class ColorData {
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise<Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>>}
+   * @return {Promise<Map<IColorDefinition, ColorValue[]>>}
    */
   _getColorOutputsOrScan (tx, outIndices, cdefCls, getTxFn, opts) {
     let txId = tx.id
@@ -145,7 +136,7 @@ export default class ColorData {
 
       let colorData = await this._storage.get(opts, {executeOpts: executeOpts})
 
-      let colorOutputs = {}
+      let colorOutputs = new Map()
       // check data for every outIndex
       for (let outIndex of outIndices) {
         // have we value for this outIndex?
@@ -155,21 +146,22 @@ export default class ColorData {
         }
 
         // collect all color values for this outIndex
+        let cdefsMap = {}
         for (let [colorId, value] of ovalues.entries()) {
-          let row = colorOutputs[colorId]
-          if (row === undefined) {
-            // cdef undefined yet, resolve
-            let cdef = await this._cdmanager.get({id: colorId}, {executeOpts: executeOpts})
-            // and define row
-            row = {
-              cdef: cdef,
-              outputs: getArrayOfNull(tx.outputs.length)
-            }
+          // resolve color definition
+          let cdef = cdefsMap[colorId]
+          if (cdef === undefined) {
+            cdef = await this._cdmanager.get({id: colorId}, {executeOpts: executeOpts})
+            cdefsMap[colorId] = cdef
           }
 
-          // create color values and remember
-          row.outputs[outIndex] = new ColorValue(row.cdef, value)
-          colorOutputs[colorId] = row
+          // create values if not exists
+          if (!colorOutputs.has(cdef)) {
+            colorOutputs.set(cdef, getArrayOfNull(tx.outputs.length))
+          }
+
+          // set color value
+          colorOutputs.get(cdef)[outIndex] = new ColorValue(cdef, value)
         }
       }
 
@@ -178,7 +170,7 @@ export default class ColorData {
 
       // return if have values for each input outIndex
       if (outIndices.length === 0) {
-        return _.values(colorOutputs)
+        return colorOutputs
       }
 
       // extract affecting inputs for each output index
@@ -186,13 +178,13 @@ export default class ColorData {
         tx, outIndices, cdefCls, getTxFn, {executeOpts: executeOpts})
 
       // run runKernel for each color definition
-      let newColorValues = await* colorInputs.map(async (item) => {
-        let colorId = item.cdef.getColorId()
-        let outColorValues = await item.cdef.runKernel(tx, item.inputs, getTxFn)
+      await* Array.from(colorInputs.entries()).map(async ([cdef, inputs]) => {
+        let outputs = await cdef.runKernel(tx, inputs, getTxFn)
+
         // saving data if need this
         if (save) {
           // save each color value
-          await* outColorValues.map(async (cvalue, outIndex) => {
+          await* outputs.map(async (cvalue, outIndex) => {
             if (cvalue === null) {
               return
             }
@@ -201,38 +193,28 @@ export default class ColorData {
               colorCode: colorCode,
               txId: txId,
               outIndex: outIndex,
-              colorId: colorId,
+              colorId: cdef.getColorId(),
               value: cvalue.getValue()
             }, {executeOpts: executeOpts})
           })
         }
 
-        // output format
-        return {cdef: item.cdef, outputs: outColorValues}
+        // add found color values to colorOutputs
+        if (!colorOutputs.has(cdef)) {
+          if (_.any(outputs)) {
+            colorOutputs.set(cdef, outputs)
+          }
+        } else {
+          let cdefColorOutputs = colorOutputs.get(cdef)
+          for (let index = 0; index < outputs.length; ++index) {
+            if (outputs[index] !== null) {
+              cdefColorOutputs[index] = outputs[index]
+            }
+          }
+        }
       })
 
-      // add found color values to colorOutputs
-      for (let item of newColorValues) {
-        let colorId = item.cdef.getColorId()
-
-        let colorOutput = colorOutputs[colorId]
-        if (colorOutput === undefined) {
-          if (_.any(item.outputs)) {
-            colorOutputs[colorId] = item
-          }
-          continue
-        }
-
-        for (let index = 0; index < item.outputs.length; ++index) {
-          if (item.outputs[index] !== null) {
-            colorOutput[index] = item.outputs[index]
-          }
-        }
-
-        colorOutputs[colorId] = colorOutput
-      }
-
-      return _.values(colorOutputs)
+      return colorOutputs
     })
   }
 
@@ -288,11 +270,11 @@ export default class ColorData {
       return value
     })
 
-    let cdefs = _.zipObject(cOutputValues.map((item) => {
-      return [item.cdef.getColorId(), item.cdef]
+    let cdefs = _.zipObject(Array.from(cOutputValues.keys()).map((cdef) => {
+      return [cdef.getColorId(), cdef]
     }))
 
-    let rows = {}
+    let cInputValues = new Map()
     for (let index = 0; index < rawInputValues.length; ++index) {
       let values = rawInputValues[index]
       if (values === null) {
@@ -300,25 +282,23 @@ export default class ColorData {
       }
 
       for (let [colorId, value] of values.entries()) {
-        if (rows[colorId] === undefined) {
-          let cdef = cdefs[colorId]
-          if (cdef === undefined) {
-            cdef = await this._cdmanager.get(
-              {id: colorId}, {executeOpts: executeOpts})
-          }
-
-          rows[colorId] = {
-            cdef: cdef,
-            inputs: getArrayOfNull(tx.inputs.length)
-          }
+        // resolve color definition
+        let cdef = cdefs[colorId]
+        if (cdef === undefined) {
+          cdef = await this._cdmanager.get({id: colorId}, {executeOpts: executeOpts})
+          cdefs[colorId] = cdef
         }
 
-        let row = rows[colorId]
-        row.inputs[index] = new ColorValue(row.cdef, value)
+        // set color definition value
+        if (!cInputValues.has(cdef)) {
+          cInputValues.set(cdef, getArrayOfNull(tx.inputs.length))
+        }
+
+        cInputValues.get(cdef)[index] = new ColorValue(cdef, value)
       }
     }
 
-    return {inputs: _.values(rows), outputs: cOutputValues}
+    return {inputs: cInputValues, outputs: cOutputValues}
   }
 
   /**
@@ -335,13 +315,14 @@ export default class ColorData {
     let rows = await this._getColorOutputsOrScan(
       tx, [outIndex], cdefCls, getTxFn, opts)
 
-    return rows.reduce((result, row) => {
-      if (row.outputs[outIndex] !== null) {
-        result.push(row.outputs[outIndex])
+    let outputColorValues = []
+    for (let outputValues of rows.values()) {
+      if (outputValues[outIndex] !== null) {
+        outputColorValues.push(outputValues[outIndex])
       }
+    }
 
-      return result
-    }, [])
+    return outputColorValues
   }
 
   /**

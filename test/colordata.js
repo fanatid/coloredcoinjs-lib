@@ -33,15 +33,15 @@ describe('ColorData', () => {
   })
 
   describe('getTxColorValues', () => {
-    it.only('not a color tx', async () => {
+    it('not a color tx', async () => {
       helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
       helpers.tx.addOutput(tx1, _.random(1, 1000))
 
       let getTxFn = helpers.getTxFnStub([])
       let result = await cdata.getTxColorValues(tx1, null, EPOBC, getTxFn)
       expect(result).to.be.an('object')
-      expect(result.inputs).to.be.an('array').and.to.have.length(0)
-      expect(result.outputs).to.be.an('array').and.to.have.length(0)
+      expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 0)
+      expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 0)
     })
 
     it('genesis tx', async () => {
@@ -51,19 +51,18 @@ describe('ColorData', () => {
       let getTxFn = helpers.getTxFnStub([])
       let result = await cdata.getTxColorValues(tx1, null, EPOBC, getTxFn)
       expect(result).to.be.an('object')
-      expect(result.inputs).to.be.an('array').and.to.have.length(0)
-      expect(result.outputs).to.be.an('array').and.to.have.length(1)
 
-      let output = result.outputs[0]
-      expect(output).to.be.an('object')
-      expect(output.cdef).to.be.instanceof(EPOBC)
-      expect(output.cdef._genesis.txId).to.equal(tx1.id)
-      expect(output.outputs).to.be.an('array').and.to.have.length(1)
+      expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 0)
 
-      let ocvalue = output.outputs[0]
-      expect(ocvalue).to.be.instanceof(cclib.ColorValue)
-      expect(ocvalue.getColorDefinition()).to.deep.equal(output.cdef)
-      expect(ocvalue.getValue()).to.equal(7)
+      expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 1)
+      let [cdef, outputs] = Array.from(result.outputs.entries())[0]
+      expect(cdef).to.be.instanceof(EPOBC)
+      expect(cdef._genesis.txId).to.equal(tx1.id)
+      expect(outputs).to.be.an('array').and.to.have.length(1)
+      let output = outputs[0]
+      expect(output).to.be.instanceof(cclib.ColorValue)
+      expect(output.getColorDefinition()).to.deep.equal(cdef)
+      expect(output.getValue()).to.equal(7)
     })
 
     it('transfer tx', async () => {
@@ -77,25 +76,25 @@ describe('ColorData', () => {
       let result = await cdata.getTxColorValues(tx2, [0], EPOBC, getTxFn)
       expect(result).to.be.an('object')
 
-      expect(result.inputs).to.be.an('array').and.to.have.length(1)
-      let input = result.inputs[0]
-      expect(input.cdef).to.be.instanceof(EPOBC)
-      expect(input.cdef._genesis.txId).to.equal(tx1.id)
-      expect(input.inputs).to.be.an('array').and.to.have.length(1)
-      let icvalue = input.inputs[0]
-      expect(icvalue).to.be.instanceof(cclib.ColorValue)
-      expect(icvalue.getColorDefinition()).to.deep.equal(input.cdef)
-      expect(icvalue.getValue()).to.equal(7)
+      expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 1)
+      let [cdef1, inputs] = Array.from(result.inputs.entries())[0]
+      expect(cdef1).to.be.instanceof(EPOBC)
+      expect(cdef1._genesis.txId).to.equal(tx1.id)
+      expect(inputs).to.be.an('array').and.to.have.length(1)
+      let input = inputs[0]
+      expect(input).to.be.instanceof(cclib.ColorValue)
+      expect(input.getColorDefinition()).to.deep.equal(cdef1)
+      expect(input.getValue()).to.equal(7)
 
-      expect(result.outputs).to.be.an('array').and.to.have.length(1)
-      let output = result.outputs[0]
-      expect(output.cdef).to.be.instanceof(EPOBC)
-      expect(output.cdef._genesis.txId).to.equal(tx1.id)
-      expect(output.outputs).to.be.an('array').and.to.have.length(1)
-      let ocvalue = output.outputs[0]
-      expect(ocvalue).to.be.instanceof(cclib.ColorValue)
-      expect(ocvalue.getColorDefinition()).to.deep.equal(output.cdef)
-      expect(ocvalue.getValue()).to.equal(6)
+      expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 1)
+      let [cdef2, outputs] = Array.from(result.outputs.entries())[0]
+      expect(cdef2).to.be.instanceof(EPOBC)
+      expect(cdef2._genesis.txId).to.equal(tx1.id)
+      expect(outputs).to.be.an('array').and.to.have.length(1)
+      let output = outputs[0]
+      expect(output).to.be.instanceof(cclib.ColorValue)
+      expect(output.getColorDefinition()).to.deep.equal(cdef2)
+      expect(output.getValue()).to.equal(6)
     })
   })
 
@@ -145,6 +144,6 @@ describe('ColorData', () => {
     await cdstorage.add(data)
     await cdata.removeColorValues(data.txId, EPOBC)
     let result = await cdstorage.get(data)
-    expect(Array.from(result.keys())).to.have.length(0)
+    expect(result).to.be.instanceof(Map).and.to.have.property('size', 0)
   })
 })
