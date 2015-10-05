@@ -122,7 +122,10 @@ export default class ColorDefinitionManager extends EventEmitter {
 
     // create color definition from record
     cdef = await this._record2ColorDefinition(data.record)
-    setImmediate(() => { this.emit('new', cdef) })
+    if (data.new) {
+      setImmediate(() => { this.emit('new', cdef) })
+    }
+
     return cdef
   }
 

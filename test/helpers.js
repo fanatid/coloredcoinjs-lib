@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import { setImmediate } from 'timers'
 import crypto from 'crypto'
 import bitcore from 'bitcore'
 

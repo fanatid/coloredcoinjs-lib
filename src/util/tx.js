@@ -1,6 +1,5 @@
 import _ from 'lodash'
 import { Transaction } from 'bitcore'
-import { setImmediate } from 'timers'
 
 /**
  * @param {getTxFn} getTxFn
