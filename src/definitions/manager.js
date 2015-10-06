@@ -130,18 +130,19 @@ export default class ColorDefinitionManager extends EventEmitter {
   }
 
   /**
+   * @param {Object} data
+   * @param {number} [data.id]
    * @param {Object} [opts]
-   * @param {number} [opts.id]
    * @param {Object} [opts.executeOpts]
    * @return {Promise<(?ColorDefinition|ColorDefinition[])>}
    */
-  async get (opts) {
-    if (_.has(opts, 'id')) {
-      if (opts.id === this._uncolored.getColorId()) {
+  async get (data, opts) {
+    if (_.has(data, 'id')) {
+      if (data.id === this._uncolored.getColorId()) {
         return new UncoloredColorDefinition()
       }
 
-      let record = await this._storage.get(opts)
+      let record = await this._storage.get(data, opts)
       if (record !== null) {
         return this._record2ColorDefinition(record)
       }
@@ -149,7 +150,7 @@ export default class ColorDefinitionManager extends EventEmitter {
       return null
     }
 
-    let records = await this._storage.get(opts)
+    let records = await this._storage.get(data, opts)
     return await* records.map((record) => {
       return this._record2ColorDefinition(record)
     })
