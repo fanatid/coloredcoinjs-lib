@@ -43,6 +43,7 @@
     "prepublish": "npm run clean && npm run compile",
     "clean": "rm -rf lib/*",
     "compile": "babel -d lib src",
+    "compile:watch": "babel -d lib src -w",
     "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha -- --compilers js:babel/register",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
     "lint": "eslint src test",

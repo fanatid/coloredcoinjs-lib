@@ -26,6 +26,7 @@ describe('ColorData', () => {
     cdefstorage = new cclib.storage.definitions.Memory()
     cdmanager = new cclib.definitions.Manager(cdefstorage)
 
+    // cdstorage = new cclib.storage.data.PostgreSQL(require('./config/postgresql.json'))
     cdstorage = new cclib.storage.data.Memory()
     cdata = new cclib.ColorData(cdstorage, cdmanager)
 
@@ -34,7 +35,7 @@ describe('ColorData', () => {
 
   describe('getTxColorValues', () => {
     it('not a color tx', async () => {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 0xFFFFFFFF)
       helpers.tx.addOutput(tx1, _.random(1, 1000))
 
       let getTxFn = helpers.getTxFnStub([])
@@ -42,6 +43,18 @@ describe('ColorData', () => {
       expect(result).to.be.an('object')
       expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 0)
       expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 0)
+    })
+
+    it('coinbase tx', async () => {
+      helpers.tx.addInput(tx1, new Buffer(cclib.util.const.ZERO_HASH, 'hex'), 0xFFFFFFFF, 0xFFFFFFFF)
+      helpers.tx.addOutput(tx1, 50 * 1e8 + _.random(1e5, 1e6))
+
+      helpers.tx.addInput(tx2, tx1.id, 0, 37 | (2 << 6))
+      helpers.tx.addOutput(tx2, _.random(40 * 1e8, 50 * 1e8))
+
+      let getTxFn = helpers.getTxFnStub([])
+      let result = await cdata.getTxColorValues(tx1, null, EPOBC, getTxFn)
+      console.log(result)
     })
 
     it('genesis tx', async () => {

@@ -3,6 +3,7 @@ import bitcore from 'bitcore'
 
 import ColorValue from './colorvalue'
 import { getArrayOfNull } from './util/js'
+import { ZERO_HASH } from './util/const'
 
 /**
  * @class ColorData
@@ -256,9 +257,14 @@ export default class ColorData {
 
     let colorCode = cdefCls.getColorCode()
     let rawInputValues = await* tx.inputs.map(async (input) => {
+      let prevTxId = input.prevTxId.toString('hex')
+      if (input.outputIndex === 0xFFFFFFFF && prevTxId === ZERO_HASH) {
+        return null
+      }
+
       let data = await this._storage.get({
         colorCode: colorCode,
-        txId: input.prevTxId.toString('hex'),
+        txId: prevTxId,
         outIndex: input.outputIndex
       }, {executeOpts: executeOpts})
 

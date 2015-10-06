@@ -81,7 +81,7 @@ class Tag {
    * @return {?Tag}
    */
   static fromTx (tx) {
-    let isCoinbase = tx.inputs[0].outputIndex === 4294967295 &&
+    let isCoinbase = tx.inputs[0].outputIndex === 0xFFFFFFFF &&
                      tx.inputs[0].prevTxId.toString('hex') === ZERO_HASH
     if (isCoinbase) {
       return null
