@@ -46,7 +46,7 @@ export default class FilledInputsTx {
         this._prevValues[index] = tx.outputs[input.outputIndex].satoshis
       })
     })
-    .then(() => { this._ready(null) }, (err) => { this._ready(err) })
+    .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**

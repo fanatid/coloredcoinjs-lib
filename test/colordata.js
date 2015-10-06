@@ -49,12 +49,11 @@ describe('ColorData', () => {
       helpers.tx.addInput(tx1, new Buffer(cclib.util.const.ZERO_HASH, 'hex'), 0xFFFFFFFF, 0xFFFFFFFF)
       helpers.tx.addOutput(tx1, 50 * 1e8 + _.random(1e5, 1e6))
 
-      helpers.tx.addInput(tx2, tx1.id, 0, 37 | (2 << 6))
-      helpers.tx.addOutput(tx2, _.random(40 * 1e8, 50 * 1e8))
-
       let getTxFn = helpers.getTxFnStub([])
       let result = await cdata.getTxColorValues(tx1, null, EPOBC, getTxFn)
-      console.log(result)
+      expect(result).to.be.an('object')
+      expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 0)
+      expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 0)
     })
 
     it('genesis tx', async () => {

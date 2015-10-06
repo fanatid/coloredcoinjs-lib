@@ -21,7 +21,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
 
     this._storage = new StorageCls(storageOpts)
     this._storage.open()
-      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**

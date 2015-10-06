@@ -51,7 +51,7 @@ export default class AbstractSQLColorDefinitionStorage extends IColorDefinitionS
           return this._storage.executeSQL(this._SQL.create)
         })
       })
-      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**

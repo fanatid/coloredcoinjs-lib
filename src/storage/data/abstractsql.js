@@ -141,7 +141,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
           await this._storage.executeSQL(this._SQL.create.indices.tx)
         })
       })
-      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**
@@ -184,7 +184,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
       }
 
       params = [data.outIndex, data.colorId, data.value, pk]
-      return await this._storage.executeSQL(this._SQL.insert.value, params, executeOpts)
+      await this._storage.executeSQL(this._SQL.insert.value, params, executeOpts)
     })
   }
 
@@ -254,14 +254,10 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
   async clear (opts) {
     await this.ready
     await this._storage.withLock(async () => {
-      let queries = [
-        this._SQL.delete.all.values,
-        this._SQL.delete.all.tx
-      ]
+      let executeOpts = _.get(opts, 'executeOpts')
 
-      for (let query of queries) {
-        await this._storage.executeSQL(query, [], _.get(opts, 'executeOpts'))
-      }
+      await this._storage.executeSQL(this._SQL.delete.all.values, [], executeOpts)
+      await this._storage.executeSQL(this._SQL.delete.all.tx, [], executeOpts)
     })
   }
 }

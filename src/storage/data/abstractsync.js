@@ -20,7 +20,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
 
     this._storage = new StorageCls(storageOpts)
     this._storage.open()
-      .then(() => { this._ready(null) }, (err) => { this._ready(err) })
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**
@@ -71,32 +71,32 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    */
   async get (data) {
     await this.ready
-    return await this._storage.withLock(async () => {
+    let storedValue = await this._storage.withLock(() => {
       let key = `${data.txId}:${data.colorCode}`
-      let storedValue = await this._storage.get(key)
-
-      let values = storedValue === null ? {} : JSON.parse(storedValue)
-      if (data.outIndex !== undefined) {
-        let newValues = {}
-        if (values[data.outIndex] !== undefined) {
-          newValues[data.outIndex] = values[data.outIndex]
-        }
-
-        values = newValues
-      }
-
-      let result = new Map()
-      for (let outIndex of Object.keys(values)) {
-        let ovalues = values[outIndex]
-        let oresult = new Map()
-        for (let colorId of Object.keys(ovalues)) {
-          oresult.set(parseInt(colorId, 10), JSON.parse(ovalues[colorId]))
-        }
-        result.set(parseInt(outIndex, 10), oresult)
-      }
-
-      return result
+      return this._storage.get(key)
     })
+
+    let values = storedValue === null ? {} : JSON.parse(storedValue)
+    if (data.outIndex !== undefined) {
+      let newValues = {}
+      if (values[data.outIndex] !== undefined) {
+        newValues[data.outIndex] = values[data.outIndex]
+      }
+
+      values = newValues
+    }
+
+    let result = new Map()
+    for (let outIndex of Object.keys(values)) {
+      let ovalues = values[outIndex]
+      let oresult = new Map()
+      for (let colorId of Object.keys(ovalues)) {
+        oresult.set(parseInt(colorId, 10), JSON.parse(ovalues[colorId]))
+      }
+      result.set(parseInt(outIndex, 10), oresult)
+    }
+
+    return result
   }
 
   /**
