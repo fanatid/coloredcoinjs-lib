@@ -101,11 +101,11 @@ export default class ColorDefinitionManager extends EventEmitter {
    * @param {Object} [opts]
    * @param {boolean} [opts.autoAdd=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise<?ColorDefinition>}
+   * @return {Promise<?([ColorDefinition, boolean])>}
    */
   async resolve (desc, opts) {
     if (desc === this._uncolored.getDesc()) {
-      return new UncoloredColorDefinition()
+      return [new UncoloredColorDefinition(), false]
     }
 
     // check desc
@@ -126,7 +126,7 @@ export default class ColorDefinitionManager extends EventEmitter {
       setImmediate(() => { this.emit('new', cdef) })
     }
 
-    return cdef
+    return [cdef, data.new]
   }
 
   /**

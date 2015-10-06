@@ -206,7 +206,7 @@ class EPOBCColorDefinition extends IColorDefinition {
       })
     }
 
-    return await resolver.resolve(desc, opts)
+    return (await resolver.resolve(desc, opts))[0]
   }
 
   /**
@@ -236,7 +236,7 @@ class EPOBCColorDefinition extends IColorDefinition {
     }
 
     let desc = ['epobc', tx.id, 0, 0].join(':')
-    return await resolver.resolve(desc, opts)
+    return (await resolver.resolve(desc, opts))[0]
   }
 
   /**

@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
+import PUtils from 'promise-useful-utils'
 
 import cclib from '../../src'
 
@@ -60,8 +61,9 @@ describe('ColorDefinitionManager', () => {
 
   describe('resolve', () => {
     it('add new record', async () => {
-      let cdef = await cdmanager.resolve(epobcDesc1)
+      let [cdef, isNew] = await cdmanager.resolve(epobcDesc1)
       expect(cdef.getDesc()).to.equal(epobcDesc1)
+      expect(isNew).to.be.true
     })
 
     it('generate event on adding new defintion', async () => {
@@ -72,16 +74,17 @@ describe('ColorDefinitionManager', () => {
         })
 
         cdmanager.on('new', (cdef) => {
-          Promise.resolve()
-            .then(() => {
-              expect(cdef).to.be.instanceof(cclib.definitions.Interface)
-              expect(cdef.getDesc()).to.equal(epobcDesc1)
-            })
-            .then(deferred.resolve, deferred.reject)
+          PUtils.try(() => {
+            expect(cdef).to.be.instanceof(cclib.definitions.Interface)
+            expect(cdef.getDesc()).to.equal(epobcDesc1)
+          })
+          .then(deferred.resolve, deferred.reject)
         })
 
-        let cdef = await cdmanager.resolve(epobcDesc1)
+        let [cdef, isNew] = await cdmanager.resolve(epobcDesc1)
         expect(cdef.getDesc()).to.equal(epobcDesc1)
+        expect(isNew).to.be.true
+
         await promise
       } finally {
         cdmanager.removeAllListeners()
@@ -90,9 +93,10 @@ describe('ColorDefinitionManager', () => {
 
     it('record is not null', async () => {
       let data = await cdstorage.resolve(epobcDesc1)
-      let cdef = await cdmanager.resolve(data.record.desc)
+      let [cdef, isNew] = await cdmanager.resolve(data.record.desc)
       expect(cdef.getColorId()).to.equal(data.record.id)
       expect(cdef.getDesc()).to.equal(data.record.desc)
+      expect(isNew).to.be.false
     })
 
     it('record is null, autoAdd is false', async () => {
@@ -101,8 +105,9 @@ describe('ColorDefinitionManager', () => {
     })
 
     it('return uncolored', async () => {
-      let cdef = await cdmanager.resolve('')
+      let [cdef, isNew] = await cdmanager.resolve('')
       expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
+      expect(isNew).to.be.false
     })
   })
 

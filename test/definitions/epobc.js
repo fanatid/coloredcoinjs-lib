@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import _ from 'lodash'
 import bitcore from 'bitcore'
+import PUtils from 'promise-useful-utils'
 
 import cclib from '../../src'
 let EPOBC = cclib.definitions.EPOBC
@@ -166,12 +167,11 @@ describe('definitions.EPOBC', () => {
         })
 
         cdmanager.on('new', (cdef) => {
-          Promise.resolve()
-            .then(() => {
-              expect(cdef).to.be.instanceof(EPOBC)
-              expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
-            })
-            .then(deferred.resolve, deferred.reject)
+          PUtils.try(() => {
+            expect(cdef).to.be.instanceof(EPOBC)
+            expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
+          })
+          .then(deferred.resolve, deferred.reject)
         })
 
         await cdstorage.ready
