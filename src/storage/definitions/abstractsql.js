@@ -64,6 +64,7 @@ export default class AbstractSQLColorDefinitionStorage extends IColorDefinitionS
   async resolve (desc, opts) {
     await this.ready
     return await this._storage.withLock(async () => {
+      let executeOpts = _.get(opts, 'executeOpts')
       let rows = await this._storage.executeSQL(
         this._SQL.select.resolve, [desc], executeOpts)
       if (rows.length !== 0) {
@@ -75,7 +76,6 @@ export default class AbstractSQLColorDefinitionStorage extends IColorDefinitionS
         return {record: null, new: null}
       }
 
-      let executeOpts = _.get(opts, 'executeOpts')
       await this._storage.executeSQL(this._SQL.insert, [desc], executeOpts)
       rows = await this._storage.executeSQL(this._SQL.select.last, [], executeOpts)
       return {record: {id: rows[0].id, desc: desc}, new: true}
