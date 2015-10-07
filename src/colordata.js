@@ -1,5 +1,7 @@
 import _ from 'lodash'
 import bitcore from 'bitcore'
+import { mixin } from 'core-decorators'
+import ReadyMixin from 'ready-mixin'
 
 import ColorValue from './colorvalue'
 import { getArrayOfNull } from './util/js'
@@ -8,16 +10,20 @@ import { ZERO_HASH } from './util/const'
 /**
  * @class ColorData
  */
+@mixin(ReadyMixin)
 export default class ColorData {
   /**
    * @constructor
-   * @param {storage.ColorData.Interface} storage
+   * @param {storage.data.Interface} storage
    * @param {definitions.Manager} cdmanager
    */
   constructor (storage, cdmanager) {
     this._storage = storage
     this._cdmanager = cdmanager
     this._scanProcesses = {}
+
+    this._storage.ready
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**
@@ -228,6 +234,8 @@ export default class ColorData {
    * @return {Promise}
    */
   async fullScanTx (tx, cdefCls, getTxFn, opts) {
+    await this.ready
+
     let outIndices = _.range(tx.outputs.length)
     await this._getColorOutputsOrScan(tx, outIndices, cdefCls, getTxFn, opts)
   }
@@ -246,6 +254,8 @@ export default class ColorData {
    *  }>}
    */
   async getTxColorValues (tx, outIndices, cdefCls, getTxFn, opts) {
+    await this.ready
+
     if (outIndices === null) {
       outIndices = _.range(tx.outputs.length)
     }
@@ -318,6 +328,8 @@ export default class ColorData {
    * @return {Promise<ColorValue[]>}
    */
   async getOutputColorValue (tx, outIndex, cdefCls, getTxFn, opts) {
+    await this.ready
+
     let rows = await this._getColorOutputsOrScan(
       tx, [outIndex], cdefCls, getTxFn, opts)
 
@@ -339,6 +351,8 @@ export default class ColorData {
    * @return {Promise}
    */
   async removeColorValues (txId, cdefCls, opts) {
+    await this.ready
+
     await this._storage.remove(
       {colorCode: cdefCls.getColorCode(), txId: txId}, opts)
   }

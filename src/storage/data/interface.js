@@ -49,8 +49,9 @@ export default class IDataStorage {
 
   /**
    * @param {Object} data
-   * @param {string} data.colorCode
-   * @param {string} data.txId
+   * @param {string} [data.colorCode]
+   * @param {string} [data.txId]
+   * @param {number} [data.colorId]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
    * @return {Promise}

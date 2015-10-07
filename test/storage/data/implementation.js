@@ -18,7 +18,7 @@ export default function (opts) {
   ldescribe('storage.data.' + opts.clsName, () => {
     let storage
 
-    let records = _.times(3).map(() => {
+    let records = _.times(2).map(() => {
       return {
         colorCode: 'epobc',
         txId: getRandomBytes(32).toString('hex'),
@@ -94,7 +94,7 @@ export default function (opts) {
     })
 
     describe('#remove', () => {
-      it('add/get/delete/get', async () => {
+      it('add/get/delete/get (by color code and txid)', async () => {
         let record = records[0]
         await storage.add(record)
 
@@ -112,6 +112,27 @@ export default function (opts) {
         await storage.remove(opts)
 
         data = await storage.get(opts)
+        expect(Array.from(data.keys())).to.have.length(0)
+      })
+
+      it('add/get/delete/get (by color id)', async () => {
+        let record = records[0]
+        await storage.add(record)
+
+        let opts = {
+          colorCode: record.colorCode,
+          txId: record.txId,
+          outIndex: record.outIndex
+        }
+        let data = await storage.get(opts)
+        expect(Array.from(data.keys())).to.have.length(1)
+        expect(Array.from(data.get(record.outIndex).keys())).to.have.length(1)
+        expect(data.get(record.outIndex).get(record.colorId)).to.equal(record.value)
+
+        opts = {colorId: record.colorId}
+        await storage.remove(opts)
+
+        data = await storage.get({colorCode: record.colorCode, txId: record.txId})
         expect(Array.from(data.keys())).to.have.length(0)
       })
     })

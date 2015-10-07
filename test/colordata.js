@@ -13,9 +13,9 @@ describe('ColorData', () => {
   let tx2
   let tx3
 
-  let cdefstorage
-  let cdmanager
-  let cdstorage
+  let cdefStorage
+  let cdataStorage
+  let cdefManager
   let cdata
 
   beforeEach(() => {
@@ -23,14 +23,14 @@ describe('ColorData', () => {
     tx2 = new bitcore.Transaction()
     tx3 = new bitcore.Transaction()
 
-    cdefstorage = new cclib.storage.definitions.Memory()
-    cdmanager = new cclib.definitions.Manager(cdefstorage)
+    cdefStorage = new cclib.storage.definitions.Memory()
+    // cdataStorage = new cclib.storage.data.PostgreSQL(require('./config/postgresql.json'))
+    cdataStorage = new cclib.storage.data.Memory()
 
-    // cdstorage = new cclib.storage.data.PostgreSQL(require('./config/postgresql.json'))
-    cdstorage = new cclib.storage.data.Memory()
-    cdata = new cclib.ColorData(cdstorage, cdmanager)
+    cdefManager = new cclib.definitions.Manager(cdefStorage, cdataStorage)
+    cdata = new cclib.ColorData(cdataStorage, cdefManager)
 
-    return Promise.all([cdefstorage.ready, cdstorage.ready])
+    return Promise.all([cdefManager.ready, cdata.ready])
   })
 
   describe('getTxColorValues', () => {
@@ -153,9 +153,9 @@ describe('ColorData', () => {
       value: 10
     }
 
-    await cdstorage.add(data)
+    await cdataStorage.add(data)
     await cdata.removeColorValues(data.txId, EPOBC)
-    let result = await cdstorage.get(data)
+    let result = await cdataStorage.get(data)
     expect(result).to.be.instanceof(Map).and.to.have.property('size', 0)
   })
 })

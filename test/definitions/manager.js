@@ -6,20 +6,22 @@ import PUtils from 'promise-useful-utils'
 import cclib from '../../src'
 
 describe('ColorDefinitionManager', () => {
-  let cdmanager
-  let cdstorage
+  let cdefStorage
+  let cdataStorage
+  let cdefManager
   let epobcDesc1 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:0:0'
   let epobcDesc2 = 'epobc:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff:1:0'
 
   beforeEach(() => {
-    cdstorage = new cclib.storage.definitions.Memory()
-    cdmanager = new cclib.definitions.Manager(cdstorage)
-    return cdstorage.ready
+    cdefStorage = new cclib.storage.definitions.Memory()
+    cdataStorage = new cclib.storage.data.Memory()
+    cdefManager = new cclib.definitions.Manager(cdefStorage, cdataStorage)
+    return cdefManager.ready
   })
 
   it('inherit EventEmitter', () => {
-    expect(cdmanager).to.be.instanceof(cclib.definitions.Manager)
-    expect(cdmanager).to.be.instanceof(EventEmitter)
+    expect(cdefManager).to.be.instanceof(cclib.definitions.Manager)
+    expect(cdefManager).to.be.instanceof(EventEmitter)
   })
 
   it('getUncolored', () => {
@@ -61,7 +63,7 @@ describe('ColorDefinitionManager', () => {
 
   describe('resolve', () => {
     it('add new record', async () => {
-      let [cdef, isNew] = await cdmanager.resolve(epobcDesc1)
+      let [cdef, isNew] = await cdefManager.resolve(epobcDesc1)
       expect(cdef.getDesc()).to.equal(epobcDesc1)
       expect(isNew).to.be.true
     })
@@ -73,7 +75,7 @@ describe('ColorDefinitionManager', () => {
           deferred = {resolve: resolve, reject: reject}
         })
 
-        cdmanager.on('new', (cdef) => {
+        cdefManager.on('new', (cdef) => {
           PUtils.try(() => {
             expect(cdef).to.be.instanceof(cclib.definitions.Interface)
             expect(cdef.getDesc()).to.equal(epobcDesc1)
@@ -81,31 +83,31 @@ describe('ColorDefinitionManager', () => {
           .then(deferred.resolve, deferred.reject)
         })
 
-        let [cdef, isNew] = await cdmanager.resolve(epobcDesc1)
+        let [cdef, isNew] = await cdefManager.resolve(epobcDesc1)
         expect(cdef.getDesc()).to.equal(epobcDesc1)
         expect(isNew).to.be.true
 
         await promise
       } finally {
-        cdmanager.removeAllListeners()
+        cdefManager.removeAllListeners()
       }
     })
 
     it('record is not null', async () => {
-      let data = await cdstorage.resolve(epobcDesc1)
-      let [cdef, isNew] = await cdmanager.resolve(data.record.desc)
+      let data = await cdefStorage.resolve(epobcDesc1)
+      let [cdef, isNew] = await cdefManager.resolve(data.record.desc)
       expect(cdef.getColorId()).to.equal(data.record.id)
       expect(cdef.getDesc()).to.equal(data.record.desc)
       expect(isNew).to.be.false
     })
 
     it('record is null, autoAdd is false', async () => {
-      let cdef = await cdmanager.resolve(epobcDesc1, {autoAdd: false})
+      let cdef = await cdefManager.resolve(epobcDesc1, {autoAdd: false})
       expect(cdef).to.be.null
     })
 
     it('return uncolored', async () => {
-      let [cdef, isNew] = await cdmanager.resolve('')
+      let [cdef, isNew] = await cdefManager.resolve('')
       expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
       expect(isNew).to.be.false
     })
@@ -113,35 +115,56 @@ describe('ColorDefinitionManager', () => {
 
   describe('get', () => {
     it('return null', async () => {
-      let cdef = await cdmanager.get({id: 10})
+      let cdef = await cdefManager.get({id: 10})
       expect(cdef).to.be.null
     })
 
     it('return uncolred', async () => {
-      let cdef = await cdmanager.get({id: 0})
+      let cdef = await cdefManager.get({id: 0})
       expect(cdef).to.be.instanceof(cclib.definitions.Uncolored)
     })
 
     it('return ColorDefinition', async () => {
-      let data = await cdstorage.resolve(epobcDesc1)
-      let cdef = await cdmanager.get({id: data.record.id})
+      let data = await cdefStorage.resolve(epobcDesc1)
+      let cdef = await cdefManager.get({id: data.record.id})
       expect(cdef.getDesc()).to.equal(data.record.desc)
       expect(cdef.getColorId()).to.equal(data.record.id)
     })
 
     it('return empty Array', async () => {
-      let cdefs = await cdmanager.get()
+      let cdefs = await cdefManager.get()
       expect(cdefs).to.deep.equal([])
     })
 
     it('return 2 items', async () => {
       await* [
-        cdmanager.resolve(epobcDesc1),
-        cdmanager.resolve(epobcDesc2)
+        cdefManager.resolve(epobcDesc1),
+        cdefManager.resolve(epobcDesc2)
       ]
-      let cdefs = await cdmanager.get()
+      let cdefs = await cdefManager.get()
       let result = _.invoke(cdefs, 'getDesc').sort()
       expect(result).to.deep.equal([epobcDesc1, epobcDesc2].sort())
+    })
+  })
+
+  describe('remove', () => {
+    it('remove', async () => {
+      let cdef = (await cdefManager.resolve(epobcDesc1))[0]
+
+      let data = {
+        colorCode: cclib.definitions.EPOBC.getColorCode(),
+        txId: new Buffer(32).toString('hex'),
+        outIndex: 0,
+        colorId: cdef.getColorId(),
+        value: 10
+      }
+      await cdataStorage.add(data)
+
+      await cdefManager.remove({id: cdef.getColorId()})
+      let result = await cdefManager.get({id: cdef.getColorId()})
+      expect(result).to.be.null
+      result = await cdataStorage.get(data)
+      expect(result).to.be.instanceof(Map).and.to.have.property('size', 0)
     })
   })
 })

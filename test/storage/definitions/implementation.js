@@ -80,5 +80,14 @@ module.exports = (opts) => {
         expect(_.sortBy(result, 'id')).to.deep.equal(_.sortBy(records, 'id'))
       })
     })
+
+    describe('#remove', () => {
+      it('by id', async () => {
+        let record = (await storage.resolve(getRandomBytes(5).toString('hex'))).record
+        await storage.remove({id: record.id})
+        let data = await storage.get({id: record.id})
+        expect(data).to.be.null
+      })
+    })
   })
 }

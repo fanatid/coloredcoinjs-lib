@@ -31,6 +31,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    */
   async add (data) {
     await this.ready
+
     await this._storage.withLock(async () => {
       let key = `${data.txId}:${data.colorCode}`
       let value = JSON.stringify(data.value)
@@ -71,6 +72,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    */
   async get (data) {
     await this.ready
+
     let storedValue = await this._storage.withLock(() => {
       let key = `${data.txId}:${data.colorCode}`
       return this._storage.get(key)
@@ -101,16 +103,45 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
 
   /**
    * @param {Object} data
-   * @param {string} data.colorCode
-   * @param {string} data.txId
+   * @param {string} [data.colorCode]
+   * @param {string} [data.txId]
+   * @param {number} [data.colorId]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async remove (data) {
     await this.ready
-    return await this._storage.withLock(() => {
-      return this._storage.remove(`${data.txId}:${data.colorCode}`)
+
+    await this._storage.withLock(async () => {
+      if (data.colorId === undefined) {
+        return await this._storage.remove(`${data.txId}:${data.colorCode}`)
+      }
+
+      for (let [key, serializedValue] of await this._storage.entries()) {
+        let changed = false
+
+        let value = JSON.parse(serializedValue)
+        for (let outIndex of Object.keys(value)) {
+          if (value[outIndex][data.colorId] !== undefined) {
+            changed = true
+
+            if (Object.keys(value[outIndex]).length === 1) {
+              delete value[outIndex]
+            } else {
+              delete value[outIndex][data.colorId]
+            }
+          }
+        }
+
+        if (changed) {
+          if (Object.keys(value).length === 0) {
+            await this._storage.remove(key)
+          } else {
+            await this._storage.set(key, JSON.stringify(value))
+          }
+        }
+      }
     })
   }
 
@@ -121,7 +152,8 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    */
   async clear () {
     await this.ready
-    return await this._storage.withLock(() => {
+
+    await this._storage.withLock(() => {
       return this._storage.clear()
     })
   }

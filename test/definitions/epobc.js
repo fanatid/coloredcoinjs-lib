@@ -157,8 +157,9 @@ describe('definitions.EPOBC', () => {
     })
 
     it('resolve with color definition manager', async () => {
-      let cdstorage = new cclib.storage.definitions.Memory()
-      let cdmanager = new cclib.definitions.Manager(cdstorage)
+      let cdefStorage = new cclib.storage.definitions.Memory()
+      let cdataStorage = new cclib.storage.data.Memory()
+      let cdefManager = new cclib.definitions.Manager(cdefStorage, cdataStorage)
 
       try {
         let deferred
@@ -166,7 +167,7 @@ describe('definitions.EPOBC', () => {
           deferred = {resolve: resolve, reject: reject}
         })
 
-        cdmanager.on('new', (cdef) => {
+        cdefManager.on('new', (cdef) => {
           PUtils.try(() => {
             expect(cdef).to.be.instanceof(EPOBC)
             expect(cdef.getDesc()).to.match(new RegExp(tx1.id))
@@ -174,13 +175,13 @@ describe('definitions.EPOBC', () => {
           .then(deferred.resolve, deferred.reject)
         })
 
-        await cdstorage.ready
-        let epobc = await EPOBC.fromTx(tx1, cdmanager)
+        await cdefStorage.ready
+        let epobc = await EPOBC.fromTx(tx1, cdefManager)
         expect(epobc).to.be.instanceof(EPOBC)
         expect(epobc.getDesc()).to.match(new RegExp(tx1.id))
         await promise
       } finally {
-        cdmanager.removeAllListeners()
+        cdefManager.removeAllListeners()
       }
     })
   })

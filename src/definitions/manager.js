@@ -1,6 +1,8 @@
 import _ from 'lodash'
 import { EventEmitter } from 'events'
 import { setImmediate } from 'timers'
+import { mixin } from 'core-decorators'
+import ReadyMixin from 'ready-mixin'
 
 import GenesisColorDefinition from './genesis'
 import UncoloredColorDefinition from './uncolored'
@@ -16,15 +18,22 @@ import errors from '../errors'
  * @extends events.EventEmitter
  * @param {IColorDefinitionStorage} storage
  */
+@mixin(ReadyMixin)
 export default class ColorDefinitionManager extends EventEmitter {
   /**
    * @constructor
+   * @param {storage.definitions.Interface} storage
+   * @param {storage.data.Interface} dataStorage
    */
-  constructor (storage) {
+  constructor (storage, dataStorage) {
     super()
 
-    this._storage = storage
     this._uncolored = new UncoloredColorDefinition()
+    this._storage = storage
+    this._dataStorage = dataStorage
+
+    Promise.all([this._storage.ready, this._dataStorage.ready])
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   static _cd_classes = {}
@@ -104,6 +113,8 @@ export default class ColorDefinitionManager extends EventEmitter {
    * @return {Promise<?([ColorDefinition, boolean])>}
    */
   async resolve (desc, opts) {
+    await this.ready
+
     if (desc === this._uncolored.getDesc()) {
       return [new UncoloredColorDefinition(), false]
     }
@@ -137,6 +148,8 @@ export default class ColorDefinitionManager extends EventEmitter {
    * @return {Promise<(?ColorDefinition|ColorDefinition[])>}
    */
   async get (data, opts) {
+    await this.ready
+
     if (_.has(data, 'id')) {
       if (data.id === this._uncolored.getColorId()) {
         return new UncoloredColorDefinition()
@@ -154,5 +167,19 @@ export default class ColorDefinitionManager extends EventEmitter {
     return await* records.map((record) => {
       return this._record2ColorDefinition(record)
     })
+  }
+
+  /**
+   * @param {Object} data
+   * @param {number} data.id
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
+   * @return {Promise}
+   */
+  async remove (data, opts) {
+    await this.ready
+
+    await this._dataStorage.remove({colorId: data.id}, opts)
+    await this._storage.remove({id: data.id}, opts)
   }
 }

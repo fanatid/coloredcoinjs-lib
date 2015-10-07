@@ -47,6 +47,17 @@ export default class IColorDefinitionStorage {
   }
 
   /**
+   * @param {Object} data
+   * @param {number} data.id
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
+   * @return {Promise}
+   */
+  async remove (data, opts) {
+    throw new errors.NotImplemented(this.constructor.name + '.remove')
+  }
+
+  /**
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
    * @return {Promise}

@@ -9,97 +9,57 @@ let SQL = {}
 
 SQL['SQLite'] = {
   create: {
-    tables: {
-      tx: `CREATE TABLE IF NOT EXISTS cclib_data_tx (
-             pk INTEGER PRIMARY KEY AUTOINCREMENT,
-             color_code TEXT NOT NULL,
-             txid TEXT NOT NULL)`,
-      values: `CREATE TABLE IF NOT EXISTS cclib_data_values (
-                 oidx INTEGER NOT NULL,
-                 color_id INTEGER NOT NULL,
-                 value TEXT NOT NULL,
-                 tx_pk INTEGER NOT NULL,
-                 FOREIGN KEY (tx_pk) REFERENCES cclib_data_tx(pk))`
-    },
-    indices: {
-      tx: `CREATE INDEX IF NOT EXISTS
-             cclib_data_tx_idx
-           ON
-             cclib_data_tx (txid, color_code)`
-    }
-  },
-  insert: {
-    tx: `INSERT INTO cclib_data_tx
-           (color_code, txid)
-         VALUES
-           ($1, $2)`,
-    value: `INSERT INTO cclib_data_values
-              (oidx, color_id, value, tx_pk)
-            VALUES
-              ($1, $2, $3, $4)`
-  },
-  select: {
-    pk: `SELECT
-           pk
-         FROM
-           cclib_data_tx
-         WHERE
-           color_code = $1 AND
-           txid = $2`,
-    value: `SELECT
-              cclib_data_values.value
-            FROM
-              cclib_data_tx
-            JOIN
-              cclib_data_values
+    table: `CREATE TABLE IF NOT EXISTS cclib_data (
+              color_id INTEGER NOT NULL,
+              color_code TEXT NOT NULL,
+              txid TEXT NOT NULL,
+              oidx INTEGER NOT NULL,
+              value TEXT NOT NULL,
+              PRIMARY KEY (color_id, txid, oidx))`,
+    index: `CREATE INDEX IF NOT EXISTS
+              cclib_data_idx
             ON
-              cclib_data_values.tx_pk = cclib_data_tx.pk
-            WHERE
-              cclib_data_tx.color_code = $1 AND
-              cclib_data_tx.txid = $2 AND
-              cclib_data_values.oidx = $3 AND
-              cclib_data_values.color_id = $4`,
+              cclib_data (color_code, txid)`
+  },
+  insert: `INSERT INTO cclib_data
+             (color_id, color_code, txid, oidx, value)
+           VALUES
+             ($1, $2, $3, $4, $5)`,
+  select: {
     all: `SELECT
             *
           FROM
-            cclib_data_tx
-          JOIN
-            cclib_data_values
-          ON
-            cclib_data_values.tx_pk = cclib_data_tx.pk
+            cclib_data
           WHERE
-            cclib_data_tx.color_code = $1 AND
-            cclib_data_tx.txid = $2`,
+            color_code = $1 AND
+            txid = $2`,
     outIndexFilter: `SELECT
                        *
                      FROM
-                       cclib_data_tx
-                     JOIN
-                       cclib_data_values
-                     ON
-                       cclib_data_values.tx_pk = cclib_data_tx.pk
+                       cclib_data
                      WHERE
-                       cclib_data_tx.color_code = $1 AND
-                       cclib_data_tx.txid = $2 AND
-                       cclib_data_values.oidx = $3`
+                       color_code = $1 AND
+                       txid = $2 AND
+                       oidx = $3`,
+    value: `SELECT
+              value
+            FROM
+              cclib_data
+            WHERE
+              color_id = $1 AND
+              color_code = $2 AND
+              txid = $3 AND
+              oidx = $4`
   },
   delete: {
-    tx: `DELETE FROM cclib_data_tx WHERE pk = $1`,
-    values: `DELETE FROM cclib_data_values WHERE tx_pk = $1`,
-    all: {
-      tx: `DELETE FROM cclib_data_tx`,
-      values: `DELETE FROM cclib_data_values`
-    }
+    byCodeAndTxId: 'DELETE FROM cclib_data WHERE color_code = $1 AND txid = $2',
+    byColorId: 'DELETE FROM cclib_data WHERE color_id = $1',
+    all: 'DELETE FROM cclib_data'
   }
 }
 
 SQL['PostgreSQL'] = _.cloneDeep(SQL['SQLite'])
-SQL['PostgreSQL'].create.tables.tx =
-  `CREATE TABLE IF NOT EXISTS cclib_data_tx (
-     pk SERIAL PRIMARY KEY,
-     color_code TEXT NOT NULL,
-     txid TEXT NOT NULL)`
-SQL['PostgreSQL'].create.indices.tx =
+SQL['PostgreSQL'].create.index =
   `DO $$
    BEGIN
      IF NOT EXISTS (
@@ -107,10 +67,10 @@ SQL['PostgreSQL'].create.indices.tx =
          FROM pg_class c
          JOIN pg_namespace n
          ON n.oid = c.relnamespace
-         WHERE c.relname = 'cclib_data_tx_idx'
+         WHERE c.relname = 'cclib_data_idx'
          AND n.nspname = 'public'
      ) THEN
-     CREATE INDEX cclib_data_tx_idx ON cclib_data_tx (txid, color_code);
+     CREATE INDEX cclib_data_idx ON cclib_data (color_code, txid);
    END IF;
    END$$;`
 
@@ -136,9 +96,8 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
     this._storage.open()
       .then(() => {
         return this._storage.withLock(async () => {
-          await this._storage.executeSQL(this._SQL.create.tables.tx)
-          await this._storage.executeSQL(this._SQL.create.tables.values)
-          await this._storage.executeSQL(this._SQL.create.indices.tx)
+          await this._storage.executeSQL(this._SQL.create.table)
+          await this._storage.executeSQL(this._SQL.create.index)
         })
       })
       .then(() => this._ready(null), (err) => this._ready(err))
@@ -152,10 +111,11 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    */
   async add (data, opts) {
     await this.ready
+
     await this._storage.withLock(async () => {
       let executeOpts = _.get(opts, 'executeOpts')
 
-      let params = [data.colorCode, data.txId, data.outIndex, data.colorId]
+      let params = [data.colorId, data.colorCode, data.txId, data.outIndex]
       let value = JSON.stringify(data.value)
 
       // are we have another value for colorCode, txId, outIndex, colorId ?
@@ -169,22 +129,8 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
           data.txId, data.outIndex, data.colorId, data.colorCode, rows[0].value)
       }
 
-      let getPK = async () => {
-        params = [data.colorCode, data.txId]
-        let rows = await this._storage.executeSQL(this._SQL.select.pk, params, executeOpts)
-        return rows.length === 0 ? null : rows[0].pk
-      }
-
-      // save
-      let pk = await getPK()
-      if (pk === null) {
-        params = [data.colorCode, data.txId]
-        await this._storage.executeSQL(this._SQL.insert.tx, params, executeOpts)
-        pk = await getPK()
-      }
-
-      params = [data.outIndex, data.colorId, data.value, pk]
-      await this._storage.executeSQL(this._SQL.insert.value, params, executeOpts)
+      params.push(value)
+      await this._storage.executeSQL(this._SQL.insert, params, executeOpts)
     })
   }
 
@@ -224,25 +170,25 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
 
   /**
    * @param {Object} data
-   * @param {string} data.colorCode
-   * @param {string} data.txId
+   * @param {string} [data.colorCode]
+   * @param {string} [data.txId]
+   * @param {number} [data.colorId]
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async remove (data, opts) {
     await this.ready
-    await this._storage.withLock(async (tx) => {
-      let executeOpts = _.get(opts, 'executeOpts')
 
+    await this._storage.withLock(async (tx) => {
+      let query = this._SQL.delete.byCodeAndTxId
       let params = [data.colorCode, data.txId]
-      let rows = await this._storage.executeSQL(this._SQL.select.pk, params, executeOpts)
-      if (rows.length !== 1) {
-        return
+      if (data.colorId !== undefined) {
+        query = this._SQL.delete.byColorId
+        params = [data.colorId]
       }
 
-      await this._storage.executeSQL(this._SQL.delete.values, [rows[0].pk], executeOpts)
-      await this._storage.executeSQL(this._SQL.delete.tx, [rows[0].pk], executeOpts)
+      await this._storage.executeSQL(query, params, _.get(opts, 'executeOpts'))
     })
   }
 
@@ -253,11 +199,10 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
    */
   async clear (opts) {
     await this.ready
-    await this._storage.withLock(async () => {
-      let executeOpts = _.get(opts, 'executeOpts')
 
-      await this._storage.executeSQL(this._SQL.delete.all.values, [], executeOpts)
-      await this._storage.executeSQL(this._SQL.delete.all.tx, [], executeOpts)
+    await this._storage.withLock(async () => {
+      await this._storage.executeSQL(
+        this._SQL.delete.all, [], _.get(opts, 'executeOpts'))
     })
   }
 }

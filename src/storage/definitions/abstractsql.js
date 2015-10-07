@@ -17,6 +17,7 @@ SQL['SQLite'] = {
     getAll: `SELECT cdesc, id FROM cclib_definitions`
   },
   delete: {
+    row: `DELETE FROM cclib_definitions WHERE id = $1`,
     all: `DELETE FROM cclib_definitions`
   }
 }
@@ -63,6 +64,7 @@ export default class AbstractSQLColorDefinitionStorage extends IColorDefinitionS
    */
   async resolve (desc, opts) {
     await this.ready
+
     return await this._storage.withLock(async () => {
       let executeOpts = _.get(opts, 'executeOpts')
       let rows = await this._storage.executeSQL(
@@ -94,6 +96,7 @@ export default class AbstractSQLColorDefinitionStorage extends IColorDefinitionS
    */
   async get (data, opts) {
     await this.ready
+
     return await this._storage.withLock(async () => {
       if (_.has(data, 'id')) {
         let rows = await this._storage.executeSQL(
@@ -112,14 +115,32 @@ export default class AbstractSQLColorDefinitionStorage extends IColorDefinitionS
   }
 
   /**
+   * @param {Object} data
+   * @param {number} data.id
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
+   * @return {Promise}
+   */
+  async remove (data, opts) {
+    await this.ready
+
+    await this._storage.withLock(() => {
+      return this._storage.executeSQL(
+        this._SQL.delete.row, [data.id], _.get(opts, 'executeOpts'))
+    })
+  }
+
+  /**
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async clear (opts) {
     await this.ready
+
     await this._storage.withLock(() => {
-      return this._storage.executeSQL(this._SQL.delete.all, [], _.get(opts, 'executeOpts'))
+      return this._storage.executeSQL(
+        this._SQL.delete.all, [], _.get(opts, 'executeOpts'))
     })
   }
 }

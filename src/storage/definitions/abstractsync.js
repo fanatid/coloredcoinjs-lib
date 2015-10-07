@@ -33,6 +33,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
    */
   async resolve (desc, opts) {
     await this.ready
+
     return await this._storage.withLock(async () => {
       let colorId = parseInt(await this._storage.get(desc), 10)
       // exists?
@@ -82,12 +83,13 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
    */
   async get (data) {
     await this.ready
+
     return await this._storage.withLock(async () => {
       if (_.has(data, 'id')) {
         let record = null
         for (let [key, value] of await this._storage.entries()) {
           value = parseInt(value, 10)
-          if (value === data.id) {
+          if (key !== '~counter' && value === data.id) {
             record = {id: value, desc: key}
           }
         }
@@ -106,12 +108,33 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
   }
 
   /**
+   * @param {Object} data
+   * @param {number} data.id
+   * @param {Object} [opts]
+   * @param {Object} [opts.executeOpts]
+   * @return {Promise}
+   */
+  async remove (data, opts) {
+    await this.ready
+
+    await this._storage.withLock(async () => {
+      for (let [key, value] of await this._storage.entries()) {
+        if (key !== '~counter' && parseInt(value, 10) === data.id) {
+          await this._storage.remove(key)
+          break
+        }
+      }
+    })
+  }
+
+  /**
    * @param {Object} [opts]
    * @param {Object} [opts.executeOpts]
    * @return {Promise}
    */
   async clear () {
     await this.ready
+
     await this._storage.withLock(() => {
       return this._storage.clear()
     })

@@ -8,19 +8,19 @@ import helpers from '../helpers'
 import fixtures from '../fixtures/transactions.json'
 
 describe('coloredcoinjs-lib (balance)', () => {
-  let cdefstorage
-  let cdmanager
-  let cdstorage
+  let cdefStorage
+  let cdataStorage
+  let cdefManager
   let cdata
 
   beforeEach(() => {
-    cdefstorage = new cclib.storage.definitions.Memory()
-    cdmanager = new cclib.definitions.Manager(cdefstorage)
+    cdefStorage = new cclib.storage.definitions.Memory()
+    cdataStorage = new cclib.storage.data.Memory()
 
-    cdstorage = new cclib.storage.data.Memory()
-    cdata = new cclib.ColorData(cdstorage, cdmanager)
+    cdefManager = new cclib.definitions.Manager(cdefStorage, cdataStorage)
+    cdata = new cclib.ColorData(cdataStorage, cdefManager)
 
-    return Promise.all([cdefstorage.ready, cdstorage.ready])
+    return Promise.all([cdefManager.ready, cdata.ready])
   })
 
   it('EPOBC', async () => {
