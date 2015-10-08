@@ -3,7 +3,6 @@ import base58 from 'bs58'
 import crypto from 'crypto'
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
-import PUtils from 'promise-useful-utils'
 
 /**
  * @class ColorSet
@@ -19,12 +18,13 @@ export default class ColorSet {
   constructor (cdmanager, cdescs) {
     this._cdescs = cdescs
 
-    PUtils.try(async () => {
-      this._cdefs = await* this._cdescs.map(async (cdesc) => {
-        return (await cdmanager.resolve(cdesc, {autoAdd: true}))[0]
+    Promise.resolve()
+      .then(async () => {
+        this._cdefs = await* this._cdescs.map(async (cdesc) => {
+          return (await cdmanager.resolve(cdesc, {autoAdd: true}))[0]
+        })
       })
-    })
-    .then(() => this._ready(null), (err) => this._ready(err))
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**

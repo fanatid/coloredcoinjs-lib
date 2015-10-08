@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import { EventEmitter } from 'events'
 import _ from 'lodash'
-import PUtils from 'promise-useful-utils'
 
 import cclib from '../../src'
 
@@ -76,11 +75,12 @@ describe('ColorDefinitionManager', () => {
         })
 
         cdefManager.on('new', (cdef) => {
-          PUtils.try(() => {
-            expect(cdef).to.be.instanceof(cclib.definitions.Interface)
-            expect(cdef.getDesc()).to.equal(epobcDesc1)
-          })
-          .then(deferred.resolve, deferred.reject)
+          Promise.resolve()
+            .then(() => {
+              expect(cdef).to.be.instanceof(cclib.definitions.Interface)
+              expect(cdef.getDesc()).to.equal(epobcDesc1)
+            })
+            .then(deferred.resolve, deferred.reject)
         })
 
         let [cdef, isNew] = await cdefManager.resolve(epobcDesc1)

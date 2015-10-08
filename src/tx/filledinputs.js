@@ -1,7 +1,6 @@
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
 import { Transaction } from 'bitcore'
-import PUtils from 'promise-useful-utils'
 
 import { ZERO_HASH } from '../util/const'
 
@@ -23,30 +22,31 @@ export default class FilledInputsTx {
    * @param {getTxFn} getTxFn
    */
   constructor (rawTx, getTxFn) {
-    PUtils.try(async () => {
-      this._tx = new Transaction(rawTx)
-      this._prevTxs = []
-      this._prevValues = []
+    Promise.resolve()
+      .then(async () => {
+        this._tx = new Transaction(rawTx)
+        this._prevTxs = []
+        this._prevValues = []
 
-      await* this._tx.inputs.map(async (input, index) => {
-        let inputTxId = input.prevTxId.toString('hex')
+        await* this._tx.inputs.map(async (input, index) => {
+          let inputTxId = input.prevTxId.toString('hex')
 
-        let isCoinbase = index === 0 &&
-                         input.outputIndex === 4294967295 &&
-                         inputTxId === ZERO_HASH
-        if (isCoinbase) {
-          this._prevTxs[index] = null
-          this._prevValues[index] = 0
-          return
-        }
+          let isCoinbase = index === 0 &&
+                           input.outputIndex === 4294967295 &&
+                           inputTxId === ZERO_HASH
+          if (isCoinbase) {
+            this._prevTxs[index] = null
+            this._prevValues[index] = 0
+            return
+          }
 
-        let rawTx = await getTxFn(inputTxId)
-        let tx = new Transaction(rawTx)
-        this._prevTxs[index] = tx
-        this._prevValues[index] = tx.outputs[input.outputIndex].satoshis
+          let rawTx = await getTxFn(inputTxId)
+          let tx = new Transaction(rawTx)
+          this._prevTxs[index] = tx
+          this._prevValues[index] = tx.outputs[input.outputIndex].satoshis
+        })
       })
-    })
-    .then(() => this._ready(null), (err) => this._ready(err))
+      .then(() => this._ready(null), (err) => this._ready(err))
   }
 
   /**
