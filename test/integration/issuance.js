@@ -14,8 +14,9 @@ describe('coloredcoinjs-lib (issuance)', () => {
 
     let genesisCdef = cclib.definitions.Manager.getGenesis()
     let cvalue = new cclib.ColorValue(genesisCdef, 500000)
-    let targetScript = bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey())
-    let ctarget = new cclib.ColorTarget(targetScript.toHex(), cvalue)
+    let inputScript = bitcore.Script.buildPublicKeyHashOut(pk1.toPublicKey()).toHex()
+    let targetScript = bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex()
+    let ctarget = new cclib.ColorTarget(targetScript, cvalue)
 
     let optx = new cclib.tx.SimpleOperational({
       targets: [
@@ -25,7 +26,8 @@ describe('coloredcoinjs-lib (issuance)', () => {
         0: [{
           txId: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
           outIndex: 1,
-          value: 1000000
+          value: 1000000,
+          script: inputScript
         }]
       },
       changeAddresses: {
@@ -40,6 +42,8 @@ describe('coloredcoinjs-lib (issuance)', () => {
     expect(comptx.getInputs()).to.deep.equal([{
       txId: '036c3688512eb99427ad9dfe979958cd5929d0cbd3babb6c4275316dbb3b4dce',
       outIndex: 1,
+      value: 1000000,
+      script: inputScript,
       sequence: 37
     }])
 

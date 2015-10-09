@@ -23,7 +23,8 @@ export default class ComposedTx {
    * @typedef {Object} ComposedTx~Input
    * @property {string} txId
    * @property {number} outIndex
-   * @property {string} [script]
+   * @property {number} value
+   * @property {string} script
    * @property {number} [sequence]
    */
 
@@ -42,10 +43,11 @@ export default class ComposedTx {
    * @param {ComposedTx~Input} input
    */
   addInput (input) {
-    let obj = {txId: input.txId, outIndex: input.outIndex}
-
-    if (input.script !== undefined) {
-      obj.script = input.script
+    let obj = {
+      txId: input.txId,
+      outIndex: input.outIndex,
+      value: input.value,
+      script: input.script
     }
 
     if (input.sequence !== undefined) {
@@ -81,7 +83,7 @@ export default class ComposedTx {
    * @return {ComposedTx~Input[]}
    */
   getInputs () {
-    return _.cloneDeep(this._inputs)
+    return this._inputs
   }
 
   /**
@@ -113,7 +115,7 @@ export default class ComposedTx {
    * @return {Array.<ComposedTx~OutScriptValue>}
    */
   getOutputs () {
-    return _.cloneDeep(this._outputs)
+    return this._outputs
   }
 
   /**

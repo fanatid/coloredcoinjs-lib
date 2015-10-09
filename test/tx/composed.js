@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { expect } from 'chai'
+import bitcore from 'bitcore'
 
 import cclib from '../../src'
 import { FixedFeeOperationalTx } from '../helpers'
@@ -15,7 +16,9 @@ describe('tx.ComposedTx', () => {
   it('addInput/addInputs/setInputSequence/getInputs', () => {
     let input = {
       txId: '06a480de0293ce9c2d8c76e15ac3b2f61f5bf7a47d139527ce335bf55b000e8f',
-      outIndex: 0
+      outIndex: 0,
+      value: _.random(1e5, 1e6),
+      script: bitcore.Script.buildPublicKeyHashOut(bitcore.PrivateKey().toPublicKey()).toHex()
     }
     tx.addInput(input)
     tx.addInputs([input, input])

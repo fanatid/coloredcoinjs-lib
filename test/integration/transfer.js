@@ -24,7 +24,8 @@ describe('coloredcoinjs-lib (transfer)', () => {
         0: [{
           txId: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
           outIndex: 0,
-          value: 1000000
+          value: 1000000,
+          script: bitcore.Script.buildPublicKeyHashOut(pk1.toPublicKey()).toHex()
         }]
       },
       changeAddresses: {
@@ -38,7 +39,9 @@ describe('coloredcoinjs-lib (transfer)', () => {
 
     expect(comptx.getInputs()).to.deep.equal([{
       txId: '8656c2b003c9f8ef7bd866cb0b3e6e97366b4fac434b91ee442abec27515d17b',
-      outIndex: 0
+      outIndex: 0,
+      value: 1000000,
+      script: bitcore.Script.buildPublicKeyHashOut(pk1.toPublicKey()).toHex()
     }])
 
     expect(comptx.getOutputs()).to.deep.equal([{
@@ -61,8 +64,9 @@ describe('coloredcoinjs-lib (transfer)', () => {
     let cdef = await cclib.definitions.EPOBC.fromDesc(
       'epobc:7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d:0:318050', 1)
     let cvalue = new cclib.ColorValue(cdef, 100000)
-    let targetScript = bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey())
-    let ctarget = new cclib.ColorTarget(targetScript.toHex(), cvalue)
+    let inputScript = bitcore.Script.buildPublicKeyHashOut(pk1.toPublicKey()).toHex()
+    let targetScript = bitcore.Script.buildPublicKeyHashOut(pk2.toPublicKey()).toHex()
+    let ctarget = new cclib.ColorTarget(targetScript, cvalue)
 
     let optx = new cclib.tx.SimpleOperational({
       targets: [
@@ -72,12 +76,14 @@ describe('coloredcoinjs-lib (transfer)', () => {
         0: [{
           txId: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
           outIndex: 0,
-          value: 250000
+          value: 250000,
+          script: inputScript
         }],
         1: [{
           txId: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
           outIndex: 0,
-          value: 500000
+          value: 500000,
+          script: inputScript
         }]
       },
       changeAddresses: {
@@ -93,10 +99,14 @@ describe('coloredcoinjs-lib (transfer)', () => {
     expect(comptx.getInputs()).to.deep.equal([{
       txId: '7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d',
       outIndex: 0,
+      value: 500000,
+      script: inputScript,
       sequence: 51
     }, {
       txId: '34ab8f0822dbedb3bff09353e909da8b24dece04610cc461b01f90469dcb706d',
-      outIndex: 0
+      outIndex: 0,
+      value: 250000,
+      script: inputScript
     }])
 
     expect(comptx.getOutputs()).to.deep.equal([{

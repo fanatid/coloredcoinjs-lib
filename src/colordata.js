@@ -249,8 +249,8 @@ export default class ColorData {
    * @param {boolean} [opts.save=true]
    * @param {Object} [opts.executeOpts]
    * @return {Promise<{
-   *   inputs: Array.<{cdef: IColorDefinition, inputs: ColorValue[]}>,
-   *   outputs: Array.<{cdef: IColorDefinition, outputs: ColorValue[]}>
+   *   inputs: Map<IColorDefinition, ColorValue[]>,
+   *   outputs: Map<IColorDefinition, ColorValue[]>
    *  }>}
    */
   async getTxColorValues (tx, outIndices, cdefCls, getTxFn, opts) {
