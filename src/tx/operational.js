@@ -134,12 +134,17 @@ export default class OperationalTx {
    * Returns ColorValue representing smallest satoshi value
    *  which isn't dust according to current parameters
    *
+   * @param {number} [minRelayTxFee=5000] Satoshis-per-kilobyte
    * @return {ColorValue}
    */
-  getDustThreshold () {
-    // https://github.com/bitcoin/bitcoin/blob/v0.9.2/src/core.h#L151-L162
+  getDustThreshold (minRelayTxFee) {
+    // https://github.com/bitcoin/bitcoin/pull/6793
+    if (minRelayTxFee === undefined) {
+      minRelayTxFee = 5000
+    }
+
     let uncolored = new Uncolored()
-    return new ColorValue(uncolored, 546)
+    return new ColorValue(uncolored, Math.ceil(182 * 3 * minRelayTxFee / 1000))
   }
 
   /**
