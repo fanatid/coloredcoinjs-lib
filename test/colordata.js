@@ -67,13 +67,11 @@ describe('ColorData', () => {
       expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 0)
 
       expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 1)
-      let [cdef, outputs] = Array.from(result.outputs.entries())[0]
-      expect(cdef).to.be.instanceof(EPOBC)
-      expect(cdef._genesis.txId).to.equal(tx1.id)
+      let [colorId, outputs] = Array.from(result.outputs.entries())[0]
       expect(outputs).to.be.an('array').and.to.have.length(1)
       let output = outputs[0]
       expect(output).to.be.instanceof(cclib.ColorValue)
-      expect(output.getColorDefinition()).to.deep.equal(cdef)
+      expect(output.getColorDefinition().getColorId()).to.equal(colorId)
       expect(output.getValue()).to.equal(7)
     })
 
@@ -89,23 +87,19 @@ describe('ColorData', () => {
       expect(result).to.be.an('object')
 
       expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 1)
-      let [cdef1, inputs] = Array.from(result.inputs.entries())[0]
-      expect(cdef1).to.be.instanceof(EPOBC)
-      expect(cdef1._genesis.txId).to.equal(tx1.id)
+      let [colorId1, inputs] = Array.from(result.inputs.entries())[0]
       expect(inputs).to.be.an('array').and.to.have.length(1)
       let input = inputs[0]
       expect(input).to.be.instanceof(cclib.ColorValue)
-      expect(input.getColorDefinition()).to.deep.equal(cdef1)
+      expect(input.getColorDefinition().getColorId()).to.equal(colorId1)
       expect(input.getValue()).to.equal(7)
 
       expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 1)
-      let [cdef2, outputs] = Array.from(result.outputs.entries())[0]
-      expect(cdef2).to.be.instanceof(EPOBC)
-      expect(cdef2._genesis.txId).to.equal(tx1.id)
+      let [colorId2, outputs] = Array.from(result.outputs.entries())[0]
       expect(outputs).to.be.an('array').and.to.have.length(1)
       let output = outputs[0]
       expect(output).to.be.instanceof(cclib.ColorValue)
-      expect(output.getColorDefinition()).to.deep.equal(cdef2)
+      expect(output.getColorDefinition().getColorId()).to.equal(colorId2)
       expect(output.getValue()).to.equal(6)
     })
   })
