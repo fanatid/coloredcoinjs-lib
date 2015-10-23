@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import _ from 'lodash'
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 
 import cclib from '../../src'
 let EPOBC = cclib.definitions.EPOBC
@@ -45,7 +45,7 @@ describe('definitions.EPOBC._Tag', () => {
   it('fromTx for coinbase tx', () => {
     let tx = {
       inputs: [{
-        prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
+        prevTxId: new Buffer(helpers.ZERO_HASH, 'hex'),
         outputIndex: 4294967295
       }]
     }
@@ -232,7 +232,7 @@ describe('definitions.EPOBC', () => {
     it('tag is null', async () => {
       let tx = {
         inputs: [{
-          prevTxId: new Buffer(cclib.util.const.ZERO_HASH, 'hex'),
+          prevTxId: new Buffer(helpers.ZERO_HASH, 'hex'),
           sequenceNumber: 4294967295
         }]
       }

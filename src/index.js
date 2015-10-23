@@ -32,10 +32,4 @@ cclib.tx.Composed = require('./tx/composed')
 cclib.tx.Operational = require('./tx/operational')
 cclib.tx.SimpleOperational = require('./tx/simpleoperational')
 
-// util
-cclib.util = {}
-cclib.util.bitcoin = require('./util/bitcoin')
-cclib.util.const = require('./util/const')
-cclib.util.js = require('./util/js')
-
 export default cclib

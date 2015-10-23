@@ -1,4 +1,4 @@
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 import { expect } from 'chai'
 
 import cclib from '../../src'
@@ -35,7 +35,7 @@ describe('tx.FilledInputs', () => {
 
   describe('!isCoinbase', () => {
     let txId = '27eba159ab0c50c3d2d1abad6ce83f501b34121fa96d7aa91fad2c3cfec68366'
-    let tx = bitcore.Transaction(transactions[txId])
+    let tx = new bitcore.Transaction(transactions[txId])
 
     beforeEach(() => {
       fitx = new cclib.tx.FilledInputs(tx, getTxFn)

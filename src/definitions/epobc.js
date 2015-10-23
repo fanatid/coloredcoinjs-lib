@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 
 import IColorDefinition from './interface'
 import ColorDefinitionManager from './manager'
@@ -81,7 +81,7 @@ class Tag {
    * @return {?Tag}
    */
   static fromTx (tx) {
-    let isCoinbase = tx.inputs[0].outputIndex === 0xFFFFFFFF &&
+    let isCoinbase = tx.inputs[0].outputIndex === 0xffffffff &&
                      tx.inputs[0].prevTxId.toString('hex') === ZERO_HASH
     if (isCoinbase) {
       return null

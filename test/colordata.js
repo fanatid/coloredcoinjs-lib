@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 import { pseudoRandomBytes as getRandomBytes } from 'crypto'
 import { expect } from 'chai'
 
@@ -35,7 +35,7 @@ describe('ColorData', () => {
 
   describe('getTxColorValues', () => {
     it('not a color tx', async () => {
-      helpers.tx.addInput(tx1, new Buffer(32), 0, 0xFFFFFFFF)
+      helpers.tx.addInput(tx1, new Buffer(32), 0, 0xffffffff)
       helpers.tx.addOutput(tx1, _.random(1, 1000))
 
       let getTxFn = helpers.getTxFnStub([])
@@ -46,7 +46,7 @@ describe('ColorData', () => {
     })
 
     it('coinbase tx', async () => {
-      helpers.tx.addInput(tx1, new Buffer(cclib.util.const.ZERO_HASH, 'hex'), 0xFFFFFFFF, 0xFFFFFFFF)
+      helpers.tx.addInput(tx1, new Buffer(helpers.ZERO_HASH, 'hex'), 0xffffffff, 0xffffffff)
       helpers.tx.addOutput(tx1, 50 * 1e8 + _.random(1e5, 1e6))
 
       let getTxFn = helpers.getTxFnStub([])

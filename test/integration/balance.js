@@ -1,4 +1,4 @@
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 import { expect } from 'chai'
 
 import cclib from '../../src'
@@ -25,7 +25,7 @@ describe('coloredcoinjs-lib (balance)', () => {
 
   it('EPOBC', async () => {
     let txId = '694dffbf830e50139c34b80abd20c95f37b1a7e6401be5ef579d6f1f973c6c4c'
-    let tx = bitcore.Transaction(fixtures[txId])
+    let tx = new bitcore.Transaction(fixtures[txId])
     let outIndex = 0
 
     let data = await cdata.getOutputColorValue(

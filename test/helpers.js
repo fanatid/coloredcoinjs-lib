@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import crypto from 'crypto'
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 
 import cclib from '../src'
 
@@ -42,7 +42,7 @@ function addInput (tx, hash, outIndex, sequence, address) {
   }
   address = address || getRandomAddress()
 
-  return tx.uncheckedAddInput(bitcore.Transaction.Input({
+  return tx.uncheckedAddInput(new bitcore.Transaction.Input({
     prevTxId: new Buffer(hash),
     outputIndex: outIndex,
     sequenceNumber: sequence,
@@ -59,7 +59,7 @@ function addInput (tx, hash, outIndex, sequence, address) {
 function addOutput (tx, value, address) {
   address = address || getRandomAddress()
 
-  return tx.addOutput(bitcore.Transaction.Output({
+  return tx.addOutput(new bitcore.Transaction.Output({
     satoshis: value,
     script: bitcore.Script.buildPublicKeyHashOut(address)
   }))
@@ -72,18 +72,18 @@ function addOutput (tx, value, address) {
 function getTxFnStub (transactions) {
   if (_.isArray(transactions)) {
     transactions = _.zipObject(transactions.map((tx) => {
-      if (!(tx instanceof bitcore.Transaction)) {
-        tx = bitcore.Transaction(tx)
+      if (tx instanceof bitcore.Transaction) {
+        return [tx.id, tx.toString()]
       }
 
-      return [tx.id, tx]
+      return [new bitcore.Transaction(tx).id, tx]
     }))
   }
 
   return (txId) => {
     let tx = transactions[txId]
     if (tx !== undefined) {
-      return Promise.resolve(tx)
+      return Promise.resolve(new bitcore.Transaction(tx))
     }
 
     return Promise.reject(new Error(`${txId} not found`))
@@ -105,7 +105,7 @@ function getRandomAddress () {
  * @return {{top: bitcore.Transaction, deps: bitcore.Transaction[]}}
  */
 function createRunKernelEnv (txId, inputs, outputs, sequence) {
-  let top = bitcore.Transaction()
+  let top = new bitcore.Transaction()
   let deps = []
 
   let txHash = Array.prototype.reverse.call(new Buffer(txId, 'hex'))
@@ -113,7 +113,7 @@ function createRunKernelEnv (txId, inputs, outputs, sequence) {
 
   for (let satoshis of inputs) {
     let inTxId = crypto.pseudoRandomBytes(32).toString('hex')
-    top.uncheckedAddInput(bitcore.Transaction.Input({
+    top.uncheckedAddInput(new bitcore.Transaction.Input({
       prevTxId: inTxId,
       outputIndex: 0,
       script: bitcore.Script.fromAddress(getRandomAddress())
@@ -124,7 +124,7 @@ function createRunKernelEnv (txId, inputs, outputs, sequence) {
   }
 
   if (top.inputs.length === 0) {
-    top.uncheckedAddInput(bitcore.Transaction.Input({
+    top.uncheckedAddInput(new bitcore.Transaction.Input({
       prevTxId: new Buffer(32),
       outputIndex: 0,
       sequenceNumber: 4294967295,
@@ -141,7 +141,7 @@ function createRunKernelEnv (txId, inputs, outputs, sequence) {
   top.inputs[0].sequenceNumber = sequence
 
   for (let satoshis of outputs) {
-    top.addOutput(bitcore.Transaction.Output({
+    top.addOutput(new bitcore.Transaction.Output({
       satoshis: satoshis,
       script: bitcore.Script.buildPublicKeyHashOut(getRandomAddress())
     }))
@@ -159,5 +159,6 @@ export default {
   getTxFnStub: getTxFnStub,
   getTxFn: getTxFnStub(require('./fixtures/transactions.json')),
   getRandomAddress: getRandomAddress,
-  createRunKernelEnv: createRunKernelEnv
+  createRunKernelEnv: createRunKernelEnv,
+  ZERO_HASH: new Array(65).join('0')
 }

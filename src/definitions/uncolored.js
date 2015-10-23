@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 
 import IColorDefinition from './interface'
 import ColorTarget from '../colortarget'

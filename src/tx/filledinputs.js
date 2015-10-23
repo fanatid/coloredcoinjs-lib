@@ -1,13 +1,13 @@
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
-import { Transaction } from 'bitcore'
+import { Transaction } from 'bitcore-lib'
 
 import { ZERO_HASH } from '../util/const'
 
 /**
  * @callback getTxFn
  * @param {string} txId
- * @return {Promise<bitcore.Transaction>}
+ * @return {Promise<(string|bitcore.Transaction|Buffer|Object)>}
  */
 
 /**

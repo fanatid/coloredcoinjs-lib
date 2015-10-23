@@ -1,7 +1,7 @@
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
 
-import errors from '../../errors'
+import { NotImplemented } from '../../errors'
 
 /**
  * @typedef {Object} IColorDefinitionStorage~Record
@@ -29,7 +29,7 @@ export default class IColorDefinitionStorage {
    * @return {Promise<{record: ?IColorDefinitionStorage~Record, new: ?boolean}>}
    */
   async resolve () {
-    throw new errors.NotImplemented(this.constructor.name + '.resolve')
+    throw new NotImplemented(`${this.constructor.name}.resolve`)
   }
 
   /**
@@ -43,7 +43,7 @@ export default class IColorDefinitionStorage {
    * )>}
    */
   async get () {
-    throw new errors.NotImplemented(this.constructor.name + '.get')
+    throw new NotImplemented(`${this.constructor.name}.get`)
   }
 
   /**
@@ -54,7 +54,7 @@ export default class IColorDefinitionStorage {
    * @return {Promise}
    */
   async remove (data, opts) {
-    throw new errors.NotImplemented(this.constructor.name + '.remove')
+    throw new NotImplemented(`${this.constructor.name}.remove`)
   }
 
   /**
@@ -63,6 +63,6 @@ export default class IColorDefinitionStorage {
    * @return {Promise}
    */
   async clear () {
-    throw new errors.NotImplemented(this.constructor.name + '.clear')
+    throw new NotImplemented(`${this.constructor.name}.clear`)
   }
 }

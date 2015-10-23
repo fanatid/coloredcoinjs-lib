@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
 
@@ -92,7 +92,7 @@ export default class ColorData {
     // scan all affecting input transactions
     await* inputss.map(async (inputs) => {
       let rawTx = await getTxFn(inputs[0].txId)
-      let inputTx = bitcore.Transaction(rawTx)
+      let inputTx = new bitcore.Transaction(rawTx)
       let inputOutIndices = _.pluck(inputs, 'outIndex')
       let outputValues = await this._getColorOutputsOrScan(
         inputTx, inputOutIndices, cdefCls, getTxFn, opts)
@@ -273,7 +273,7 @@ export default class ColorData {
     let colorCode = cdefCls.getColorCode()
     let rawInputValues = await* tx.inputs.map(async (input) => {
       let prevTxId = input.prevTxId.toString('hex')
-      if (input.outputIndex === 0xFFFFFFFF && prevTxId === ZERO_HASH) {
+      if (input.outputIndex === 0xffffffff && prevTxId === ZERO_HASH) {
         return null
       }
 

@@ -1,7 +1,7 @@
 import { mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
 
-import errors from '../../errors'
+import { NotImplemented } from '../../errors'
 
 /**
  * @typedef {Object} IDataStorage~Record
@@ -31,7 +31,7 @@ export default class IDataStorage {
    * @return {Promise}
    */
   async add () {
-    throw new errors.NotImplemented(this.constructor.name + '.add')
+    throw new NotImplemented(`${this.constructor.name}.add`)
   }
 
   /**
@@ -44,7 +44,7 @@ export default class IDataStorage {
    * @return {Promise<Map<number, Map<number, *>>>}
    */
   async get () {
-    throw new errors.NotImplemented(this.constructor.name + '.get')
+    throw new NotImplemented(`${this.constructor.name}.get`)
   }
 
   /**
@@ -57,7 +57,7 @@ export default class IDataStorage {
    * @return {Promise}
    */
   async remove () {
-    throw new errors.NotImplemented(this.constructor.name + '.remove')
+    throw new NotImplemented(`${this.constructor.name}.remove`)
   }
 
   /**
@@ -66,6 +66,6 @@ export default class IDataStorage {
    * @return {Promise}
    */
   async clear () {
-    throw new errors.NotImplemented(this.constructor.name + '.clear')
+    throw new NotImplemented(`${this.constructor.name}.clear`)
   }
 }

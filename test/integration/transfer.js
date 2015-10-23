@@ -1,4 +1,4 @@
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 import { expect } from 'chai'
 
 import cclib from '../../src'
@@ -7,9 +7,9 @@ describe('coloredcoinjs-lib (transfer)', () => {
   it('uncolored', async () => {
     // http://tbtc.blockr.io/tx/info/87dec49cc16846b0b28a985102bec306c8266b0694ffdf0392a036e3f8646b3e
 
-    let pk1 = bitcore.PrivateKey(
+    let pk1 = new bitcore.PrivateKey(
       'cQY9eoeCCP9wcxp1H2DydbUAHWtmsrvXTEGfMaayeDEesAJFnNNm', 'testnet')
-    let pk2 = bitcore.PrivateKey(
+    let pk2 = new bitcore.PrivateKey(
       'cUJwqRHipdAtHxmyM1K3nMM7HNRryCyEFTc1eZuB2mgwGwxtuaYg', 'testnet')
 
     let cvalue = new cclib.ColorValue(new cclib.definitions.Uncolored(), 100000)
@@ -56,9 +56,9 @@ describe('coloredcoinjs-lib (transfer)', () => {
   it('EPOBC', async () => {
     // http://tbtc.blockr.io/tx/info/87b2e65e7fec95c2ba5d84f5e61779d64df8ca17f2e0f2dd86e56d65c882dce6
 
-    let pk1 = bitcore.PrivateKey(
+    let pk1 = new bitcore.PrivateKey(
       'cW4QRvHawwgJNxuSBrUsSpPEkLpLDAemaZ68ciibV64HYHwHATVm', 'testnet')
-    let pk2 = bitcore.PrivateKey(
+    let pk2 = new bitcore.PrivateKey(
       'cVZRCg3E45bjMiqt16uWDiYsEimtzvUJShAnXUurDxgo44rSu6a2', 'testnet')
 
     let cdef = await cclib.definitions.EPOBC.fromDesc(

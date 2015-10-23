@@ -1,4 +1,4 @@
-import errors from '../errors'
+import { NotImplemented } from '../errors'
 
 /**
  * Represents a color definition.
@@ -21,7 +21,7 @@ export default class IColorDefinition {
    * @return {string}
    */
   static getColorCode () {
-    throw new errors.NotImplemented('IColorDefinition.getColorCode')
+    throw new NotImplemented('IColorDefinition.getColorCode')
   }
 
   /**
@@ -43,7 +43,7 @@ export default class IColorDefinition {
    * @return {string}
    */
   getDesc () {
-    throw new errors.NotImplemented(this.constructor.name + '.desc')
+    throw new NotImplemented(`${this.constructor.name}.desc`)
   }
 
   /**
@@ -57,7 +57,7 @@ export default class IColorDefinition {
    * @return {Promise<IColorDefinition>}
    */
   static async fromDesc () {
-    throw new errors.NotImplemented('IColorDefinition.fromDesc')
+    throw new NotImplemented('IColorDefinition.fromDesc')
   }
 
   /**
@@ -71,7 +71,7 @@ export default class IColorDefinition {
    * @return {Promise<?IColorDefinition>}
    */
   static async fromTx () {
-    throw new errors.NotImplemented('IColorDefinition.fromTx')
+    throw new NotImplemented('IColorDefinition.fromTx')
   }
 
   /**
@@ -80,7 +80,7 @@ export default class IColorDefinition {
    * @return {boolean}
    */
   isGenesis () {
-    throw new errors.NotImplemented(this.constructor.name + '.isGenesis')
+    throw new NotImplemented(`${this.constructor.name}.isGenesis`)
   }
 
   /**
@@ -91,7 +91,7 @@ export default class IColorDefinition {
    * @return {Promise<Array.<?ColorValue>>}
    */
   async runKernel () {
-    throw new errors.NotImplemented(this.constructor.name + '.runKernel')
+    throw new NotImplemented(`${this.constructor.name}.runKernel`)
   }
 
   /**
@@ -103,7 +103,7 @@ export default class IColorDefinition {
    * @return {Promise<number[]>}
    */
   static async getAffectingInputs () {
-    throw new errors.NotImplemented('IColorDefinition.getAffectingInputs')
+    throw new NotImplemented('IColorDefinition.getAffectingInputs')
   }
 
   /**
@@ -113,7 +113,7 @@ export default class IColorDefinition {
    * @return {Promise<ComposedTx>}
    */
   static async makeComposedTx () {
-    throw new errors.NotImplemented('IColorDefinition.makeComposedTx')
+    throw new NotImplemented('IColorDefinition.makeComposedTx')
   }
 
   /**
@@ -123,6 +123,6 @@ export default class IColorDefinition {
    * @return {Promise<ComposedTx>}
    */
   static async composeGenesisTx () {
-    throw new errors.NotImplemented('IColorDefinition.composeGenesisTx')
+    throw new NotImplemented('IColorDefinition.composeGenesisTx')
   }
 }

@@ -1,6 +1,7 @@
 language: node_js
 node_js:
   - "0.12"
+  - "4"
 addons:
   firefox: "38.0"
   postgresql: "9.4"

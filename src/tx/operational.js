@@ -97,7 +97,7 @@ export default class OperationalTx {
    * @return {Promise<OperationalTx~selectCoinsResult>}
    */
   async selectCoins () {
-    throw new NotImplemented(this.constructor.name + '.selectCoins')
+    throw new NotImplemented(`${this.constructor.name}.selectCoins`)
   }
 
   /**
@@ -108,7 +108,7 @@ export default class OperationalTx {
    * @return {Promise<string>}
    */
   async getChangeAddress () {
-    throw new NotImplemented(this.constructor.name + '.getChangeAddress')
+    throw new NotImplemented(`${this.constructor.name}.getChangeAddress`)
   }
 
   /**

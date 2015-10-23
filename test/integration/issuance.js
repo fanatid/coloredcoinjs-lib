@@ -1,4 +1,4 @@
-import bitcore from 'bitcore'
+import bitcore from 'bitcore-lib'
 import { expect } from 'chai'
 
 import cclib from '../../src'
@@ -7,9 +7,9 @@ describe('coloredcoinjs-lib (issuance)', () => {
   it('EPOBC', async () => {
     // http://tbtc.blockr.io/tx/info/7932c31eca2d7f6798f3edd03cbac195dca6443e49b44918233abfcfe9597f9d
 
-    let pk1 = bitcore.PrivateKey(
+    let pk1 = new bitcore.PrivateKey(
       'cMgKymqtZtF2dCPXwR9h9yYnJm3Mno9xfuSjNXy42ByyW96qcqyT', 'testnet')
-    let pk2 = bitcore.PrivateKey(
+    let pk2 = new bitcore.PrivateKey(
       'cW4QRvHawwgJNxuSBrUsSpPEkLpLDAemaZ68ciibV64HYHwHATVm', 'testnet')
 
     let genesisCdef = cclib.definitions.Manager.getGenesis()
