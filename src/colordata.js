@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import bitcore from 'bitcore-lib'
-import { mixin } from 'core-decorators'
+import { deprecate, mixin } from 'core-decorators'
 import ReadyMixin from 'ready-mixin'
 
 import ColorValue from './colorvalue'
@@ -328,6 +328,7 @@ export default class ColorData {
    * @param {Object} [opts.executeOpts]
    * @return {Promise<ColorValue[]>}
    */
+  @deprecate('Use getOutColorValues')
   async getOutputColorValue (tx, outIndex, cdefCls, getTxFn, opts) {
     await this.ready
 
@@ -342,6 +343,27 @@ export default class ColorData {
     }
 
     return outputColorValues
+  }
+
+  /**
+   * @param {bitcore.Transaction} tx
+   * @param {?number[]} outIndices `null` means all outputs
+   * @param {definitions.IColorDefinition} cdefCls
+   * @param {getTxFn} getTxFn
+   * @param {Object} [opts]
+   * @param {boolean} [opts.save=true]
+   * @param {Object} [opts.executeOpts]
+   * @return {Promise<ColorValue[]>}
+   * @return {Promise<Map<number, ColorValue[]>>}
+   */
+  async getOutColorValues (tx, outIndices, cdefCls, getTxFn, opts) {
+    await this.ready
+
+    if (outIndices === null) {
+      outIndices = _.range(tx.outputs.length)
+    }
+
+    return this._getColorOutputsOrScan(tx, outIndices, cdefCls, getTxFn, opts)
   }
 
   /**
