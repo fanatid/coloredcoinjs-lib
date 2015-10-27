@@ -53,7 +53,7 @@ export default class FilledInputsTx {
    * @return {bitcore.Transaction}
    */
   getTx () {
-    return Transaction(this._tx.toObject())
+    return new Transaction(this._tx.toObject())
   }
 
   /**
@@ -65,7 +65,7 @@ export default class FilledInputsTx {
 
     let tx = this._prevTxs[index] || null
     if (tx !== null) {
-      tx = Transaction(tx.toObject())
+      tx = new Transaction(tx.toObject())
     }
 
     return tx

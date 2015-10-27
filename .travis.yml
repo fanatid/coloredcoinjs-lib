@@ -13,7 +13,7 @@ before_script:
   - cp test/config/postgresql.json.travis test/config/postgresql.json
 install:
   - npm install
-  - npm install bitcore
+  - npm install bitcore-lib
 env:
   - TEST_SUITE=coveralls
   - TEST_SUITE=lint
