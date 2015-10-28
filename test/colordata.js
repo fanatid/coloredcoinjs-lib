@@ -123,12 +123,14 @@ describe('ColorData', () => {
       let result = await cdata.getOutColorValues(tx3, null, EPOBC, getTxFn)
       expect(result).to.be.instanceof(Map).and.to.have.property('size', 2)
       let cvs = Array.from(result.values())
+      expect(cvs[0]).to.have.length(3)
       expect(cvs[0][0]).to.be.instanceof(cclib.ColorValue)
       expect(cvs[0][0].getColorDefinition()._genesis.txId).to.equal(tx1.id)
       expect(cvs[0][0].getValue()).to.equal(5)
       expect(cvs[0][0].getColorId()).to.equal(Array.from(result.keys())[0])
       expect(cvs[0][1]).to.be.null
       expect(cvs[0][2]).to.be.null
+      expect(cvs[1]).to.have.length(3)
       expect(cvs[1][0]).to.be.null
       expect(cvs[1][1]).to.be.null
       expect(cvs[1][2]).to.be.instanceof(cclib.ColorValue)
@@ -137,26 +139,19 @@ describe('ColorData', () => {
       expect(cvs[1][2].getColorId()).to.equal(Array.from(result.keys())[1])
 
       result = await cdata.getOutColorValues(tx3, [0], EPOBC, getTxFn)
-      expect(result).to.be.instanceof(Map).and.to.have.property('size', 1)
-      cvs = result.values().next().value
-      expect(cvs[0]).to.be.instanceof(cclib.ColorValue)
-      expect(cvs[0].getColorDefinition()._genesis.txId).to.equal(tx1.id)
-      expect(cvs[0].getValue()).to.equal(5)
-      expect(cvs[0].getColorId()).to.equal(result.keys().next().value)
-      expect(cvs[1]).to.be.null
-      expect(cvs[2]).to.be.null
-
-/*
-      result = await cdata.getOutColorValues(tx3, [1], EPOBC, getTxFn)
-      expect(result).to.be.an('array').and.to.have.length(0)
-
-      result = await cdata.getOutColorValues(tx3, [2], EPOBC, getTxFn)
-      expect(result).to.be.an('array').and.to.have.length(1)
-      cv = result[0]
-      expect(cv).to.be.instanceof(cclib.ColorValue)
-      expect(cv.getColorDefinition()._genesis.txId).to.equal(tx2.id)
-      expect(cv.getValue()).to.equal(10)
-*/
+      expect(result).to.be.instanceof(Map).and.to.have.property('size', 2)
+      cvs = Array.from(result.values())
+      expect(cvs[0]).to.have.length(3)
+      expect(cvs[0][0]).to.be.instanceof(cclib.ColorValue)
+      expect(cvs[0][0].getColorDefinition()._genesis.txId).to.equal(tx1.id)
+      expect(cvs[0][0].getValue()).to.equal(5)
+      expect(cvs[0][0].getColorId()).to.equal(result.keys().next().value)
+      expect(cvs[0][1]).to.be.null
+      expect(cvs[0][2]).to.be.null
+      expect(cvs[1]).to.have.length(3)
+      expect(cvs[1][0]).to.be.null
+      expect(cvs[1][1]).to.be.null
+      expect(cvs[1][2]).to.be.null
     })
   })
 

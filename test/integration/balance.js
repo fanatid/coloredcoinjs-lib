@@ -28,14 +28,14 @@ describe('coloredcoinjs-lib (balance)', () => {
     let tx = new bitcore.Transaction(fixtures[txId])
     let outIndex = 0
 
-    let data = await cdata.getOutputColorValue(
-      tx, outIndex, EPOBC, helpers.getTxFn)
-    expect(data).to.be.an('array').and.to.have.length(1)
-    let cv = data[0]
-    expect(cv).to.be.instanceof(cclib.ColorValue)
-    expect(cv.getColorDefinition()).to.be.instanceof(EPOBC)
-    expect(cv.getColorDefinition()._genesis.txId).to.equal(
-      'b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170')
-    expect(cv.getValue()).to.equal(100000)
+    let data = await cdata.getOutColorValues(
+      tx, [outIndex], EPOBC, helpers.getTxFn)
+    expect(data).to.be.instanceof(Map).and.to.have.property('size', 1)
+    let cvs = Array.from(data.values())
+    expect(cvs[0]).to.have.length(2)
+    expect(cvs[0][0]).to.be.instanceof(cclib.ColorValue)
+    expect(cvs[0][0].getColorDefinition()._genesis.txId).to.equal('b8a402f28f247946df2b765f7e52cfcaf8c0714f71b13ae4f151a973647c5170')
+    expect(cvs[0][0].getValue()).to.equal(100000)
+    expect(cvs[0][0].getColorId()).to.equal(Array.from(data.keys())[0])
   })
 })

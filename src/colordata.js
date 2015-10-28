@@ -22,7 +22,7 @@ export default class ColorData {
     this._cdmanager = cdmanager
     this._scanProcesses = {}
 
-    this._storage.ready
+    Promise.all([this._storage.ready, this._cdmanager.ready])
       .then(() => this._ready(null), (err) => this._ready(err))
   }
 
@@ -171,8 +171,10 @@ export default class ColorData {
             colorOutputs.set(colorId, getArrayOfNull(tx.outputs.length))
           }
 
-          // set color value
-          colorOutputs.get(colorId)[outIndex] = new ColorValue(cdef, value)
+          // set color value if not null
+          if (value !== null) {
+            colorOutputs.get(colorId)[outIndex] = new ColorValue(cdef, value)
+          }
         }
       }
 
@@ -188,6 +190,21 @@ export default class ColorData {
       let colorInputs = await this._getAffectingInputs(
         tx, outIndices, cdefCls, getTxFn, {executeOpts: executeOpts})
 
+      // add uncolored outputs if another outputs is colored
+      if (colorOutputs.size > 0 && colorInputs.size === 0) {
+        await* Array.from(colorOutputs.keys()).map(async (colorId) => {
+          await* outIndices.map((outIndex) => {
+            return this._storage.add({
+              colorCode: colorCode,
+              txId: txId,
+              outIndex: outIndex,
+              colorId: colorId,
+              value: null
+            }, {executeOpts: executeOpts})
+          })
+        })
+      }
+
       // run runKernel for each color definition
       await* Array.from(colorInputs.entries()).map(async ([colorId, inputs]) => {
         let cdef = await resolveColorId(colorId)
@@ -197,7 +214,7 @@ export default class ColorData {
         if (save) {
           // save each color value
           await* outputs.map(async (cvalue, outIndex) => {
-            if (cvalue === null) {
+            if (_.includes(outIndices, outIndex) === false) {
               return
             }
 
@@ -206,7 +223,7 @@ export default class ColorData {
               txId: txId,
               outIndex: outIndex,
               colorId: colorId,
-              value: cvalue.getValue()
+              value: cvalue === null ? null : cvalue.getValue()
             }, {executeOpts: executeOpts})
           })
         }
