@@ -122,13 +122,8 @@ describe('definitions.EPOBC', () => {
   })
 
   describe('fromDesc', () => {
-    it('throw error', async () => {
-      try {
-        await EPOBC.fromDesc('obc:11:2:3')
-        throw new Error()
-      } catch (err) {
-        expect(err).to.be.instanceof(cclib.errors.ColorDefinition.IncorrectDesc)
-      }
+    it('throw error', () => {
+      return expect(EPOBC.fromDesc('obc:11:2:3')).to.be.rejectedWith(cclib.errors.ColorDefinition.IncorrectDesc)
     })
 
     it('return EPOBCColorDefinition', async () => {

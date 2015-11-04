@@ -47,13 +47,7 @@ export default function (opts) {
           value: records[0].value + 1
         }, records[0])
 
-        try {
-          await storage.add(newRecord)
-          throw new Error()
-        } catch (err) {
-          expect(err).to.be.instanceof(
-            cclib.errors.Storage.ColorData.HaveAnotherValue)
-        }
+        await expect(storage.add(newRecord)).to.be.rejectedWith(cclib.errors.Storage.ColorData.HaveAnotherValue)
       })
     })
 

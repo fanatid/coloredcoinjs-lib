@@ -41,22 +41,12 @@ describe('tx.Operational', () => {
     expect(optx.isMonoColor()).to.be.false
   })
 
-  it('selectCoins', async () => {
-    try {
-      await optx.selectCoins()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('selectCoins', () => {
+    return expect(optx.selectCoins()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('getChangeAddress', async () => {
-    try {
-      await optx.getChangeAddress()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('getChangeAddress', () => {
+    return expect(optx.getChangeAddress()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
   it('getRequiredFee (default fee-per-kilobyte)', () => {

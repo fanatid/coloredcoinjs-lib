@@ -31,57 +31,27 @@ describe('definitions.Genesis', () => {
     expect(::cdef.getDesc).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('static fromDesc', async () => {
-    try {
-      await Genesis.fromDesc()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static fromDesc', () => {
+    return expect(Genesis.fromDesc()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('fromTx', async () => {
-    try {
-      await Genesis.fromTx()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('fromTx', () => {
+    return expect(Genesis.fromTx()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('runKernel', async () => {
-    try {
-      await cdef.runKernel()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('runKernel', () => {
+    return expect(cdef.runKernel()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static getAffectingInputs', async () => {
-    try {
-      await Genesis.getAffectingInputs()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static getAffectingInputs', () => {
+    return expect(Genesis.getAffectingInputs()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static makeComposedTx', async () => {
-    try {
-      await Genesis.makeComposedTx()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static makeComposedTx', () => {
+    return expect(Genesis.makeComposedTx()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static composeGenesisTx', async () => {
-    try {
-      await Genesis.composeGenesisTx()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static composeGenesisTx', () => {
+    return expect(Genesis.composeGenesisTx()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 })

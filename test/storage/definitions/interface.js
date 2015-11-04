@@ -13,30 +13,15 @@ describe('storage.definitions.Interface', () => {
     expect(cclib.storage.definitions.Interface.isAvailable()).to.be.false
   })
 
-  it('#resolve', async () => {
-    try {
-      await storage.resolve()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('#resolve', () => {
+    return expect(storage.resolve()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('#get', async () => {
-    try {
-      await storage.get()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('#get', () => {
+    return expect(storage.get()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('#clear', async () => {
-    try {
-      await storage.clear()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('#clear', () => {
+    return expect(storage.clear()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 })

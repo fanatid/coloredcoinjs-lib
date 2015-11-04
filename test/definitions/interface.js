@@ -27,61 +27,31 @@ describe('definitions.Interface', () => {
     expect(::cdef.getDesc).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('static fromDesc', async () => {
-    try {
-      await Interface.fromDesc()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static fromDesc', () => {
+    return expect(Interface.fromDesc()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static fromTx', async () => {
-    try {
-      await Interface.fromTx()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static fromTx', () => {
+    return expect(Interface.fromTx()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
   it('isGenesis', () => {
     expect(::cdef.isGenesis).to.throw(cclib.errors.NotImplemented)
   })
 
-  it('runKernel', async () => {
-    try {
-      await cdef.runKernel()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('runKernel', () => {
+    return expect(cdef.runKernel()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static getAffectingInputs', async () => {
-    try {
-      await Interface.getAffectingInputs()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static getAffectingInputs', () => {
+    return expect(Interface.getAffectingInputs()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static makeComposedTx', async () => {
-    try {
-      await Interface.makeComposedTx()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static makeComposedTx', () => {
+    return expect(Interface.makeComposedTx()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 
-  it('static composeGenesisTx', async () => {
-    try {
-      await Interface.composeGenesisTx()
-      throw new Error()
-    } catch (err) {
-      expect(err).to.be.instanceof(cclib.errors.NotImplemented)
-    }
+  it('static composeGenesisTx', () => {
+    return expect(Interface.composeGenesisTx()).to.be.rejectedWith(cclib.errors.NotImplemented)
   })
 })

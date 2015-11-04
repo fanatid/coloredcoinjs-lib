@@ -1,21 +1,26 @@
+sudo: false
 language: node_js
 node_js:
-  - "0.12"
-  - "4"
+  - 0.12
+  - 4
+  - 5
 addons:
-  firefox: "38.0"
-  postgresql: "9.4"
-before_install:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
-  - cp test/config/postgresql.json.travis test/config/postgresql.json
+  firefox: 38.0
+  postgresql: 9.4
 install:
   - npm install
   - npm install bitcore-lib
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
+  - cp test/config/postgresql.json.travis test/config/postgresql.json
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
 env:
-  - TEST_SUITE=coveralls
-  - TEST_SUITE=lint
   - TEST_SUITE=test
-script: "npm run $TEST_SUITE"
+matrix:
+  include:
+    - node_js: 4
+      env: TEST_SUITE=coverage
+    - node_js: 4
+      env: TEST_SUITE=lint
+script: npm run $TEST_SUITE
