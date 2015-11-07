@@ -79,28 +79,31 @@ describe('ColorData', () => {
       helpers.tx.addInput(tx1, new Buffer(32), 0, 37 | (2 << 6))
       helpers.tx.addOutput(tx1, 11)
 
-      helpers.tx.addInput(tx2, tx1.id, 0, 51 | (2 << 6))
-      helpers.tx.addOutput(tx2, 10)
+      helpers.tx.addInput(tx2, new Buffer(32), 0, 0xffffffff)
+      helpers.tx.addOutput(tx2, 100)
 
-      let getTxFn = helpers.getTxFnStub([tx1])
-      let result = await cdata.getTxColorValues(tx2, [0], EPOBC, getTxFn)
+      helpers.tx.addInput(tx3, tx1.id, 0, 51 | (2 << 6))
+      helpers.tx.addInput(tx3, tx2.id, 0, 0xffffffff)
+      helpers.tx.addOutput(tx3, 10)
+
+      let getTxFn = helpers.getTxFnStub([tx1, tx2])
+      let result = await cdata.getTxColorValues(tx3, [0], EPOBC, getTxFn)
       expect(result).to.be.an('object')
 
       expect(result.inputs).to.be.instanceof(Map).and.to.have.property('size', 1)
       let [colorId1, inputs] = Array.from(result.inputs.entries())[0]
-      expect(inputs).to.be.an('array').and.to.have.length(1)
-      let input = inputs[0]
-      expect(input).to.be.instanceof(cclib.ColorValue)
-      expect(input.getColorDefinition().getColorId()).to.equal(colorId1)
-      expect(input.getValue()).to.equal(7)
+      expect(inputs).to.be.an('array').and.to.have.length(2)
+      expect(inputs[0]).to.be.instanceof(cclib.ColorValue)
+      expect(inputs[0].getColorDefinition().getColorId()).to.equal(colorId1)
+      expect(inputs[0].getValue()).to.equal(7)
+      expect(inputs[1]).to.be.null
 
       expect(result.outputs).to.be.instanceof(Map).and.to.have.property('size', 1)
       let [colorId2, outputs] = Array.from(result.outputs.entries())[0]
       expect(outputs).to.be.an('array').and.to.have.length(1)
-      let output = outputs[0]
-      expect(output).to.be.instanceof(cclib.ColorValue)
-      expect(output.getColorDefinition().getColorId()).to.equal(colorId2)
-      expect(output.getValue()).to.equal(6)
+      expect(outputs[0]).to.be.instanceof(cclib.ColorValue)
+      expect(outputs[0].getColorDefinition().getColorId()).to.equal(colorId2)
+      expect(outputs[0].getValue()).to.equal(6)
     })
   })
 

@@ -1,6 +1,6 @@
 {
   "name": "coloredcoinjs-lib",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Colored coin JavaScript library for Bitcoin.",
   "keywords": [
     "bitcoin",
@@ -46,7 +46,7 @@
     "compile:watch": "babel -d lib src -w",
     "coverage": "find test/ -type f -name \"*.js\" | xargs istanbul cover _mocha -- --compilers js:babel/register",
     "coveralls": "npm run coverage && coveralls <coverage/lcov.info",
-    "lint": "eslint src test",
+    "lint": "standard",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "karma start karma.conf.js",
     "test:node": "find test/ -type f -name \"*.js\" | xargs istanbul test mocha -- --compilers js:babel/register --reporter spec"
@@ -71,9 +71,6 @@
     "chai": "^3.4.0",
     "chai-as-promised": "^5.1.0",
     "coveralls": "^2.11.3",
-    "eslint": "^1.7.3",
-    "eslint-config-standard": "^4.0.0",
-    "eslint-plugin-standard": "^1.2.0",
     "istanbul": "^0.4.0",
     "karma": "^0.13.14",
     "karma-browserify": "^4.4.0",
@@ -83,12 +80,23 @@
     "karma-mocha": "^0.2.0",
     "mocha": "^2.2.5",
     "pg": "^4.4.3",
-    "sqlite3": "^3.1.0"
+    "sqlite3": "^3.1.0",
+    "standard": "^5.3.1"
   },
   "browser": {
     "./lib/storage/data/index.js": "./lib/storage/data/index-browser.js",
     "./lib/storage/definitions/index.js": "./lib/storage/definitions/index-browser.js",
     "./src/storage/data/index.js": "./src/storage/data/index-browser.js",
     "./src/storage/definitions/index.js": "./src/storage/definitions/index-browser.js"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "xdescribe",
+      "beforeEach",
+      "afterEach",
+      "it"
+    ],
+    "parser": "babel-eslint"
   }
 }

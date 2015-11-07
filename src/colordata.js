@@ -287,8 +287,10 @@ export default class ColorData {
     let cOutputValues = await this._getColorOutputsOrScan(
       tx, outIndices, cdefCls, getTxFn, opts)
 
+    let cInputValues = new Map()
+    let cdefsMap = {}
     let colorCode = cdefCls.getColorCode()
-    let rawInputValues = await* tx.inputs.map(async (input) => {
+    await* tx.inputs.map(async (input, index) => {
       let prevTxId = input.prevTxId.toString('hex')
       if (input.outputIndex === 0xffffffff && prevTxId === ZERO_HASH) {
         return null
@@ -300,23 +302,16 @@ export default class ColorData {
         outIndex: input.outputIndex
       }, {executeOpts: executeOpts})
 
-      let value = data.get(input.outputIndex)
-      if (value === undefined) {
-        return null
-      }
-
-      return value
-    })
-
-    let cdefsMap = {}
-    let cInputValues = new Map()
-    for (let index = 0; index < rawInputValues.length; ++index) {
-      let values = rawInputValues[index]
-      if (values === null) {
-        continue
+      var values = data.get(input.outputIndex)
+      if (values === undefined) {
+        return
       }
 
       for (let [colorId, value] of values.entries()) {
+        if (value === null) {
+          continue
+        }
+
         // resolve color definition
         let cdef = cdefsMap[colorId]
         if (cdef === undefined) {
@@ -330,7 +325,7 @@ export default class ColorData {
 
         cInputValues.get(colorId)[index] = new ColorValue(cdef, value)
       }
-    }
+    })
 
     return {inputs: cInputValues, outputs: cOutputValues}
   }
@@ -370,7 +365,6 @@ export default class ColorData {
    * @param {Object} [opts]
    * @param {boolean} [opts.save=true]
    * @param {Object} [opts.executeOpts]
-   * @return {Promise<ColorValue[]>}
    * @return {Promise<Map<number, ColorValue[]>>}
    */
   async getOutColorValues (tx, outIndices, cdefCls, getTxFn, opts) {

@@ -5,7 +5,7 @@ node_js:
   - 4
   - 5
 addons:
-  firefox: 38.0
+  firefox: latest
   postgresql: 9.4
 install:
   - npm install
@@ -13,10 +13,12 @@ install:
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
   - cp test/config/postgresql.json.travis test/config/postgresql.json
-  - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 env:
-  - TEST_SUITE=test
+  global:
+    - DISPLAY=:99.0
+  matrix:
+    - TEST_SUITE=test
 matrix:
   include:
     - node_js: 4
