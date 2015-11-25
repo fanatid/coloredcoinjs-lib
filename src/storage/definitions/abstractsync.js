@@ -52,7 +52,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
       // counter not exists, try get max color id or set to zero
       if (isNaN(colorId)) {
         colorId = 0
-        for (let [, value] of await this._storage.entries()) {
+        for (let {value} of await this._storage.entries()) {
           value = parseInt(value, 10)
           if (!isNaN(value)) {
             colorId = Math.max(colorId, parseInt(value, 10))
@@ -87,7 +87,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
     return await this._storage.withLock(async () => {
       if (_.has(data, 'id')) {
         let record = null
-        for (let [key, value] of await this._storage.entries()) {
+        for (let {key, value} of await this._storage.entries()) {
           value = parseInt(value, 10)
           if (key !== '~counter' && value === data.id) {
             record = {id: value, desc: key}
@@ -97,7 +97,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
       }
 
       let records = []
-      for (let [key, value] of await this._storage.entries()) {
+      for (let {key, value} of await this._storage.entries()) {
         value = parseInt(value, 10)
         if (key !== '~counter' && !isNaN(value)) {
           records.push({id: value, desc: key})
@@ -118,7 +118,7 @@ export default class AbstractSyncColorDefinitionStorage extends IColorDefinition
     await this.ready
 
     await this._storage.withLock(async () => {
-      for (let [key, value] of await this._storage.entries()) {
+      for (let {key, value} of await this._storage.entries()) {
         if (key !== '~counter' && parseInt(value, 10) === data.id) {
           await this._storage.remove(key)
           break

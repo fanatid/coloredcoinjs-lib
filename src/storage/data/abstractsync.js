@@ -118,7 +118,7 @@ export default class AbstractSyncColorDataStorage extends IDataStorage {
         return await this._storage.remove(`${data.txId}:${data.colorCode}`)
       }
 
-      for (let [key, serializedValue] of await this._storage.entries()) {
+      for (let {key, value: serializedValue} of await this._storage.entries()) {
         let changed = false
 
         let value = JSON.parse(serializedValue)
